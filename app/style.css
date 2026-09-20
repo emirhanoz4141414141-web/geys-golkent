@@ -16,3 +16,5 @@
 .teacherAssign{display:block;margin-top:12px;max-width:220px;border:1px solid #dbe4eb;border-radius:8px;padding:8px;background:#fff;font-size:11px}.permTable th,.permTable td{text-align:center}.permTable th:first-child,.permTable td:first-child{text-align:left}.permTable input[type=checkbox]{width:18px;height:18px;accent-color:#0b607e;cursor:pointer}
 
 .reportFilters{margin-top:18px}.reportSplit{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:18px 0}.qualityBars>div{margin:15px 0}.qualityBars span{display:flex;justify-content:space-between;font-size:12px;font-weight:700}.qualityBars i{display:block;height:9px;background:#edf2f5;border-radius:10px;margin-top:6px;overflow:hidden}.qualityBars em{display:block;height:100%;border-radius:10px;background:#7993a2}.qualityBars em.saglam{background:#37a56b}.qualityBars em.iyi{background:#4d9bd1}.qualityBars em.orta{background:#e4b53e}.qualityBars em.zayif{background:#d95c5c}@media(max-width:850px){.reportSplit{grid-template-columns:1fr}}
+
+.dualInput{display:flex;gap:6px;min-width:160px}.cellInput.tiny{width:72px}.monthTable td small+small{margin-top:1px}
