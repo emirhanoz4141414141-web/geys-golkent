@@ -57,3 +57,10 @@
 .heroFeatures b:last-child{border-right:0}
 .premiumHero small{display:block;letter-spacing:4px;font-size:10px;color:#e8bf68;font-weight:800}
 @media(max-width:900px){.premiumHero{bottom:5%!important}.heroFeatures{display:none}.premiumHero h1{font-size:42px!important}.premiumHero>span{font-size:14px!important}.login .brand img{width:62px;height:62px}}
+
+/* E-GÖLKENT logo — kurumsal, sade sunum */
+.login .brand{display:flex;align-items:center;gap:18px}
+.login .brand img{width:118px!important;height:72px!important;object-fit:contain!important;background:rgba(255,255,255,.98)!important;border-radius:10px!important;padding:5px 9px!important;box-shadow:0 8px 28px rgba(0,0,0,.16)!important;border:1px solid rgba(255,255,255,.7)}
+.login .brand b{font-family:Inter,Arial,sans-serif!important;font-size:27px!important;font-weight:800!important;letter-spacing:1.8px!important}
+.login .brand span{font-size:12px!important;font-weight:500!important;letter-spacing:.7px!important;opacity:.88}
+@media(max-width:900px){.login .brand img{width:98px!important;height:60px!important}.login .brand b{font-size:23px!important}}
