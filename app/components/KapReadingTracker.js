@@ -1,0 +1,16 @@
+'use client'
+import {useEffect,useState} from 'react'
+const quality=['saglam','iyi','orta','zayif']
+export default function KapReadingTracker({supabase,students,profiles,session}){
+ const [rows,setRows]=useState({}),[busy,setBusy]=useState(false),[msg,setMsg]=useState('')
+ const kap=students.filter(s=>s.classes?.program==='kap'||String(s.classes?.code||'').startsWith('KAP'))
+ useEffect(()=>{(async()=>{if(!kap.length)return;const {data}=await supabase.from('kap_reading_records').select('*').in('student_id',kap.map(x=>x.id));const m={};(data||[]).forEach(x=>m[x.student_id+'-'+x.juz_no]=x);setRows(m)})()},[students])
+ async function save(st,juz){
+  const key=st.id+'-'+juz,r=rows[key]||{},teacher=r.teacher_id||session.user.id
+  setBusy(true);setMsg('')
+  const payload={student_id:st.id,teacher_id:teacher,recorded_by:session.user.id,reading_date:r.reading_date||new Date().toISOString().slice(0,10),juz_no:juz,score:r.score===''||r.score==null?null:Number(r.score),evaluation:r.evaluation||null,note:r.note||null,approved:true}
+  const {data,error}=await supabase.from('kap_reading_records').upsert(payload,{onConflict:'student_id,juz_no'}).select().single()
+  setBusy(false);if(error)return setMsg(error.message);setRows(v=>({...v,[key]:data}));setMsg(st.first_name+' '+st.last_name+' · '+juz+'. cüz kaydedildi.')
+ }
+ return <section className="panel kapTracker"><div className="panelHead"><div><h3>KAP — 30 Cüz Okuma Takibi</h3><p>Her cüz için tarih, dinleyen hoca, puan, değerlendirme ve onay kaydı.</p></div></div>{msg&&<div className="msg">{msg}</div>}<div className="tableWrap"><table className="kapTable"><thead><tr><th>Öğrenci</th>{Array.from({length:30},(_,i)=><th key={i}>{i+1}</th>)}</tr></thead><tbody>{kap.map(st=><tr key={st.id}><td><b>{st.first_name} {st.last_name}</b></td>{Array.from({length:30},(_,i)=>i+1).map(j=>{const k=st.id+'-'+j,r=rows[k]||{};return <td key={j} className={r.approved?'kapDone':''}><input type="date" value={r.reading_date||''} onChange={e=>setRows(v=>({...v,[k]:{...r,reading_date:e.target.value}}))}/><select value={r.teacher_id||session.user.id} onChange={e=>setRows(v=>({...v,[k]:{...r,teacher_id:e.target.value}}))}>{profiles.filter(p=>p.active&&['teacher','admin','super_admin'].includes(p.role)).map(p=><option key={p.id} value={p.id}>{p.full_name}</option>)}</select><input type="number" min="0" max="100" placeholder="Puan" value={r.score??''} onChange={e=>setRows(v=>({...v,[k]:{...r,score:e.target.value}}))}/><select value={r.evaluation||''} onChange={e=>setRows(v=>({...v,[k]:{...r,evaluation:e.target.value}}))}><option value="">Değerlendirme</option>{quality.map(q=><option key={q} value={q}>{q[0].toUpperCase()+q.slice(1)}</option>)}</select><input placeholder="Not" value={r.note||''} onChange={e=>setRows(v=>({...v,[k]:{...r,note:e.target.value}}))}/><button disabled={busy} onClick={()=>save(st,j)}>✓ Onayla</button></td>})}</tr>)}{!kap.length&&<tr><td colSpan="31">KAP öğrencisi bulunmuyor.</td></tr>}</tbody></table></div></section>
+}
