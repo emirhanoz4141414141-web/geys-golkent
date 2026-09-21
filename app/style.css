@@ -74,3 +74,40 @@
 }
 .login .brand{gap:20px}
 @media(max-width:900px){.login .brand img{width:116px!important;height:72px!important}}
+
+/* 2026 premium giriş kompozisyonu */
+.login{background:#061b2b}
+.login .hero{flex:1.72;min-width:0}
+.login .hero>img{filter:saturate(.82) contrast(1.06) brightness(.78)}
+.login .hero:after{background:linear-gradient(180deg,rgba(3,20,34,.35),rgba(3,20,34,.08) 42%,rgba(3,20,34,.82))}
+.login .premiumBrand{position:absolute!important;z-index:4;top:5.5%!important;left:50%!important;transform:translateX(-50%);width:72%;display:flex!important;flex-direction:column;justify-content:center;gap:4px!important;text-align:center}
+.login .premiumBrand img{width:150px!important;height:92px!important;margin:0 auto 5px;object-fit:contain!important;background:transparent!important;border:0!important;box-shadow:none!important;filter:drop-shadow(0 5px 12px rgba(0,0,0,.3))}
+.login .premiumBrand b{font-family:Georgia,"Times New Roman",serif!important;font-size:clamp(38px,4vw,62px)!important;font-weight:500!important;letter-spacing:3px!important;line-height:.95;color:#fff;text-shadow:0 4px 20px rgba(0,0,0,.45)}
+.login .premiumBrand span{font-size:12px!important;letter-spacing:3.2px!important;color:#4ed2ec!important;font-weight:700!important;margin-top:7px}
+.login .premiumHero{bottom:5.5%!important;max-width:850px!important}
+.login .premiumHero h1{font-size:clamp(34px,4vw,58px)!important;font-weight:400!important;white-space:nowrap;margin-bottom:12px!important}
+.login .premiumHero h1 em{color:#f0bd59}
+.login .premiumHero .heroRule{width:62%;height:1px;margin:0 auto 13px;background:linear-gradient(90deg,transparent,#d8a844 22%,#d8a844 78%,transparent)}
+.login .premiumHero p{font-size:11px!important;letter-spacing:5px!important;color:#fff!important;margin:0 0 18px!important}
+.login .heroFeatures{margin:10px auto 12px;border-top:0;padding:12px 0 8px;max-width:690px}
+.login .heroFeatures b{font-size:25px;color:#e9b74f;display:flex;align-items:center;justify-content:center;gap:10px;font-weight:400}
+.login .heroFeatures b span{font-size:10px;line-height:1.5;letter-spacing:1.2px;color:#fff;text-align:left;text-transform:uppercase}
+.login .premiumHero small{font-size:9px;letter-spacing:4.5px;color:#fff}
+.login .loginBox{flex:.92;background:linear-gradient(160deg,#071d2d 0%,#0a2a40 100%);padding:28px 30px;color:#fff;display:flex;align-items:center;position:relative;box-shadow:-20px 0 50px rgba(0,0,0,.18)}
+.login .form{width:min(100%,470px);max-height:94vh;overflow:auto;border:1px solid rgba(230,184,91,.65);border-radius:24px;padding:28px;background:linear-gradient(145deg,rgba(15,48,69,.92),rgba(5,28,44,.96));box-shadow:0 28px 70px rgba(0,0,0,.32)}
+.login .form .mobileLogo{display:block;width:78px;height:58px;object-fit:contain;margin:0 auto 5px;filter:drop-shadow(0 4px 8px rgba(0,0,0,.25))}
+.loginIdentity{text-align:center;margin-bottom:22px}
+.loginIdentity b{display:block;font-family:Georgia,"Times New Roman",serif;font-size:27px;letter-spacing:2px;color:#fff}
+.loginIdentity span{display:block;font-size:10px;letter-spacing:1.3px;color:#d9e3e9;margin-top:3px}
+.login .form h2{color:#efbd5c;font-size:24px;margin:0 0 5px}
+.login .form>p{color:#c8d5dd;margin-bottom:20px}
+.login .form label{color:#d9e3e9}
+.login .form input{background:rgba(2,19,31,.55)!important;border:1px solid rgba(153,185,204,.38)!important;color:#fff!important}
+.login .form input::placeholder{color:#8299a8}
+.login .form form>button,.login .parentLogin>button{background:linear-gradient(90deg,#f4ca72,#dba544)!important;color:#102334!important;font-weight:800!important;border:0!important}
+.login .link{color:#c7d4dc!important}
+.login .parentDivider{color:#e7b85d!important;border-color:rgba(231,184,93,.28)!important}
+.login .parentPortalHead b,.login .parentPortalHead span{color:#fff}
+.login .securityCode{background:#f3f4f2!important;color:#1a2730!important}
+.login .parentPortalFoot,.login .form small{color:#91a5b1}
+@media(max-width:900px){.login .premiumBrand{top:4%!important}.login .premiumBrand img{width:105px!important;height:66px!important}.login .premiumBrand b{font-size:34px!important}.login .premiumBrand span{font-size:9px!important}.login .premiumHero h1{font-size:32px!important;white-space:normal}.login .loginBox{padding:18px}.login .form{padding:22px}}
