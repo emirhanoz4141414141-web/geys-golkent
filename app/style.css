@@ -64,3 +64,13 @@
 .login .brand b{font-family:Inter,Arial,sans-serif!important;font-size:27px!important;font-weight:800!important;letter-spacing:1.8px!important}
 .login .brand span{font-size:12px!important;font-weight:500!important;letter-spacing:.7px!important;opacity:.88}
 @media(max-width:900px){.login .brand img{width:98px!important;height:60px!important}.login .brand b{font-size:23px!important}}
+
+/* Logo: fotoğraf üzerinde transparan / kutusuz */
+.login .brand img{
+ width:142px!important;height:88px!important;object-fit:contain!important;
+ background:transparent!important;border:0!important;border-radius:0!important;
+ padding:0!important;box-shadow:none!important;
+ filter:drop-shadow(0 3px 7px rgba(0,0,0,.28));
+}
+.login .brand{gap:20px}
+@media(max-width:900px){.login .brand img{width:116px!important;height:72px!important}}
