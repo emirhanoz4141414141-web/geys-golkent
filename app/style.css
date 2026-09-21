@@ -111,3 +111,31 @@
 .login .securityCode{background:#f3f4f2!important;color:#1a2730!important}
 .login .parentPortalFoot,.login .form small{color:#91a5b1}
 @media(max-width:900px){.login .premiumBrand{top:4%!important}.login .premiumBrand img{width:105px!important;height:66px!important}.login .premiumBrand b{font-size:34px!important}.login .premiumBrand span{font-size:9px!important}.login .premiumHero h1{font-size:32px!important;white-space:normal}.login .loginBox{padding:18px}.login .form{padding:22px}}
+
+/* E-GÖLKENT final premium login polish */
+.login .premiumBrand{top:3.8%!important}
+.brandEmblem{width:155px;height:105px;overflow:hidden;margin:0 auto 2px;position:relative;mix-blend-mode:multiply;filter:brightness(1.7) saturate(1.45) contrast(1.05) drop-shadow(0 5px 10px rgba(0,0,0,.25))}
+.brandEmblem img{position:absolute!important;width:155px!important;height:auto!important;max-width:none!important;left:0!important;top:-64px!important;background:transparent!important;padding:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;filter:none!important}
+.login .premiumBrand b{font-family:"Times New Roman",Georgia,serif!important;font-size:clamp(42px,4.2vw,66px)!important;font-weight:500!important;letter-spacing:5.5px!important;background:linear-gradient(180deg,#fff9e7 10%,#e9c87d 58%,#b8812f 100%);-webkit-background-clip:text;background-clip:text;color:transparent!important;text-shadow:none!important}
+.login .premiumBrand span{font-family:Arial,sans-serif!important;color:#65d7ed!important;font-size:11px!important;letter-spacing:4px!important;text-shadow:0 2px 8px rgba(0,0,0,.45)}
+.login .premiumHero{bottom:4.2%!important}
+.login .premiumHero h1{font-family:Georgia,"Times New Roman",serif!important;font-size:clamp(36px,4.1vw,60px)!important;letter-spacing:-1px!important;text-shadow:0 4px 18px rgba(0,0,0,.5)}
+.login .premiumHero h1 em{font-weight:400;background:linear-gradient(90deg,#e8b454,#ffe0a0);-webkit-background-clip:text;background-clip:text;color:transparent}
+.login .loginBox{background:radial-gradient(circle at 50% 12%,#163c55 0%,#0b293e 36%,#061b2c 100%)!important;padding:24px 28px!important}
+.login .form{background:linear-gradient(160deg,rgba(12,44,65,.96),rgba(4,24,39,.98))!important;border:1px solid rgba(231,184,93,.82)!important;box-shadow:0 0 0 1px rgba(255,255,255,.025) inset,0 24px 70px rgba(0,0,0,.4),0 0 35px rgba(219,165,68,.08)!important}
+.loginMiniEmblem{width:76px;height:50px;overflow:hidden;position:relative;margin:0 auto 3px;mix-blend-mode:multiply;filter:brightness(1.8) saturate(1.5)}
+.loginMiniEmblem img{position:absolute;width:76px!important;height:auto!important;left:0;top:-31px;background:transparent!important;padding:0!important;border:0!important;box-shadow:none!important}
+.login .loginIdentity b{font-family:Georgia,"Times New Roman",serif!important;color:#f4d38a!important;letter-spacing:2.5px!important}
+.login .parentDivider{margin:22px 0 16px!important;color:#e9bd64!important}
+.login .parentPortalLogin{background:rgba(2,18,30,.32)!important;border:1px solid rgba(137,174,196,.22)!important;border-radius:18px!important;padding:18px!important;color:#fff!important}
+.login .parentPortalHead{color:#fff!important}
+.login .parentPortalHead b{color:#fff!important}
+.login .parentPortalHead span{color:#9fb2bf!important}
+.login .parentLogin.pro{background:transparent!important;border:0!important;padding:0!important;box-shadow:none!important}
+.login .parentLogin.pro label{color:#dce7ed!important}
+.login .parentLogin.pro input{background:rgba(1,16,27,.62)!important;color:#fff!important;border:1px solid rgba(146,181,202,.38)!important}
+.login .securityRow{align-items:stretch!important}
+.login .securityCode{background:linear-gradient(135deg,#f5cf7a,#dda541)!important;color:#122738!important;border:0!important;font-weight:900!important;letter-spacing:2px!important}
+.login .parentPortalFoot{color:#839ba9!important;border-top:1px solid rgba(255,255,255,.08);padding-top:12px!important}
+.login .msg{background:rgba(197,143,46,.13)!important;border-color:rgba(231,184,93,.34)!important;color:#f3d897!important}
+@media(max-width:900px){.brandEmblem{width:112px;height:75px}.brandEmblem img{width:112px!important;top:-46px!important}.login .premiumBrand b{font-size:36px!important;letter-spacing:3px!important}.login .premiumBrand span{letter-spacing:2px!important}.login .premiumHero{bottom:3%!important}}
