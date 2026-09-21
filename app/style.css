@@ -184,3 +184,38 @@
 .login .parentPortalFoot{font-size:8px!important;margin-top:8px!important;padding-top:8px!important}
 @media(max-width:1000px){.login{grid-template-columns:minmax(0,1.35fr) minmax(370px,.85fr)!important}.login .premiumBrand b{font-size:42px!important}.login .premiumHero h1{font-size:34px!important}}
 @media(max-width:760px){.login{display:block!important;height:auto!important;min-height:100vh!important;overflow:auto!important}.login .hero{height:48vh!important;min-height:430px!important}.login .loginBox{height:auto!important;min-height:100vh!important;padding:20px 14px!important}.login .premiumBrand{top:4%!important}.cssEmblem{transform:scale(.82)}.login .premiumBrand b{font-size:34px!important;letter-spacing:4px!important}.login .premiumBrand span{font-size:8px!important;letter-spacing:2px!important}.login .premiumHero h1{font-size:29px!important}.login .heroFeatures{display:none!important}}
+
+/* FINAL v2 — temiz, dengeli, masaüstünde tam ekran */
+.login .premiumBrand{top:4.8%!important}
+.login .premiumBrand b{font-size:clamp(42px,4vw,62px)!important;letter-spacing:8px!important}
+.login .premiumBrand span{margin-top:8px!important;font-size:10px!important;letter-spacing:4.2px!important}
+.login .premiumHero{bottom:4.8%!important;width:88%!important}
+.login .premiumHero h1{font-size:clamp(32px,3.4vw,49px)!important}
+.login .heroFeatures b{font-size:0!important}
+.login .heroFeatures b span{font-size:9px!important;text-align:center!important}
+.login .loginBox{padding:14px 20px!important}
+.login .form{max-height:calc(100vh - 28px)!important;padding:18px 24px!important}
+.login .loginIdentity{margin-bottom:8px!important}
+.login .loginIdentity b{font-size:22px!important}
+.login .loginIdentity span{font-size:9px!important}
+.login .form h2{font-size:20px!important}
+.login .form>p{margin-bottom:10px!important}
+.login .form label{margin-bottom:6px!important}
+.login .form input{min-height:38px!important}
+.login .form form>button{min-height:40px!important}
+.login .link{margin-top:6px!important}
+.login .parentDivider{margin:10px 0 8px!important}
+.login .parentPortalLogin{padding:10px 12px!important}
+.login .parentPortalHead{margin-bottom:6px!important}
+.login .parentLogin.pro{gap:6px!important}
+.login .parentLogin.pro input{min-height:34px!important}
+.login .securityCode,.login .parentLogin.pro>button{min-height:36px!important}
+.login .parentPortalFoot{margin-top:5px!important;padding-top:5px!important}
+@media(max-height:760px) and (min-width:761px){
+ .login{min-height:600px!important}.login .hero,.login .loginBox{min-height:600px!important}
+ .login .premiumBrand{top:2.5%!important}.login .premiumBrand b{font-size:42px!important}
+ .login .premiumHero{bottom:2%!important}.login .premiumHero h1{font-size:34px!important;margin-bottom:7px!important}
+ .login .heroFeatures{padding:3px 0!important}.login .form{padding:14px 20px!important}
+ .login .form h2{font-size:18px!important}.login .form>p{margin-bottom:7px!important}
+ .login .parentDivider{margin:7px 0!important}.login .parentPortalLogin{padding:8px 10px!important}
+}
