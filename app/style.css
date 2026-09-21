@@ -139,3 +139,48 @@
 .login .parentPortalFoot{color:#839ba9!important;border-top:1px solid rgba(255,255,255,.08);padding-top:12px!important}
 .login .msg{background:rgba(197,143,46,.13)!important;border-color:rgba(231,184,93,.34)!important;color:#f3d897!important}
 @media(max-width:900px){.brandEmblem{width:112px;height:75px}.brandEmblem img{width:112px!important;top:-46px!important}.login .premiumBrand b{font-size:36px!important;letter-spacing:3px!important}.login .premiumBrand span{letter-spacing:2px!important}.login .premiumHero{bottom:3%!important}}
+
+/* FINAL LOGIN — taşmasız, kutusuz, tek ekran */
+.login{height:100vh!important;min-height:680px!important;overflow:hidden!important;display:grid!important;grid-template-columns:minmax(0,1.62fr) minmax(390px,.78fr)!important}
+.login .hero{width:auto!important;height:100vh!important;min-height:680px!important;position:relative!important;overflow:hidden!important}
+.login .hero>img{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;object-fit:cover!important;object-position:center 48%!important}
+.login .premiumBrand{top:3.2%!important;left:50%!important;width:90%!important;transform:translateX(-50%)!important;gap:2px!important}
+.cssEmblem{position:relative;width:92px;height:58px;margin:0 auto 4px;filter:drop-shadow(0 5px 10px rgba(0,0,0,.3))}
+.cssEmblem .sun{position:absolute;width:50px;height:26px;border-radius:50px 50px 5px 5px;left:21px;top:1px;background:linear-gradient(180deg,#ffd66c,#d99e2e)}
+.cssEmblem .book{position:absolute;top:19px;width:49px;height:15px;background:#4bc8e4;border-bottom:4px solid #e4ad3e}
+.cssEmblem .bookL{left:1px;transform:skewY(21deg) rotate(7deg);clip-path:polygon(0 0,100% 28%,100% 100%,0 65%)}
+.cssEmblem .bookR{right:1px;transform:skewY(-21deg) rotate(-7deg);clip-path:polygon(0 28%,100% 0,100% 65%,0 100%)}
+.cssEmblem .water{position:absolute;left:22px;bottom:0;width:48px;height:5px;border-radius:50%;background:#43c7e3}
+.login .premiumBrand b{font-size:clamp(38px,3.65vw,58px)!important;line-height:1!important;letter-spacing:6px!important}
+.login .premiumBrand span{font-size:10px!important;letter-spacing:3.5px!important;margin-top:5px!important}
+.login .premiumHero{left:50%!important;bottom:3.2%!important;width:92%!important;max-width:790px!important;transform:translateX(-50%)!important}
+.login .premiumHero h1{font-size:clamp(31px,3.35vw,50px)!important;line-height:1.05!important;white-space:normal!important;margin:0 auto 11px!important}
+.login .premiumHero .heroRule{margin-bottom:10px!important}
+.login .premiumHero p{font-size:10px!important;letter-spacing:4px!important;margin-bottom:8px!important}
+.login .heroFeatures{margin:4px auto 5px!important;padding:8px 0 6px!important}
+.login .heroFeatures b{font-size:20px!important}
+.login .heroFeatures b span{font-size:9px!important}
+.login .premiumHero small{font-size:8px!important;letter-spacing:3.7px!important}
+.login .loginBox{height:100vh!important;min-height:680px!important;overflow:hidden!important;padding:18px 22px!important;display:flex!important;align-items:center!important;justify-content:center!important}
+.login .form{box-sizing:border-box!important;width:100%!important;max-width:465px!important;max-height:calc(100vh - 36px)!important;overflow-y:auto!important;padding:22px 25px!important;border-radius:22px!important;scrollbar-width:thin}
+.login .loginIdentity{margin-bottom:12px!important}
+.login .loginIdentity b{font-size:24px!important}
+.login .form h2{font-size:22px!important;margin-bottom:2px!important}
+.login .form>p{font-size:12px!important;margin:0 0 13px!important}
+.login .form label{font-size:12px!important;margin-bottom:8px!important}
+.login .form input{min-height:42px!important;padding:9px 11px!important}
+.login .form form>button{min-height:44px!important;margin-top:4px!important}
+.login .link{margin:9px 0 0!important;font-size:11px!important}
+.login .parentDivider{margin:15px 0 11px!important;font-size:10px!important}
+.login .parentPortalLogin{padding:13px!important;border-radius:15px!important}
+.login .parentPortalHead{margin-bottom:9px!important}
+.login .parentPortalHead b{font-size:14px!important}
+.login .parentPortalHead span{font-size:10px!important}
+.login .parentLogin.pro{gap:8px!important}
+.login .parentLogin.pro label{font-size:10px!important}
+.login .parentLogin.pro input{min-height:38px!important}
+.login .securityCode{min-height:38px!important}
+.login .parentLogin.pro>button{min-height:40px!important}
+.login .parentPortalFoot{font-size:8px!important;margin-top:8px!important;padding-top:8px!important}
+@media(max-width:1000px){.login{grid-template-columns:minmax(0,1.35fr) minmax(370px,.85fr)!important}.login .premiumBrand b{font-size:42px!important}.login .premiumHero h1{font-size:34px!important}}
+@media(max-width:760px){.login{display:block!important;height:auto!important;min-height:100vh!important;overflow:auto!important}.login .hero{height:48vh!important;min-height:430px!important}.login .loginBox{height:auto!important;min-height:100vh!important;padding:20px 14px!important}.login .premiumBrand{top:4%!important}.cssEmblem{transform:scale(.82)}.login .premiumBrand b{font-size:34px!important;letter-spacing:4px!important}.login .premiumBrand span{font-size:8px!important;letter-spacing:2px!important}.login .premiumHero h1{font-size:29px!important}.login .heroFeatures{display:none!important}}
