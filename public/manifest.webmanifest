@@ -1,0 +1,14 @@
+{
+  "name":"E-GÖLKENT | Eğitim ve Kurum Yönetim Sistemi",
+  "short_name":"E-GÖLKENT",
+  "description":"Gölkent Erkek Yatılı Hafızlık Kur’an Kursu dijital eğitim ve kurum yönetim sistemi",
+  "start_url":"/",
+  "scope":"/",
+  "display":"standalone",
+  "background_color":"#0b1f3a",
+  "theme_color":"#0b1f3a",
+  "icons":[
+    {"src":"/icons/e-golkent-192.webp","sizes":"192x192","type":"image/webp","purpose":"any maskable"},
+    {"src":"/icons/e-golkent-512.webp","sizes":"512x512","type":"image/webp","purpose":"any maskable"}
+  ]
+}
