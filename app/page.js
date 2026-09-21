@@ -11,7 +11,7 @@ import HafizlikMonthlyLedger from './components/HafizlikMonthlyLedger'
 import CanteenModule from './components/CanteenModule'
 const supabase=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL,process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)
 const menu=[['Ana Sayfa',School],['Öğrenciler',Users],['Sınıflar',BookOpen],['Eğitmenler',GraduationCap],['Ders Takibi',ClipboardCheck],['Yoklama',ClipboardCheck],['Veli Sistemi',UserRound],['Raporlar',BarChart3],['Kurs Bilgileri',School],['Kullanıcı & Yetkiler',ShieldCheck],['Kantin Yönetimi',BarChart3],['Kurum İşlemleri',Settings],['Sistem Ayarları',Settings]]
-const roleMenus={teacher:['Ana Sayfa','Öğrenciler','Sınıflar','Ders Takibi','Yoklama','Raporlar'],staff:['Ana Sayfa','Öğrenciler','Sınıflar','Raporlar','Kantin Yönetimi']}
+const roleMenus={teacher:['Ana Sayfa','Öğrenciler','Sınıflar','Ders Takibi','Yoklama','Raporlar'],staff:['Ana Sayfa','Öğrenciler','Sınıflar','Raporlar']}
 const emptyStudent={first_name:'',last_name:'',class_id:'',residency:'boarding',registry_no:'',gender:'male',birth_date:'',enrollment_date:new Date().toISOString().slice(0,10),phone:'',father_name:'',mother_name:'',emergency_phone:'',hafiz_certificate:false,hafiz_certificate_url:'',guardian1_name:'',guardian1_relation:'',guardian1_phone:'',guardian2_name:'',guardian2_relation:'',guardian2_phone:'',photo_url:'',notes:''}
 const emptyClass={code:'',name:'',program:'hafizlik'}
 export default function Home(){
