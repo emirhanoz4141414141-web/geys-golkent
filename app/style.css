@@ -242,3 +242,6 @@
 
 /* Professional student operations */
 .rowActions{display:flex;gap:6px;flex-wrap:wrap}.parentAdminGrid{display:grid;grid-template-columns:1fr 2fr;gap:10px}.parentAdminGrid>div{padding:14px;border:1px solid #e1eaee;border-radius:12px;background:#f9fbfc}.parentAdminGrid small,.parentAdminGrid b{display:block}.parentAdminGrid small{font-size:11px;font-weight:800;color:#72858f;margin-bottom:5px}.parentAdminGrid b.negative{color:#b42318}@media(max-width:650px){.parentAdminGrid{grid-template-columns:1fr}}
+
+/* Student digital dossier timeline */
+.timeline{display:grid;gap:8px}.timeline>div{display:flex;justify-content:space-between;gap:12px;padding:11px 13px;border-left:3px solid #2f7782;background:#f7fafb;border-radius:6px}.timeline b{font-size:13px}.timeline span{font-size:12px;color:#71848e;white-space:nowrap}@media(max-width:650px){.timeline>div{display:block}.timeline span{display:block;margin-top:4px}}
