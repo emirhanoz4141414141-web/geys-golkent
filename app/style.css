@@ -239,3 +239,6 @@
 
 /* Unified student profile */
 .studentOverviewCards,.dormProfile{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.studentOverviewCards>div,.dormProfile>div{border:1px solid #e1eaee;border-radius:12px;padding:13px;background:#f9fbfc}.studentOverviewCards small,.dormProfile small{display:block;color:#738792;font-size:11px;font-weight:800;margin-bottom:5px}.studentOverviewCards b,.dormProfile b{font-size:15px;color:#173b4c}.studentOverviewCards b.negative{color:#b42318}.profileTable td small{display:block;color:#72838c;margin-top:3px}@media(max-width:760px){.studentOverviewCards,.dormProfile{grid-template-columns:1fr 1fr}}
+
+/* Professional student operations */
+.rowActions{display:flex;gap:6px;flex-wrap:wrap}.parentAdminGrid{display:grid;grid-template-columns:1fr 2fr;gap:10px}.parentAdminGrid>div{padding:14px;border:1px solid #e1eaee;border-radius:12px;background:#f9fbfc}.parentAdminGrid small,.parentAdminGrid b{display:block}.parentAdminGrid small{font-size:11px;font-weight:800;color:#72858f;margin-bottom:5px}.parentAdminGrid b.negative{color:#b42318}@media(max-width:650px){.parentAdminGrid{grid-template-columns:1fr}}
