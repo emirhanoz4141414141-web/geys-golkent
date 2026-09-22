@@ -1,25 +1,19 @@
 'use client'
-function esc(v){return '"'+String(v??'').replaceAll('"','""')+'"'}
+import {useState} from 'react'\nimport * as XLSX from 'xlsx'
+import {Document,Packer,Paragraph,Table,TableCell,TableRow,TextRun,WidthType,HeadingLevel,AlignmentType,ShadingType} from 'docx'
+import {jsPDF} from 'jspdf'
+import autoTable from 'jspdf-autotable'
+const tr={saglam:'Sağlam',iyi:'İyi',orta:'Orta',zayif:'Zayıf',present:'Geldi',absent:'Gelmedi',excused:'Mazeretli',sick:'Hasta',report:'Raporlu',leave:'İzinli'}
+const title='Gölkent Erkek Yatılı Hafızlık Kur’an Kursu'
 export default function ReportExports({students,classes,lessons,attendance,from,to,classId}){
- const selected=students.filter(s=>!classId||s.class_id===classId)
- function download(name,rows){
-  const blob=new Blob(['\uFEFF'+rows.map(r=>r.map(esc).join(';')).join('\n')],{type:'text/csv;charset=utf-8'})
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();URL.revokeObjectURL(a.href)
- }
- function studentReport(){
-  const rows=[['Öğrenci','Sınıf','Ders Kaydı','Sağlam','İyi','Orta','Zayıf','Geldi','Gelmedi','Mazeret/Hasta/Rapor/İzin']]
-  selected.forEach(s=>{const l=lessons.filter(x=>x.student_id===s.id),a=attendance.filter(x=>x.student_id===s.id);rows.push([s.first_name+' '+s.last_name,classes.find(c=>c.id===s.class_id)?.code||'',l.length,l.filter(x=>x.quality==='saglam').length,l.filter(x=>x.quality==='iyi').length,l.filter(x=>x.quality==='orta').length,l.filter(x=>x.quality==='zayif').length,a.filter(x=>x.status==='present').length,a.filter(x=>x.status==='absent').length,a.filter(x=>['excused','sick','report','leave'].includes(x.status)).length])})
-  download('GEYS-Ogrenci-Basari-'+from+'-'+to+'.csv',rows)
- }
- function attendanceReport(){
-  const rows=[['Tarih','Öğrenci','Sınıf','Durum','Not']]
-  attendance.forEach(a=>{const s=students.find(x=>x.id===a.student_id);rows.push([a.attendance_date,s?s.first_name+' '+s.last_name:'',classes.find(c=>c.id===a.class_id)?.code||'',a.status,a.note||''])})
-  download('GEYS-Yoklama-'+from+'-'+to+'.csv',rows)
- }
- function qualityReport(){
-  const rows=[['Tarih','Öğrenci','Sınıf','Program','Ders/Cüz','Aşama','Kalite','Durum','Not']]
-  lessons.forEach(l=>{const s=students.find(x=>x.id===l.student_id);rows.push([l.lesson_date,s?s.first_name+' '+s.last_name:'',classes.find(c=>c.id===l.class_id)?.code||'',l.program,l.work_value||l.subject||'',l.lesson_stage||l.curriculum_stage||'',l.quality||'',l.status_code||'',l.note||''])})
-  download('GEYS-Ders-Kalite-'+from+'-'+to+'.csv',rows)
- }
- return <section className="panel reportExportPanel"><div className="panelHead"><div><h3>Rapor Çıktıları</h3><p>Seçili tarih ve sınıf filtresine göre kurumsal rapor dosyaları.</p></div></div><div className="reportExportBtns"><button className="primary" onClick={studentReport}>Öğrenci Başarı Raporu</button><button className="ghost" onClick={qualityReport}>Ders / Ezber Kalite Raporu</button><button className="ghost" onClick={attendanceReport}>Yoklama Raporu</button><button className="ghost" onClick={()=>window.print()}>PDF / Yazdır</button></div></section>
+ const selected=students.filter(s=>!classId||s.class_id===classId),cn=id=>classes.find(c=>c.id===id)?.code||'—',sn=id=>{const s=students.find(x=>x.id===id);return s?(s.first_name+' '+s.last_name):'—'}
+ const studentRows=()=>{const rows=[];selected.forEach(s=>{const l=lessons.filter(x=>x.student_id===s.id),a=attendance.filter(x=>x.student_id===s.id);rows.push([s.first_name+' '+s.last_name,cn(s.class_id),l.length,l.filter(x=>x.quality==='saglam').length,l.filter(x=>x.quality==='iyi').length,l.filter(x=>x.quality==='orta').length,l.filter(x=>x.quality==='zayif').length,a.filter(x=>x.status==='present').length,a.filter(x=>x.status==='absent').length,a.filter(x=>['excused','sick','report','leave'].includes(x.status)).length])});return {name:'Öğrenci Başarı',headers:['Öğrenci','Sınıf','Ders Kaydı','Sağlam','İyi','Orta','Zayıf','Geldi','Gelmedi','Mazeret'],rows}}
+ const qualityRows=()=>({name:'Ders Kalite',headers:['Tarih','Öğrenci','Sınıf','Program','Ders / Cüz','Aşama','Kalite','Durum','Not'],rows:lessons.filter(l=>!classId||l.class_id===classId).map(l=>[l.lesson_date,sn(l.student_id),cn(l.class_id),l.program||'—',l.work_value||l.subject||'—',l.lesson_stage||l.curriculum_stage||'—',tr[l.quality]||l.quality||'—',l.status_code||'—',l.note||'—'])})
+ const attendanceRows=()=>({name:'Yoklama',headers:['Tarih','Öğrenci','Sınıf','Durum','Not'],rows:attendance.filter(a=>!classId||a.class_id===classId).map(a=>[a.attendance_date,sn(a.student_id),cn(a.class_id),tr[a.status]||a.status,a.note||'—'])})
+ function xlsx(r){const wb=XLSX.utils.book_new(),data=[[title],[r.name+' Raporu'],['Dönem',from+' — '+to],[],r.headers,...r.rows],ws=XLSX.utils.aoa_to_sheet(data);ws['!merges']=[XLSX.utils.decode_range('A1:'+XLSX.utils.encode_col(r.headers.length-1)+'1'),XLSX.utils.decode_range('A2:'+XLSX.utils.encode_col(r.headers.length-1)+'2')];ws['!cols']=r.headers.map((h,i)=>({wch:Math.max(13,Math.min(35,Math.max(h.length,...r.rows.map(x=>String(x[i]??'').length))+2))}));ws['!freeze']={xSplit:0,ySplit:5};XLSX.utils.book_append_sheet(wb,ws,r.name.slice(0,31));XLSX.writeFile(wb,'E-GOLKENT-'+r.name.replaceAll(' ','-')+'-'+from+'-'+to+'.xlsx')}
+ async function word(r){const head=r.headers.map(x=>new TableCell({shading:{fill:'276B78',type:ShadingType.CLEAR},children:[new Paragraph({children:[new TextRun({text:x,bold:true,color:'FFFFFF'})]})]}));const body=r.rows.map(row=>new TableRow({children:row.map(v=>new TableCell({children:[new Paragraph(String(v??''))]}))}));const doc=new Document({sections:[{children:[new Paragraph({text:'E-GÖLKENT',heading:HeadingLevel.TITLE,alignment:AlignmentType.CENTER}),new Paragraph({text:title,alignment:AlignmentType.CENTER}),new Paragraph({text:r.name+' Raporu',heading:HeadingLevel.HEADING_1}),new Paragraph({text:'Rapor Dönemi: '+from+' — '+to}),new Paragraph({text:'Kayıt Sayısı: '+r.rows.length}),new Table({width:{size:100,type:WidthType.PERCENTAGE},rows:[new TableRow({children:head}),...body]})]}]});const blob=await Packer.toBlob(doc),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='E-GOLKENT-'+r.name.replaceAll(' ','-')+'-'+from+'-'+to+'.docx';a.click();URL.revokeObjectURL(a.href)}
+ function pdf(r){const doc=new jsPDF({orientation:r.headers.length>6?'landscape':'portrait'});doc.setFontSize(17);doc.text('E-GOLKENT',14,15);doc.setFontSize(10);doc.text(title,14,22);doc.setFontSize(13);doc.text(r.name+' Raporu',14,31);doc.setFontSize(9);doc.text('Donem: '+from+' - '+to+' | Kayit: '+r.rows.length,14,37);autoTable(doc,{startY:43,head:[r.headers],body:r.rows,styles:{fontSize:7,cellPadding:2},headStyles:{fillColor:[39,107,120]},alternateRowStyles:{fillColor:[242,247,248]},margin:{left:10,right:10}});doc.save('E-GOLKENT-'+r.name.replaceAll(' ','-')+'-'+from+'-'+to+'.pdf')}
+ const [kind,setKind]=useState('student')
+ const r=kind==='quality'?qualityRows():kind==='attendance'?attendanceRows():studentRows()
+ return <section className="panel reportExportPanel"><div className="panelHead"><div><small>E-GÖLKENT · PROFESYONEL RAPOR MERKEZİ</small><h3>Rapor Merkezi</h3><p>Seçili tarih ve sınıfa göre gerçek Excel, Word ve PDF dosyaları oluşturur.</p></div></div><div className="reportTypeTabs"><button className={kind==='student'?'active':''} onClick={()=>setKind('student')}>Öğrenci Başarı</button><button className={kind==='quality'?'active':''} onClick={()=>setKind('quality')}>Ders / Ezber</button><button className={kind==='attendance'?'active':''} onClick={()=>setKind('attendance')}>Yoklama</button></div><div className="reportSummary"><div><span>Rapor</span><b>{r.name}</b></div><div><span>Dönem</span><b>{from} — {to}</b></div><div><span>Kayıt</span><b>{r.rows.length}</b></div></div><div className="reportExportBtns"><button className="primary" onClick={()=>xlsx(r)}>Excel (.xlsx)</button><button className="ghost" onClick={()=>word(r)}>Word (.docx)</button><button className="ghost" onClick={()=>pdf(r)}>PDF (.pdf)</button><button className="ghost" onClick={()=>window.print()}>Yazdır</button></div></section>
 }
