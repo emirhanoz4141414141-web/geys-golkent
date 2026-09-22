@@ -245,3 +245,6 @@
 
 /* Student digital dossier timeline */
 .timeline{display:grid;gap:8px}.timeline>div{display:flex;justify-content:space-between;gap:12px;padding:11px 13px;border-left:3px solid #2f7782;background:#f7fafb;border-radius:6px}.timeline b{font-size:13px}.timeline span{font-size:12px;color:#71848e;white-space:nowrap}@media(max-width:650px){.timeline>div{display:block}.timeline span{display:block;margin-top:4px}}
+
+/* Student unified timeline */
+.studentTimeline{display:grid;gap:8px}.studentTimeline>div{display:grid;grid-template-columns:150px 90px 1fr;gap:10px;align-items:start;padding:10px 12px;border:1px solid #e0e9ec;border-radius:10px;background:#fbfcfd}.studentTimeline time{font-size:11px;color:#72858f}.studentTimeline>div>span{font-size:11px;font-weight:900;background:#eaf3f4;padding:4px 7px;border-radius:999px;text-align:center}.studentTimeline b,.studentTimeline small{display:block}.studentTimeline small{color:#6e818b;margin-top:3px}@media(max-width:650px){.studentTimeline>div{grid-template-columns:1fr}.studentTimeline>div>span{width:max-content}}
