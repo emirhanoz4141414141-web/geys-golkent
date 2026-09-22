@@ -1,5 +1,6 @@
 'use client'
-import {useState} from 'react'\nimport * as XLSX from 'xlsx'
+import {useState} from 'react'
+import * as XLSX from 'xlsx'
 import {Document,Packer,Paragraph,Table,TableCell,TableRow,TextRun,WidthType,HeadingLevel,AlignmentType,ShadingType} from 'docx'
 import {jsPDF} from 'jspdf'
 import autoTable from 'jspdf-autotable'
