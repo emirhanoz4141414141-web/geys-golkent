@@ -1,1 +1,25 @@
-{"name":"geys-web","version":"0.1.0","private":true,"scripts":{"dev":"next dev","build":"next build","start":"next start"},"dependencies":{"@supabase/ssr":"latest","@supabase/supabase-js":"latest","lucide-react":"latest","next":"latest","react":"latest","react-dom":"latest","xlsx":"latest","docx":"latest","jspdf":"latest","jspdf-autotable":"latest"},"devDependencies":{}}
+{
+  "name": "geys-web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@supabase/ssr": "latest",
+    "@supabase/supabase-js": "latest",
+    "lucide-react": "latest",
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "xlsx": "latest",
+    "docx": "latest",
+    "jspdf": "latest",
+    "jspdf-autotable": "latest",
+    "exceljs": "^4.4.0",
+    "pdfmake": "^0.2.20"
+  },
+  "devDependencies": {}
+}
