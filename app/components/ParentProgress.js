@@ -6,6 +6,7 @@ export default function ParentProgress({data}){
   const yuzune=data?.yuzune_progress||[]
   const hafizlik=data?.hafizlik_records||[]
   const program=data?.class?.program
+  const student=data?.student||{}
   const last=lessons[0]
   const today=new Date()
   const year=today.getFullYear()
