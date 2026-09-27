@@ -1,4 +1,5 @@
 'use client'
+import useLiveRefresh from '../hooks/useLiveRefresh'
 import {useEffect,useMemo,useState} from 'react'
 const qOpts=[['','·'],['saglam','S'],['iyi','İ'],['orta','O'],['zayif','Z']]
 const statuses=['','H','R','İ','T','X','M','G']
@@ -6,6 +7,7 @@ export default function HafizlikDersCetveli({supabase,students,classes,profile,i
  const canUpdate=profile?.role==='super_admin'||!!permissions?.can_update
  const now=new Date(),academicYears=(()=>{const m=String(institution?.academic_year||'').match(/(\d{4})\D+(\d{4})/);return m?[Number(m[1]),Number(m[2])]:[now.getFullYear(),now.getFullYear()+1]})(),[year,setYear]=useState(academicYears.includes(now.getFullYear())?now.getFullYear():academicYears[0]),[month,setMonth]=useState(now.getMonth()+1),[classId,setClassId]=useState(''),[rows,setRows]=useState([]),[busy,setBusy]=useState(false),[notice,setNotice]=useState('')
  useEffect(()=>{if(!academicYears.includes(year))setYear(academicYears[0])},[institution?.academic_year])
+ useLiveRefresh(supabase,['hafizlik_daily_records','students'],load)
  const hClasses=classes.filter(c=>c.program==='hafizlik')
  const list=useMemo(()=>students.filter(s=>s.status==='active'&&hClasses.some(c=>c.id===s.class_id)&&(!classId||s.class_id===classId)).sort((a,b)=>(a.first_name+' '+a.last_name).localeCompare(b.first_name+' '+b.last_name,'tr')),[students,classes,classId])
  const days=new Date(year,month,0).getDate(),prefix=year+'-'+String(month).padStart(2,'0')+'-'
