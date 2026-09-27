@@ -14,7 +14,7 @@ export default function ParentProgress({data}){
  const month=months.includes(chosen)?chosen:(months.includes(current)?current:months[0]),[y,m]=month.split('-').map(Number),days=new Date(y,m,0).getDate(),prefix=month+'-'
  const within=(r,key='lesson_date')=>String(r?.[key]||'').startsWith(prefix)
  const attendance=(data?.attendance||[]).filter(r=>within(r,'attendance_date'))
- const rows=program==='hafizlik'?(data?.hafizlik_records||[]).filter(within):program==='yuzune'?(data?.yuzune_progress||[]).filter(within):(data?.kap_records||[]).filter(within)
+ const rows=program==='hafizlik'?(data?.hafizlik_records||[]).filter(r=>within(r)):program==='yuzune'?(data?.yuzune_progress||[]).filter(r=>within(r)):(data?.kap_records||[]).filter(r=>within(r))
  const monthName=new Date(y,m-1,1).toLocaleDateString('tr-TR',{month:'long',year:'numeric'})
  const last=rows[0],absent=attendance.filter(x=>x.status!=='present').length
  const programTitle=program==='hafizlik'?'Hafızlık Eğitim Takibi':program==='yuzune'?'Yüzüne · Ders / Sûre / Dua Takibi':'Kur’an’ı Anlama (KAP) · Cüz Takibi'
