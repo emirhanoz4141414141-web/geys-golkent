@@ -351,3 +351,5 @@
 
 
 .menuNotify{margin-left:auto;min-width:19px;height:19px;padding:0 5px;display:inline-flex;align-items:center;justify-content:center;border-radius:999px;background:#b84141;color:#fff;font-size:8px;font-style:normal;font-weight:900;box-shadow:0 0 0 2px rgba(255,255,255,.12)}.supportHomeAlert{width:100%;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;margin-bottom:14px;padding:13px 16px;text-align:left;border:1px solid #e8d7b4;border-radius:12px;background:linear-gradient(90deg,#fffaf0,#fff);color:#654f22;cursor:pointer}.supportHomeAlert span{font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.7px;padding:5px 7px;border-radius:999px;background:#f2e3bd}.supportHomeAlert b{font-size:11px}.supportHomeAlert i{font-size:9px;font-style:normal;font-weight:900;color:#315f68}@media(max-width:650px){.supportHomeAlert{grid-template-columns:1fr}.supportHomeAlert i{justify-self:start}}
+
+.supportPrivacyRule{display:block;margin-top:5px;font-size:8px;line-height:1.4;color:#8a6b24;font-weight:700}.supportActions select:disabled{background:#f7f3e9;color:#7a6a44;cursor:not-allowed}
