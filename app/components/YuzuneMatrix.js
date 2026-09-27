@@ -1,4 +1,5 @@
 'use client'
+import useLiveRefresh from '../hooks/useLiveRefresh'
 import {useEffect,useMemo,useState} from 'react'
 export default function YuzuneMatrix({supabase,students,classes,institution,profile,permissions}){
  const canCreate=profile?.role==='super_admin'||!!permissions?.can_create,canUpdate=profile?.role==='super_admin'||!!permissions?.can_update,canDelete=profile?.role==='super_admin'||!!permissions?.can_delete
@@ -7,6 +8,7 @@ export default function YuzuneMatrix({supabase,students,classes,institution,prof
  const list=useMemo(()=>students.filter(s=>s.status==='active'&&(!classId||s.class_id===classId)&&(classId||yuzClasses.some(c=>c.id===s.class_id))).sort((a,b)=>(a.first_name+' '+a.last_name).localeCompare(b.first_name+' '+b.last_name,'tr')),[students,classId,classes])
  async function load(){const [{data:i},{data:r}]=await Promise.all([supabase.from('yuzune_curriculum_items').select('*').eq('institution_id',institution.id).eq('active',true).order('sort_order'),supabase.from('yuzune_progress').select('*')]);setItems(i||[]);setRows(r||[])}
  useEffect(()=>{if(institution?.id)load()},[institution?.id])
+ useLiveRefresh(supabase,['yuzune_curriculum_items','yuzune_progress'],load)
  const get=(sid,iid)=>rows.find(r=>r.student_id===sid&&r.item_id===iid)
  async function result(sid,iid,value){if(!canUpdate){setNotice('Bu işlem için düzenleme yetkiniz bulunmuyor.');return}setBusy(true);const old=get(sid,iid);if(!value){if(old)await supabase.from('yuzune_progress').delete().eq('id',old.id)}else await supabase.from('yuzune_progress').upsert({student_id:sid,item_id:iid,result:value,quality:value==='plus'?old?.quality||null:null,lesson_date:date,recorded_by:profile.id},{onConflict:'student_id,item_id'});await load();setBusy(false)}
  async function quality(sid,iid,value){if(!canUpdate){setNotice('Bu işlem için düzenleme yetkiniz bulunmuyor.');return}const old=get(sid,iid);if(!old||old.result!=='plus')return;setBusy(true);await supabase.from('yuzune_progress').update({quality:value||null,lesson_date:date,recorded_by:profile.id,updated_at:new Date().toISOString()}).eq('id',old.id);await load();setBusy(false)}
