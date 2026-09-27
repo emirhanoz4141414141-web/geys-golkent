@@ -1,4 +1,5 @@
 'use client'
+import useLiveRefresh from '../hooks/useLiveRefresh'
 import {useEffect,useMemo,useState} from 'react'
 const qualities=[['saglam','S','Sağlam'],['iyi','İ','İyi'],['orta','O','Orta'],['zayif','Z','Zayıf']]
 const statuses=[['H','Hasta'],['R','Raporlu'],['İ','İzinli'],['T','Tatil'],['M','Mazeretli'],['G','Gelmedi'],['X','Ders Vermedi']]
@@ -7,6 +8,7 @@ export default function KapDersCetveli({supabase,students,classes,profiles,profi
  const permUpdate=profile?.role==='super_admin'||!!permissions?.can_update,permCreate=profile?.role==='super_admin'||!!permissions?.can_create,permDelete=profile?.role==='super_admin'||!!permissions?.can_delete,permExport=profile?.role==='super_admin'||!!permissions?.can_export
  const now=new Date(),academicYears=(()=>{const m=String(institution?.academic_year||'').match(/(\d{4})\D+(\d{4})/);return m?[Number(m[1]),Number(m[2])]:[now.getFullYear(),now.getFullYear()+1]})(),[drafts,setDrafts]=useState({}),[year,setYear]=useState(academicYears.includes(now.getFullYear())?now.getFullYear():academicYears[0]),[month,setMonth]=useState(now.getMonth()+1),[rows,setRows]=useState([]),[reviews,setReviews]=useState([]),[teacherFilter,setTeacherFilter]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[detail,setDetail]=useState(null),[editRecord,setEditRecord]=useState(null),[archives,setArchives]=useState([]),[archiveOpen,setArchiveOpen]=useState(false),[reviewStudent,setReviewStudent]=useState(null)
  useEffect(()=>{if(!academicYears.includes(year))setYear(academicYears[0])},[institution?.academic_year])
+ useLiveRefresh(supabase,['kap_daily_records','kap_hatim_reviews','kap_monthly_reports','students'],load)
  const isManager=['super_admin','admin'].includes(profile?.role),kapClassIds=classes.filter(c=>c.program==='kap').map(c=>c.id),teachers=(profiles||[]).filter(p=>p.active!==false&&['teacher','admin','super_admin'].includes(p.role))
  const list=useMemo(()=>students.filter(s=>s.status==='active'&&kapClassIds.includes(s.class_id)&&(!teacherFilter||s.kap_teacher_id===teacherFilter)).sort((a,b)=>(a.first_name+' '+a.last_name).localeCompare(b.first_name+' '+b.last_name,'tr')),[students,classes,teacherFilter])
  const days=new Date(year,month,0).getDate(),prefix=year+'-'+String(month).padStart(2,'0')+'-'
