@@ -10,18 +10,22 @@ export default function AnnouncementsModule({supabase,profile,institution,permis
  const isManager=['admin','super_admin'].includes(profile?.role)
  const canCreate=profile?.role==='super_admin'||!!permissions?.can_create
  const canDelete=profile?.role==='super_admin'||!!permissions?.can_delete
- const [items,setItems]=useState([]),[reads,setReads]=useState([]),[form,setForm]=useState(blank),[showForm,setShowForm]=useState(false),[busy,setBusy]=useState(false),[msg,setMsg]=useState('')
+ const [items,setItems]=useState([]),[reads,setReads]=useState([]),[allReads,setAllReads]=useState([]),[people,setPeople]=useState([]),[detail,setDetail]=useState(null),[form,setForm]=useState(blank),[showForm,setShowForm]=useState(false),[busy,setBusy]=useState(false),[msg,setMsg]=useState('')
  async function load(){
-  const [{data:a,error},{data:r}]=await Promise.all([
+  const jobs=[
    supabase.from('announcements').select('*').order('published_at',{ascending:false}).limit(100),
-   supabase.from('announcement_reads').select('announcement_id,read_at,acknowledged_at').eq('user_id',profile.id)
-  ])
+   supabase.from('announcement_reads').select('announcement_id,user_id,read_at,acknowledged_at').eq('user_id',profile.id)
+  ]
+  if(isManager)jobs.push(supabase.from('announcement_reads').select('announcement_id,user_id,read_at,acknowledged_at'),supabase.from('profiles').select('id,full_name,email,role,active').eq('active',true))
+  const results=await Promise.all(jobs),{data:a,error}=results[0],{data:r}=results[1]
   if(error)setMsg('Duyurular yüklenemedi: '+error.message)
-  setItems(a||[]);setReads(r||[])
+  setItems(a||[]);setReads(r||[]);if(isManager){setAllReads(results[2]?.data||[]);setPeople(results[3]?.data||[])}
  }
  useEffect(()=>{if(profile?.id)load()},[profile?.id])
  const readMap=useMemo(()=>Object.fromEntries(reads.map(x=>[x.announcement_id,x])),[reads])
  const unread=items.filter(x=>x.is_published&&!readMap[x.id]).length
+ const eligible=item=>people.filter(p=>(item.audience||['all']).includes('all')||(item.audience||[]).includes(p.role))
+ const managerStats=item=>{const target=eligible(item),rr=allReads.filter(x=>x.announcement_id===item.id&&target.some(p=>p.id===x.user_id));return {target,read:rr,readCount:rr.length,ackCount:rr.filter(x=>x.acknowledged_at).length,unreadCount:Math.max(0,target.length-rr.length)}}
  useEffect(()=>{onUnreadChange?.(unread)},[unread,onUnreadChange])
  async function mark(item,ack=false){
   const row={announcement_id:item.id,user_id:profile.id,read_at:new Date().toISOString()}
@@ -64,11 +68,13 @@ export default function AnnouncementsModule({supabase,profile,institution,permis
    <label className="annCheck"><input type="checkbox" checked={form.requires_ack} onChange={e=>setForm({...form,requires_ack:e.target.checked})}/><span>Kullanıcılardan “Okudum, bilgi edindim” onayı iste</span></label>
    <button disabled={busy}>{busy?'Yayımlanıyor...':'Duyuruyu Yayımla'}</button>
   </form>}
-  <div className="annStats"><div><b>{items.length}</b><span>Toplam duyuru</span></div><div><b>{unread}</b><span>Okunmamış</span></div><div><b>{items.filter(x=>x.category==='update').length}</b><span>Sistem güncellemesi</span></div></div>
+  <div className="annStats"><div><b>{items.length}</b><span>Toplam duyuru</span></div><div><b>{isManager?items.reduce((n,x)=>n+managerStats(x).unreadCount,0):unread}</b><span>{isManager?'Kurum genelinde okunmamış':'Okunmamış'}</span></div><div><b>{items.filter(x=>x.category==='update').length}</b><span>Sistem güncellemesi</span></div></div>
   <div className="annList">{items.length===0?<section className="panel annEmpty"><Bell size={28}/><b>Henüz yayımlanmış duyuru bulunmuyor.</b></section>:items.map(item=>{const rd=readMap[item.id];return <article className={'panel annCard '+(!rd?'unread':'')} key={item.id}>
    <div className="annCardTop"><div className="annTags"><span className={'annType '+item.category}>{categoryLabel[item.category]||'Duyuru'}</span>{item.version_label&&<span className="annVersion">{item.version_label}</span>}{!rd&&<span className="annNew">YENİ</span>}</div><time>{new Date(item.published_at).toLocaleDateString('tr-TR',{day:'2-digit',month:'long',year:'numeric'})}</time></div>
    <h3>{item.title}</h3><p className="annBody">{item.body}</p>
    <div className="annMeta"><span>Hedef: {(item.audience||['all']).map(x=>roleLabel[x]||x).join(', ')}</span>{item.requires_ack&&<span>Okundu onayı isteniyor</span>}</div>
+   {isManager&&(()=>{const s=managerStats(item);return <div className="annManagerStats"><button onClick={()=>setDetail(detail===item.id?null:item.id)}><b>{s.target.length}</b><span>Hedef kullanıcı</span></button><button onClick={()=>setDetail(detail===item.id?null:item.id)}><b>{s.readCount}</b><span>Okudu</span></button><button onClick={()=>setDetail(detail===item.id?null:item.id)}><b>{s.ackCount}</b><span>Bilgi edindi</span></button><button className={s.unreadCount?'warn':''} onClick={()=>setDetail(detail===item.id?null:item.id)}><b>{s.unreadCount}</b><span>Okumadı</span></button></div>})()}
+   {isManager&&detail===item.id&&(()=>{const s=managerStats(item),rm=Object.fromEntries(s.read.map(r=>[r.user_id,r]));return <div className="annReceiptList"><div className="annReceiptHead"><b>Kullanıcı Durumları</b><span>{s.target.length} hedef kullanıcı</span></div>{s.target.map(p=>{const r=rm[p.id];return <div className="annReceiptRow" key={p.id}><div><b>{p.full_name||p.email||'Kullanıcı'}</b><span>{roleLabel[p.role]||p.role}</span></div><div className={'annReceiptStatus '+(r?.acknowledged_at?'ack':r?'read':'pending')}>{r?.acknowledged_at?'Bilgi edindi':r?'Okudu':'Okumadı'}</div><time>{r?.acknowledged_at?new Date(r.acknowledged_at).toLocaleString('tr-TR'):r?.read_at?new Date(r.read_at).toLocaleString('tr-TR'):'—'}</time></div>})}</div>})()}
    <div className="annCardActions">{!rd&&<button className="secondary" onClick={()=>mark(item,false)}>Okundu İşaretle</button>}{item.requires_ack&&!rd?.acknowledged_at&&<button onClick={()=>mark(item,true)}><CheckCircle2 size={16}/> Okudum, Bilgi Edindim</button>}{rd?.acknowledged_at&&<span className="annAck"><CheckCircle2 size={16}/> Bilgi edinildi</span>}{canDelete&&<button className="danger" onClick={()=>remove(item.id)}><Trash2 size={15}/> Sil</button>}</div>
   </article>})}</div>
  </div>
