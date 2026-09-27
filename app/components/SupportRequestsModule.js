@@ -1,4 +1,5 @@
 'use client'
+import useLiveRefresh from '../hooks/useLiveRefresh'
 import {useEffect,useMemo,useState} from 'react'
 const types={suggestion:'Öneri',request:'Talep',complaint:'Şikâyet',thanks:'Teşekkür / Memnuniyet',technical:'Teknik Sorun',other:'Diğer'}
 const statuses={new:'Yeni',reviewing:'İnceleniyor',assigned:'Yönlendirildi',answered:'Cevaplandı',resolved:'Sonuçlandırıldı',closed:'Kapatıldı'}
@@ -7,6 +8,7 @@ export default function SupportRequestsModule({supabase,profile,profiles}){
  const [rows,setRows]=useState([]),[selected,setSelected]=useState(null),[filter,setFilter]=useState('open'),[q,setQ]=useState(''),[busy,setBusy]=useState(false),[reply,setReply]=useState(''),[note,setNote]=useState(''),[detail,setDetail]=useState(null)
  async function load(){const x=await supabase.from('support_requests').select('*').order('created_at',{ascending:false});setRows(x.data||[])}
  useEffect(()=>{load()},[])
+ useLiveRefresh(supabase,['support_requests','support_request_messages'],load)
  const visible=useMemo(()=>rows.filter(r=>(filter==='all'||(filter==='open'?!['resolved','closed'].includes(r.status):r.status===filter))&&(!q||[r.tracking_no,r.subject,r.description,r.complained_name].join(' ').toLocaleLowerCase('tr').includes(q.toLocaleLowerCase('tr')))),[rows,filter,q])
  const counts={new:rows.filter(x=>x.status==='new').length,work:rows.filter(x=>['reviewing','assigned'].includes(x.status)).length,private:rows.filter(x=>x.privacy_mode).length,done:rows.filter(x=>['resolved','closed'].includes(x.status)).length}
  async function setStatus(status){if(!selected)return;setBusy(true);const {error}=await supabase.rpc('support_management_set_status',{p_request_id:selected.id,p_status:status});setBusy(false);if(error){alert(error.message);return}const next={...selected,status};setSelected(next);await load();openDetail(next)}
