@@ -2,7 +2,7 @@
 import useLiveRefresh from '../hooks/useLiveRefresh'
 import {useEffect,useMemo,useState} from 'react'
 export default function EducationDashboard({supabase,students,classes,institution}){
- const [date,setDate]=useState(new Date().toISOString().slice(0,10)),[lessons,setLessons]=useState([]),[attendance,setAttendance]=useState([]),[hafRows,setHafRows]=useState([]),[yuzRows,setYuzRows]=useState([])
+ const [date,setDate]=useState(new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Istanbul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())),[lessons,setLessons]=useState([]),[attendance,setAttendance]=useState([]),[hafRows,setHafRows]=useState([]),[yuzRows,setYuzRows]=useState([])
  async function load(){const [{data:l},{data:a},{data:h},{data:y}]=await Promise.all([supabase.from('lesson_records').select('student_id,program,quality,status_code,work_value').eq('lesson_date',date),supabase.from('attendance').select('student_id,status').eq('attendance_date',date),supabase.from('hafizlik_daily_records').select('student_id,quality,status_code,work_value').eq('lesson_date',date),supabase.from('yuzune_progress').select('student_id,result,quality,lesson_date').eq('lesson_date',date)]);setLessons(l||[]);setAttendance(a||[]);setHafRows(h||[]);setYuzRows(y||[])}
  useEffect(()=>{load()},[date])
  useLiveRefresh(supabase,['lesson_records','attendance','hafizlik_daily_records','yuzune_progress'],load)
