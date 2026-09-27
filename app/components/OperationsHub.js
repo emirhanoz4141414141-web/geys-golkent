@@ -1,4 +1,5 @@
 'use client'
+import useLiveRefresh from '../hooks/useLiveRefresh'
 import {useEffect,useState} from 'react'
 export default function OperationsHub({supabase,students,profiles,session,profile,permissions}){
  const manager=['admin','super_admin'].includes(profile?.role),canCreate=profile?.role==='super_admin'||!!permissions?.can_create,canUpdate=profile?.role==='super_admin'||!!permissions?.can_update,canDelete=profile?.role==='super_admin'||!!permissions?.can_delete,[edit,setEdit]=useState(null)
@@ -6,6 +7,7 @@ export default function OperationsHub({supabase,students,profiles,session,profil
  const table={Disiplin:'student_discipline','İzin / Çıkış':'student_leaves',Yatakhane:'dormitory_assignments',Nöbet:'duty_roster','Kantin / Muhasebe':'finance_entries',Bildirim:'notifications'}[tab]
  async function load(){const {data,error}=await supabase.from(table).select('*').order(tab==='Nöbet'?'duty_date':tab==='Kantin / Muhasebe'?'entry_date':'created_at',{ascending:false});if(error)setMsg(error.message);else setRows(data||[])}
  useEffect(()=>{load();setForm({});setMsg('')},[tab])
+ useLiveRefresh(supabase,['student_discipline','student_leaves','dormitory_assignments','duty_roster','finance_entries','notifications'],load)
  const studentOptions=<>{students.map(s=><option key={s.id} value={s.id}>{s.first_name} {s.last_name}</option>)}</>
  async function save(e){e.preventDefault();if(edit&&!canUpdate)return setMsg('Bu kaydı düzenleme yetkiniz bulunmuyor.');if(!edit&&!canCreate)return setMsg('Yeni kayıt ekleme yetkiniz bulunmuyor.');let p={}
   if(tab==='Disiplin')p={student_id:form.student_id,incident_date:form.date,category:form.category,description:form.description,action_taken:form.action||null,decision_no:form.decision_no||null,parent_visible:form.parent_visible!==false,status:form.status||'active',recorded_by:session.user.id,updated_by:session.user.id}
