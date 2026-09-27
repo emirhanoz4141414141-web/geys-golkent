@@ -3,7 +3,7 @@ import useLiveRefresh from '../hooks/useLiveRefresh'
 import {useEffect,useMemo,useState} from 'react'
 export default function YuzuneMatrix({supabase,students,classes,institution,profile,permissions}){
  const canCreate=profile?.role==='super_admin'||!!permissions?.can_create,canUpdate=profile?.role==='super_admin'||!!permissions?.can_update,canDelete=profile?.role==='super_admin'||!!permissions?.can_delete
- const [items,setItems]=useState([]),[rows,setRows]=useState([]),[classId,setClassId]=useState(''),[date,setDate]=useState(new Date().toISOString().slice(0,10)),[newTitle,setNewTitle]=useState(''),[newPosition,setNewPosition]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false)
+ const [items,setItems]=useState([]),[rows,setRows]=useState([]),[classId,setClassId]=useState(''),[date,setDate]=useState(new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Istanbul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date())),[newTitle,setNewTitle]=useState(''),[newPosition,setNewPosition]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false)
  const yuzClasses=classes.filter(c=>c.program==='yuzune'),manager=['admin','super_admin'].includes(profile?.role)
  const list=useMemo(()=>students.filter(s=>s.status==='active'&&(!classId||s.class_id===classId)&&(classId||yuzClasses.some(c=>c.id===s.class_id))).sort((a,b)=>(a.first_name+' '+a.last_name).localeCompare(b.first_name+' '+b.last_name,'tr')),[students,classId,classes])
  async function load(){const [{data:i},{data:r}]=await Promise.all([supabase.from('yuzune_curriculum_items').select('*').eq('institution_id',institution.id).eq('active',true).order('sort_order'),supabase.from('yuzune_progress').select('*')]);setItems(i||[]);setRows(r||[])}
