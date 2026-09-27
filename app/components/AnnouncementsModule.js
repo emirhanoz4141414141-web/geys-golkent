@@ -1,4 +1,5 @@
 'use client'
+import useLiveRefresh from '../hooks/useLiveRefresh'
 import {useEffect,useMemo,useState} from 'react'
 import {Bell,Plus,Trash2,CheckCircle2,Megaphone,RefreshCw} from 'lucide-react'
 
@@ -22,6 +23,7 @@ export default function AnnouncementsModule({supabase,profile,institution,permis
   setItems(a||[]);setReads(r||[]);if(isManager){setAllReads(results[2]?.data||[]);setPeople(results[3]?.data||[])}
  }
  useEffect(()=>{if(profile?.id)load()},[profile?.id])
+ useLiveRefresh(supabase,['announcements','announcement_reads','profiles'],load)
  const readMap=useMemo(()=>Object.fromEntries(reads.map(x=>[x.announcement_id,x])),[reads])
  const unread=items.filter(x=>x.is_published&&!readMap[x.id]).length
  const eligible=item=>people.filter(p=>(item.audience||['all']).includes('all')||(item.audience||[]).includes(p.role))
