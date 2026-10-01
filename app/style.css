@@ -367,3 +367,10 @@
 
 
 .annMenuNotify{background:#d6a62f!important;color:#fff!important}.annPromptOverlay{position:fixed;inset:0;z-index:9999;background:#0a2234a8;backdrop-filter:blur(5px);display:grid;place-items:center;padding:20px}.annPromptModal{width:min(540px,100%);background:#fff;border-radius:24px;padding:28px;box-shadow:0 28px 80px #071b2c55;border:1px solid #e4eaeb;text-align:center}.annPromptIcon{width:58px;height:58px;border-radius:18px;background:#e8f3f1;color:#216f68;display:grid;place-items:center;margin:0 auto 13px}.annPromptEyebrow{font-size:10px;font-weight:900;letter-spacing:.09em;color:#a57a20}.annPromptModal h2{font-size:24px;color:#173b4e;margin:7px 0}.annPromptModal h3{font-size:16px;color:#315564;margin:14px 0 6px}.annPromptModal p{color:#64767d;line-height:1.6;white-space:pre-wrap;max-height:180px;overflow:auto}.annPromptActions{display:flex;justify-content:center;gap:9px;margin-top:20px}.annPromptActions button{min-width:150px}.annPromptModal small{display:block;margin-top:14px;color:#7a898e;line-height:1.45}@media(max-width:600px){.annPromptModal{padding:22px 17px;border-radius:20px}.annPromptActions{flex-direction:column}.annPromptActions button{width:100%}}
+
+/* User class access scope */
+.classAccessBox{margin-top:18px;padding:20px;border:1px solid #dbe7ec;border-radius:18px;background:linear-gradient(135deg,#f8fbfc,#eef6f8)}
+.classAccessBox h3{margin:0 0 5px;color:#083e5b}.classAccessBox p{margin:0 0 15px;color:#617680}
+.classScopeChoices{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}.classScopeChoices label{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#fff;border:1px solid #d8e5e9;border-radius:12px;font-weight:700;cursor:pointer}
+.classAccessGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;margin:10px 0 12px}.classAccessGrid label{display:flex;gap:8px;align-items:center;background:#fff;border:1px solid #dce8ec;border-radius:10px;padding:10px}
+.classAccessBox small{color:#687d86}
