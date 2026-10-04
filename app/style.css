@@ -374,3 +374,16 @@
 .classScopeChoices{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}.classScopeChoices label{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#fff;border:1px solid #d8e5e9;border-radius:12px;font-weight:700;cursor:pointer}
 .classAccessGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;margin:10px 0 12px}.classAccessGrid label{display:flex;gap:8px;align-items:center;background:#fff;border:1px solid #dce8ec;border-radius:10px;padding:10px}
 .classAccessBox small{color:#687d86}
+
+/* Kantin eksi bakiye detay */
+.canteenStatButton{font:inherit;text-align:left;border:0;cursor:pointer;color:inherit;background:inherit}
+.canteenStatButton small{display:block;margin-top:5px;font-size:11px;opacity:.68}
+.canteenStatButton:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(18,62,75,.10)}
+.debtModalBackdrop{position:fixed;inset:0;background:rgba(8,25,34,.55);z-index:1000;display:flex;align-items:center;justify-content:center;padding:22px}
+.debtModal{background:#fff;width:min(760px,96vw);max-height:88vh;overflow:auto;border-radius:18px;padding:22px;box-shadow:0 24px 70px rgba(0,0,0,.28)}
+.debtModalHead{display:flex;justify-content:space-between;gap:20px;align-items:flex-start;border-bottom:1px solid #e4ecef;padding-bottom:14px}
+.debtModalHead h3{margin:4px 0;font-size:24px}.debtModalHead p{margin:0;color:#60747d}.debtModalHead small{font-weight:800;letter-spacing:.08em;color:#276b78}
+.debtModalHead>button{border:0;background:#eef4f5;border-radius:10px;width:38px;height:38px;cursor:pointer}
+.debtActions{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}.debtActions button{border:1px solid #cbdcdf;background:#f7fbfb;border-radius:9px;padding:9px 14px;font-weight:700;cursor:pointer}
+.debtModal tfoot td{border-top:2px solid #276b78}
+@media(max-width:650px){.debtModalBackdrop{padding:8px}.debtModal{padding:14px}.debtActions button{flex:1}.debtModalHead h3{font-size:20px}}
