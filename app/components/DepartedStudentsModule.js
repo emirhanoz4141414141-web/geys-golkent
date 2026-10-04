@@ -7,7 +7,7 @@ const reasonLabel=k=>({parent_request:'Veli Talebi',transfer:'Nakil',discipline:
 
 export default function DepartedStudentsModule({supabase,students=[],classes=[],profile,permissions,onRefresh}){
  const [items,setItems]=useState([]),[archiveStudents,setArchiveStudents]=useState([]),[q,setQ]=useState(''),[year,setYear]=useState(''),[reason,setReason]=useState(''),[program,setProgram]=useState('')
- const [restore,setRestore]=useState(null),[legacyOpen,setLegacyOpen]=useState(false),[importPreview,setImportPreview]=useState(null),[legacy,setLegacy]=useState(emptyLegacy),[msg,setMsg]=useState('')
+ const [restore,setRestore]=useState(null),[selected,setSelected]=useState(null),[legacyOpen,setLegacyOpen]=useState(false),[importPreview,setImportPreview]=useState(null),[legacy,setLegacy]=useState(emptyLegacy),[msg,setMsg]=useState('')
  const canCreate=profile?.role==='super_admin'||permissions?.can_create
  const canUpdate=profile?.role==='super_admin'||permissions?.can_update
  const canExport=profile?.role==='super_admin'||permissions?.can_export
@@ -32,15 +32,26 @@ export default function DepartedStudentsModule({supabase,students=[],classes=[],
   <div className="gradStats"><div><span>Toplam Ayrılan</span><b>{items.length}</b></div><div><span>Bu Yıl</span><b>{items.filter(x=>String(x.departure_date||'').startsWith(String(now))).length}</b></div><div><span>Nakil</span><b>{items.filter(x=>x.reason_category==='transfer').length}</b></div><div><span>Veli Talebi</span><b>{items.filter(x=>x.reason_category==='parent_request').length}</b></div></div><div className="archiveCharts"><ArchiveBars title="Yıllara Göre Ayrılış" data={yearStats}/><ArchiveBars title="Ayrılış Nedenleri" data={reasonStats}/><ArchiveBars title="Program / Son Sınıf Dağılımı" data={programStats}/></div>
   <div className="gradTools"><input placeholder="Ayrılan öğrenci ara..." value={q} onChange={e=>setQ(e.target.value)}/><select value={year} onChange={e=>setYear(e.target.value)}><option value="">Tüm yıllar</option>{years.map(y=><option key={y}>{y}</option>)}</select><select value={reason} onChange={e=>setReason(e.target.value)}><option value="">Tüm nedenler</option><option value="own_request">Kendi İsteği</option><option value="parent_request">Veli Talebi</option><option value="transfer">Nakil</option><option value="discipline">Disiplin</option><option value="health">Sağlık</option><option value="other">Diğer</option></select><select value={program} onChange={e=>setProgram(e.target.value)}><option value="">Tüm programlar</option>{programs.map(p=><option key={p}>{p}</option>)}</select>{canCreate&&<button onClick={()=>setLegacyOpen(true)}>+ Geçmiş Ayrılan Ekle</button>}{canCreate&&<label className="importBtn">Excel’den Aktar<input hidden type="file" accept=".xlsx,.xls" onChange={e=>readImport(e.target.files?.[0])}/></label>}{canExport&&<button onClick={excel}>Excel Raporu</button>}{canExport&&<button onClick={printReport}>PDF / Yazdır</button>}</div>
   <div className="tableWrap"><table><thead><tr><th>Öğrenci</th><th>Ayrılış Tarihi</th><th>Neden</th><th>Program</th><th>Gittiği Kurum</th><th>Açıklama</th><th>İşlem</th></tr></thead><tbody>
-   {rows.map(x=><tr key={x.id}><td><b>{x.student.first_name} {x.student.last_name}</b></td><td>{x.departure_date||'—'}</td><td>{reasonLabel(x.reason_category)}</td><td>{x.last_program||'—'}</td><td>{x.destination_institution||'—'}</td><td>{x.reason_detail||'—'}</td><td>{canUpdate&&<button onClick={()=>setRestore({student:x.student,class_id:''})}>Aktife Geri Al</button>}</td></tr>)}
+   {rows.map(x=><tr key={x.id}><td><b>{x.student.first_name} {x.student.last_name}</b></td><td>{x.departure_date||'—'}</td><td>{reasonLabel(x.reason_category)}</td><td>{x.last_program||'—'}</td><td>{x.destination_institution||'—'}</td><td>{x.reason_detail||'—'}</td><td><button onClick={()=>setSelected(x)}>Arşiv Dosyası</button>{canUpdate&&<button onClick={()=>setRestore({student:x.student,class_id:''})}>Aktife Geri Al</button>}</td></tr>)}
    {!rows.length&&<tr><td colSpan="7">Henüz ayrılan öğrenci kaydı bulunmuyor.</td></tr>}
   </tbody></table></div>
   {msg&&<div className="msg">{msg}</div>}{importPreview&&<ImportPreview rows={importPreview} onClose={()=>setImportPreview(null)} onImport={commitImport}/>}
-  {legacyOpen&&<LegacyDepartureForm legacy={legacy} setLegacy={setLegacy} onClose={()=>setLegacyOpen(false)} onSubmit={addLegacy}/>}
+  {selected&&<DepartureDossier item={selected} onClose={()=>setSelected(null)}/>}\n  {legacyOpen&&<LegacyDepartureForm legacy={legacy} setLegacy={setLegacy} onClose={()=>setLegacyOpen(false)} onSubmit={addLegacy}/>}
   {restore&&<RestoreModal restore={restore} setRestore={setRestore} classes={classes} onSubmit={reactivate}/>}
  </section>
 }
 
+function DepartureDossier({item,onClose}){const s=item.student;return <div className="debtModalBackdrop"><div className="debtModal graduateDossier">
+ <div className="debtModalHead"><div><small>AYRILIŞ ARŞİV DOSYASI</small><h3>{s.first_name} {s.last_name}</h3><p>{item.last_program||'Program belirtilmemiş'} · {item.departure_date||'Tarih belirtilmemiş'}</p></div><button onClick={onClose}>✕</button></div>
+ <div className="gradProfileGrid">
+  <div><span>Şahsi Telefon</span><b>{s.personal_phone||s.phone||'—'}</b></div><div><span>Doğum Tarihi</span><b>{s.birth_date||'—'}</b></div>
+  <div><span>Kursa Kayıt Tarihi</span><b>{s.enrollment_date||'—'}</b></div><div><span>Ayrılış Tarihi</span><b>{item.departure_date||'—'}</b></div>
+  <div><span>Program / Son Sınıf</span><b>{item.last_program||'—'}</b></div><div><span>Ayrılış Nedeni</span><b>{reasonLabel(item.reason_category)}</b></div>
+  <div><span>Gittiği Kurum</span><b>{item.destination_institution||'—'}</b></div><div><span>Kayıt Türü</span><b>{item.legacy_record?'Geçmiş Arşiv Kaydı':'E-Gölkent Kaydı'}</b></div>
+ </div>
+ <h4>Ayrılış Açıklaması</h4><div className="lifecycleWarn">{item.reason_detail||'Ayrıntılı açıklama girilmemiş.'}</div>
+ <div className="archiveMeta">Arşiv kayıt tarihi: {item.created_at?new Date(item.created_at).toLocaleString('tr-TR'):'—'}</div>
+ </div></div>}
 function LegacyDepartureForm({legacy,setLegacy,onClose,onSubmit}){
  return <div className="debtModalBackdrop"><form className="debtModal gradForm" onSubmit={onSubmit}>
   <div className="debtModalHead"><div><small>ARŞİV KAYDI</small><h3>Geçmiş Ayrılan Öğrenci Ekle</h3><p>E-Gölkent öncesi ayrılan öğrenciler için.</p></div><button type="button" onClick={onClose}>✕</button></div>
