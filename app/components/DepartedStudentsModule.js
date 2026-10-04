@@ -11,7 +11,7 @@ export default function DepartedStudentsModule({supabase,students=[],classes=[],
  const canCreate=profile?.role==='super_admin'||permissions?.can_create
  const canUpdate=profile?.role==='super_admin'||permissions?.can_update
  const canExport=profile?.role==='super_admin'||permissions?.can_export
- const load=async()=>{const [{data:i},{data:s}]=await Promise.all([supabase.from('student_departures').select('*').order('departure_date',{ascending:false}),supabase.from('students').select('*').in('student_status',['graduated','departed'])]);setItems(i||[]);setArchiveStudents(s||[])}
+ const load=async()=>{const [{data:i},{data:s}]=await Promise.all([supabase.from('student_departures').select('*').order('departure_date',{ascending:false}),supabase.rpc('list_departed_archive_students')]);setItems(i||[]);setArchiveStudents(s||[])}
  useEffect(()=>{load()},[])
  const sm=useMemo(()=>Object.fromEntries([...students,...archiveStudents].map(s=>[s.id,s])),[students,archiveStudents])
  const rows=useMemo(()=>items.map(x=>({...x,student:sm[x.student_id]})).filter(x=>x.student).filter(x=>(x.student.first_name+' '+x.student.last_name).toLocaleLowerCase('tr').includes(q.toLocaleLowerCase('tr'))).filter(x=>!year||String(x.departure_date||'').startsWith(year)).filter(x=>!reason||x.reason_category===reason).filter(x=>!program||(x.last_program||'')===program),[items,sm,q,year,reason,program])
