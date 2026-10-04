@@ -394,3 +394,9 @@
 .balanceStudentNo{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-right:10px;border-radius:7px;background:#edf4f5;color:#52717b;font-size:11px;font-weight:800}
 .balanceStatus{display:inline-block;min-width:68px;text-align:center;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:800;letter-spacing:.03em}.balanceStatus.active{background:#e9f7ef;color:#247346}.balanceStatus.debt{background:#fff0ed;color:#a13a2d}
 .balanceReportActions{display:flex;gap:8px;justify-content:flex-end;margin:10px 0}.balanceReportActions button{border:1px solid #cbdcdf;background:#fff;border-radius:9px;padding:8px 13px;font-weight:700;cursor:pointer}
+
+/* Mezuniyet ve ayrılan öğrenciler */
+.graduatesPro{display:grid;gap:16px}.gradHero{background:linear-gradient(135deg,#173f4d,#276b78);color:#fff;padding:24px;border-radius:18px;box-shadow:0 14px 35px rgba(23,63,77,.16)}.gradHero small{font-weight:800;letter-spacing:.09em;opacity:.82}.gradHero h2{margin:7px 0 5px;font-size:25px}.gradHero p{margin:0;opacity:.86}.departureHero{background:linear-gradient(135deg,#4d3d27,#806b3d)}
+.gradStats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.gradStats>div{background:#fff;border:1px solid #dce8eb;border-radius:14px;padding:16px;box-shadow:0 5px 16px rgba(20,57,69,.05)}.gradStats span{display:block;font-size:11px;color:#6b7e86;font-weight:700}.gradStats b{display:block;font-size:25px;margin-top:5px;color:#173f4d}
+.gradTools{display:flex;gap:9px;flex-wrap:wrap;background:#fff;border:1px solid #dce8eb;padding:12px;border-radius:13px}.gradTools input{flex:1;min-width:220px}.gradTools input,.gradTools select,.gradTools button{border:1px solid #cddde1;border-radius:9px;padding:9px 11px;background:#fff}.gradTools button{font-weight:800;cursor:pointer}
+@media(max-width:760px){.gradStats{grid-template-columns:repeat(2,1fr)}.gradHero{padding:18px}.gradHero h2{font-size:21px}}
