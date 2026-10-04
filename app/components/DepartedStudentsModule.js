@@ -1,0 +1,10 @@
+'use client'
+import {useEffect,useMemo,useState} from 'react'
+export default function DepartedStudentsModule({supabase,students=[]}){
+ const [items,setItems]=useState([]),[q,setQ]=useState('')
+ useEffect(()=>{supabase.from('student_departures').select('*').order('departure_date',{ascending:false}).then(({data})=>setItems(data||[]))},[])
+ const sm=useMemo(()=>Object.fromEntries(students.map(s=>[s.id,s])),[students])
+ const rows=items.map(x=>({...x,student:sm[x.student_id]})).filter(x=>x.student).filter(x=>(x.student.first_name+' '+x.student.last_name).toLocaleLowerCase('tr').includes(q.toLocaleLowerCase('tr')))
+ const reason=k=>({parent_request:'Veli Talebi',transfer:'Nakil',discipline:'Disiplin',health:'Sağlık',own_request:'Kendi İsteği',other:'Diğer'}[k]||k||'—')
+ return <section className="graduatesPro"><div className="gradHero departureHero"><div><small>E-GÖLKENT · ÖĞRENCİ YAŞAM DÖNGÜSÜ</small><h2>Ayrılan Öğrenciler Arşivi</h2><p>Programını tamamlamadan kurumdan ayrılan öğrencilerin kurumsal kayıt ve takip alanı.</p></div></div><div className="gradStats"><div><span>Toplam Ayrılan</span><b>{items.length}</b></div><div><span>Bu Yıl</span><b>{items.filter(x=>String(x.departure_date||'').startsWith(String(new Date().getFullYear()))).length}</b></div><div><span>Nakil</span><b>{items.filter(x=>x.reason_category==='transfer').length}</b></div><div><span>Veli Talebi</span><b>{items.filter(x=>x.reason_category==='parent_request').length}</b></div></div><div className="gradTools"><input placeholder="Ayrılan öğrenci ara..." value={q} onChange={e=>setQ(e.target.value)}/></div><div className="tableWrap"><table><thead><tr><th>Öğrenci</th><th>Ayrılış Tarihi</th><th>Neden</th><th>Program</th><th>Gittiği Kurum</th><th>Açıklama</th></tr></thead><tbody>{rows.map(x=><tr key={x.id}><td><b>{x.student.first_name} {x.student.last_name}</b></td><td>{x.departure_date||'—'}</td><td>{reason(x.reason_category)}</td><td>{x.last_program||'—'}</td><td>{x.destination_institution||'—'}</td><td>{x.reason_detail||'—'}</td></tr>)}{!rows.length&&<tr><td colSpan="6">Henüz ayrılan öğrenci kaydı bulunmuyor.</td></tr>}</tbody></table></div></section>
+}
