@@ -387,3 +387,10 @@
 .debtActions{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}.debtActions button{border:1px solid #cbdcdf;background:#f7fbfb;border-radius:9px;padding:9px 14px;font-weight:700;cursor:pointer}
 .debtModal tfoot td{border-top:2px solid #276b78}
 @media(max-width:650px){.debtModalBackdrop{padding:8px}.debtModal{padding:14px}.debtActions button{flex:1}.debtModalHead h3{font-size:20px}}
+
+/* Öğrenci bakiyeleri kurumsal görünüm */
+.balanceSectionHead{display:flex;justify-content:space-between;align-items:end;margin:16px 0 8px;padding:16px 18px;background:linear-gradient(135deg,#f5fafb,#eef6f7);border:1px solid #dce9eb;border-radius:14px}
+.balanceSectionHead small{font-size:10px;font-weight:800;letter-spacing:.08em;color:#276b78}.balanceSectionHead h3{margin:4px 0 2px;font-size:20px;color:#173b4c}.balanceSectionHead p{margin:0;color:#687e87;font-size:12px}
+.balanceStudentNo{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;margin-right:10px;border-radius:7px;background:#edf4f5;color:#52717b;font-size:11px;font-weight:800}
+.balanceStatus{display:inline-block;min-width:68px;text-align:center;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:800;letter-spacing:.03em}.balanceStatus.active{background:#e9f7ef;color:#247346}.balanceStatus.debt{background:#fff0ed;color:#a13a2d}
+.balanceReportActions{display:flex;gap:8px;justify-content:flex-end;margin:10px 0}.balanceReportActions button{border:1px solid #cbdcdf;background:#fff;border-radius:9px;padding:8px 13px;font-weight:700;cursor:pointer}
