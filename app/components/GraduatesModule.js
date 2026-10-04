@@ -6,7 +6,7 @@ export default function GraduatesModule({supabase,students=[],profile,permission
  const admin=profile?.role==='super_admin',canExport=admin||permissions?.can_export
  const load=async()=>{const {data}=await supabase.from('student_graduations').select('*').order('graduation_date',{ascending:false});setItems(data||[])}
  useEffect(()=>{load()},[])
- const sm=useMemo(()=>Object.fromEntries(students.map(s=>[s.id,s])),[students])
+ const [archiveStudents,setArchiveStudents]=useState([]);useEffect(()=>{supabase.from('students').select('*').in('student_status',['graduated','departed']).then(({data})=>setArchiveStudents(data||[]))},[]);const sm=useMemo(()=>Object.fromEntries([...students,...archiveStudents].map(s=>[s.id,s])),[students,archiveStudents])
  const rows=useMemo(()=>items.map(g=>({...g,student:sm[g.student_id]})).filter(x=>x.student).filter(x=>{const n=(x.student.first_name+' '+x.student.last_name).toLocaleLowerCase('tr');return n.includes(q.toLocaleLowerCase('tr'))&&(!year||String(x.graduation_year||'')===year)}),[items,sm,q,year])
  const years=[...new Set(items.map(x=>x.graduation_year).filter(Boolean))].sort((a,b)=>b-a)
  const haf=items.filter(x=>x.program==='Hafızlık').length, yuz=items.filter(x=>x.program==='Yüzüne').length, now=new Date().getFullYear()
