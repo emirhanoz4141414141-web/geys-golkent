@@ -1,7 +1,7 @@
 'use client'
 import useLiveRefresh from '../hooks/useLiveRefresh'
 import {useEffect,useMemo,useState} from 'react'
-const qualities=[['saglam','S','Sağlam'],['iyi','İ','İyi'],['orta','O','Orta'],['zayif','Z','Zayıf']]
+const qualities=[['saglam','S','Sağlam'],['iyi','Y','İyi'],['orta','O','Orta'],['zayif','Z','Zayıf']]
 const statuses=[['H','Hasta'],['R','Raporlu'],['İ','İzinli'],['T','Tatil'],['M','Mazeretli'],['G','Gelmedi'],['X','Ders Vermedi']]
 const months=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık']
 export default function KapDersCetveli({supabase,students,classes,profiles,profile,institution,permissions}){
