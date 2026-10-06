@@ -474,3 +474,30 @@
 .libraryLabels{margin:14px 0;padding:16px;border:1px solid #dfe8e9;border-radius:14px;background:#f8fbfb}.libraryLabelTools{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.libraryLabelList{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px;max-height:420px;overflow:auto}.libraryLabelList label{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #dfe8e9;border-radius:10px;background:#fff;cursor:pointer}.libraryLabelList label.selected{outline:2px solid #276b78}.libraryLabelList span{display:grid;gap:3px}.libraryLabelList small{color:#64777a}@media(max-width:650px){.libraryLabelTools button{flex:1}.libraryLabelList{grid-template-columns:1fr}}
 
 @media(max-width:700px){.libraryToolbar{align-items:stretch;gap:10px;flex-direction:column}.libraryToolbar>div:first-child{width:100%}.libraryCatalogTools{justify-content:flex-start}}
+
+/* Library physical location hierarchy */
+.libraryLocations{border-color:#d8e4e5;box-shadow:0 12px 34px rgba(25,63,68,.06)}
+.libraryLocations .libraryInventoryHead{padding-bottom:12px;border-bottom:1px solid #e8eeee;gap:14px}
+.libraryLocations .libraryInventoryHead p{margin:5px 0 0;color:#718589;font-size:11px}
+.libraryLocations .libraryForms{margin:14px 0}
+.libraryLocationList{max-height:520px;align-items:start}
+.libraryLocationList .libraryCabinetCard{align-items:flex-start;background:linear-gradient(180deg,#fff,#fafcfc);padding:12px}
+.libraryCabinetCard>span:first-child{min-width:120px}
+.libraryCabinetCard>span:first-child>b{font-size:13px;color:#244f55}
+.libraryShelfChips{display:flex!important;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.libraryShelfChips button{border:1px solid #d7e3e4;border-radius:10px;background:#f5f9f9;color:#315e63;padding:7px 9px;font-size:10px;font-weight:900;line-height:1.05;min-width:58px}
+.libraryShelfChips button small{display:block!important;margin-top:4px!important;font-size:8px!important;color:#7c9194!important;font-weight:700}
+.libraryShelfChips button.active{background:#244f55;color:#fff;border-color:#244f55}
+.libraryShelfChips button.active small{color:#dce9ea!important}
+.libraryLocations .libraryCopyList>div>input[type=checkbox]{width:17px;height:17px;accent-color:#244f55;flex:0 0 auto}
+.libraryLocations .libraryAddForm button:disabled{opacity:.45;cursor:not-allowed}
+@media(max-width:700px){
+ .libraryLocations{padding:12px}
+ .libraryLocations .libraryInventoryHead{align-items:flex-start;flex-direction:column}
+ .libraryLocations .libraryInventoryHead>b{white-space:normal}
+ .libraryLocationList .libraryCabinetCard{flex-direction:column}
+ .libraryShelfChips{justify-content:flex-start;width:100%}
+ .libraryCabinetCard>span:first-child{min-width:0}
+ .libraryLocations .libraryCopyList>div{align-items:flex-start;flex-wrap:wrap}
+ .libraryLocations .libraryCopyList>div>select{width:100%}
+}
