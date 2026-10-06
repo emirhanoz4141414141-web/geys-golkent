@@ -440,3 +440,5 @@
 .libraryOpenLoans>div.overdue{border-color:#e7bcbc;background:#fff7f7}.libraryOpenLoans>div.overdue small{color:#9b3434;font-weight:900}.libraryOpenLoans span em{display:block;margin-top:3px;font-size:10px;color:#718589;font-style:normal}.libraryReturnForm p{margin:0;padding:10px;border-radius:9px;background:#f4f8f8;color:#315d62;font-weight:800}.libraryReturnForm select{border:1px solid #dbe4e5;border-radius:9px;padding:10px;background:#fff}
 
 .libraryHoldChoices{display:flex;gap:4px;align-items:center}.libraryHoldChoices button{padding:8px 9px;white-space:nowrap}@media(max-width:650px){.libraryHoldChoices{width:100%;display:grid;grid-template-columns:repeat(3,1fr)}}
+
+.libraryReservationCallout{display:inline-block;margin-top:5px;padding:4px 7px;border-radius:999px;background:#eef8f1;color:#347044;font-size:10px;font-weight:900}
