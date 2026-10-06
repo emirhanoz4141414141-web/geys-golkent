@@ -436,3 +436,5 @@
 .libraryDesk .libraryBarcodeSearch{border:1px solid #bfd1d3;background:#f8fbfb;font-weight:800;letter-spacing:.15px}.libraryDesk .libraryBarcodeSearch:focus{outline:2px solid rgba(36,79,85,.14);border-color:#6f969b}
 
 .libraryCopyActions{display:flex;align-items:center;gap:7px}.libraryCopyActions button{border:1px solid #d8e2e3;border-radius:8px;background:#f8fbfb;color:#315d62;padding:7px 9px;font-weight:800;display:inline-flex;align-items:center;gap:4px}.libraryCopyActions button:disabled{opacity:.45;cursor:not-allowed}@media(max-width:650px){.libraryCopyActions{width:100%;justify-content:space-between}.libraryCopyActions select{flex:1}}
+
+.libraryOpenLoans>div.overdue{border-color:#e7bcbc;background:#fff7f7}.libraryOpenLoans>div.overdue small{color:#9b3434;font-weight:900}.libraryOpenLoans span em{display:block;margin-top:3px;font-size:10px;color:#718589;font-style:normal}.libraryReturnForm p{margin:0;padding:10px;border-radius:9px;background:#f4f8f8;color:#315d62;font-weight:800}.libraryReturnForm select{border:1px solid #dbe4e5;border-radius:9px;padding:10px;background:#fff}
