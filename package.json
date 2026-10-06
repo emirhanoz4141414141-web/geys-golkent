@@ -19,7 +19,8 @@
     "jspdf": "latest",
     "jspdf-autotable": "latest",
     "exceljs": "^4.4.0",
-    "pdfmake": "^0.2.20"
+    "pdfmake": "^0.2.20",
+    "qrcode": "^1.5.4"
   },
   "devDependencies": {}
 }
