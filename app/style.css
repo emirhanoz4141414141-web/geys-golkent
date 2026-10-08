@@ -503,3 +503,23 @@
 }
 
 .libraryLocationHint{margin:0;padding:9px 11px;border:1px dashed #cbdcde;border-radius:9px;background:#f7fafa;color:#607a7e;font-size:10px;line-height:1.45}.libraryLocationHint b{color:#244f55}
+
+
+/* Hafızlık: sıkı tek hücreli aylık cetvel */
+.hafTable{border-collapse:separate;border-spacing:0}
+.hafTable th,.hafTable td{border-right:1px solid #b6c5c9;border-bottom:1px solid #b6c5c9}
+.hafTable thead th{height:31px;min-width:43px;font-size:10px}
+.hafTable .hafStudent{min-width:185px;max-width:220px;padding:4px 6px}
+.hafTable .hafPace{min-width:53px}
+.hafTable .hafStage{min-width:57px}
+.hafTable td>select{height:32px;font-size:11px}
+.hafDay{min-width:43px;height:33px}
+.hafCompactInput{display:block;width:100%;min-width:0;height:32px;padding:1px 2px;border:0;background:transparent;text-align:center;font-size:11px;font-weight:700;color:#16333c;outline-offset:-2px}
+.hafDay.saglam{background:#a9e4bd}
+.hafDay.iyi{background:#b5d5f6}
+.hafDay.orta{background:#f8df96}
+.hafDay.zayif{background:#f1a9a9}
+.hafDay.status-X{background:#f6c5c5}
+.hafDay.status-H,.hafDay.status-R,.hafDay.status-İ,.hafDay.status-T,.hafDay.status-M,.hafDay.status-G{background:#e6e9ec}
+.hafStageInput{width:46px;height:29px;border:1px solid #b6c5c9;border-radius:4px;font-size:11px}
+@media(max-width:700px){.hafTable .hafStudent{min-width:145px}}
