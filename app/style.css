@@ -563,3 +563,14 @@
 .eduProgramPopover li{font-size:12px;padding:4px 0;border-bottom:1px solid #e5ecee}
 .eduProgramPopover p{font-size:12px;margin:0}
 @media(max-width:900px){.eduProgramGrid{grid-template-columns:1fr}}
+
+
+/* Günlük gösterge paneli: mobil etkileşim ve PDF indirme */
+.eduDashHead{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.eduDashActions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.eduPdfButton{background:#164c61;color:#fff;border:0;border-radius:9px;padding:11px 15px;font-weight:700;font-size:12px;cursor:pointer;white-space:normal}
+.eduPdfButton:disabled{opacity:.55;cursor:wait}
+.eduPdfButton:focus-visible,.eduProgramNumber:focus-visible{outline:3px solid #1b98aa;outline-offset:3px}
+.eduExportError{padding:10px;color:#8a2525;background:#fff0ee;border-radius:8px}
+@media(max-width:900px){.eduDashHead,.eduDashActions{width:100%}.eduDashActions>*{max-width:100%}.eduProgramCard{overflow:visible}.eduProgramNumber{cursor:pointer}.eduProgramPopover{left:0;right:auto;max-width:min(340px,78vw);width:max-content}}
+@media(max-width:480px){.eduDashActions{display:grid;grid-template-columns:1fr}.eduDashActions input,.eduPdfButton{width:100%;min-height:42px}.eduProgramGrid{gap:10px}.eduProgramCard{padding:12px}.eduProgramNumbers{gap:8px}.eduProgramNumber{padding:9px 7px}.eduProgramNumber>b{font-size:24px}.eduProgramPopover{position:absolute;min-width:0;width:min(295px,78vw);max-height:50vh}.eduProgramNumber:nth-child(2) .eduProgramPopover{left:auto;right:0}}
