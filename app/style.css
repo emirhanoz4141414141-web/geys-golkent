@@ -593,3 +593,33 @@
 @media(max-width:1150px){.eduDonutLayout{grid-template-columns:1fr;justify-items:center}.eduDonutLegend{width:100%}}
 @media(min-width:1151px) and (max-width:1550px){.eduDonutLayout{grid-template-columns:minmax(125px,165px) minmax(0,1fr);gap:12px}}
 @media(max-width:600px){.eduDonutLayout{gap:14px}.eduDonutChart{width:190px}.eduDonutLegend{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.eduDonutLegendItem{grid-template-columns:10px 1fr auto;gap:5px;padding:9px 7px}.eduDonutLegendItem small{grid-column:2/4;text-align:left}}
+
+
+/* Ana sayfa premium alt alan: hızlı erişim ve yerleşke */
+.homePremiumBottom{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:18px;margin-top:18px;align-items:stretch}
+.homeQuickPanel,.homeCampusPanel{min-width:0;overflow:hidden;border:1px solid #dbe6e9;border-radius:18px;background:#fff;box-shadow:0 9px 30px rgba(22,56,72,.07)}
+.homeQuickPanel{padding:23px}
+.homeBottomEyebrow{display:block;font-size:10px;letter-spacing:1.5px;font-weight:800;color:#247b86}
+.homeQuickPanel h3{font-size:22px;color:#163b4c;margin:8px 0 5px}
+.homeQuickPanel>p{font-size:12px;color:#758995;margin:0 0 18px}
+.homeQuickGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.homeQuickAction{display:flex;align-items:center;gap:10px;min-height:62px;width:100%;padding:11px;border:1px solid #dce7eb;border-radius:12px;background:linear-gradient(135deg,#f7fafb,#eff6f7);color:#173c4e;text-align:left;cursor:pointer;transition:transform .15s,box-shadow .15s,border-color .15s}
+.homeQuickAction:hover,.homeQuickAction:focus-visible{transform:translateY(-2px);border-color:#76b0b7;box-shadow:0 6px 17px #16445b16;outline-offset:2px}
+.homeQuickNumber{display:grid;place-items:center;flex:0 0 33px;width:33px;height:33px;background:#dceef0;color:#247c86;border-radius:10px;font-size:11px;font-weight:800}
+.homeQuickName{font-size:12px;font-weight:700;flex:1;line-height:1.4}
+.homeQuickAction svg{flex:0 0 auto;color:#55949b}
+.homeCampusPanel{display:flex;flex-direction:column}
+.homeCampusPhoto{position:relative;min-height:220px;flex:1;overflow:hidden;background:#e7eff1}
+.homeCampusPhoto img{width:100%;height:100%;min-height:220px;object-fit:cover;display:block;transition:transform .3s}
+.homeCampusPanel:hover .homeCampusPhoto img{transform:scale(1.025)}
+.homeCampusPhoto:after{content:"";position:absolute;inset:35% 0 0;background:linear-gradient(transparent,#092f4b85);pointer-events:none}
+.homeCampusPhotoLabel{position:absolute;left:18px;bottom:17px;z-index:1;background:#ffffffed;color:#194c5b;border-radius:30px;padding:7px 12px;font-size:10px;font-weight:800;letter-spacing:1px}
+.homeCampusContent{padding:21px 23px 22px}
+.homeCampusContent h3{font-size:20px;line-height:1.3;color:#153c50;margin:8px 0}
+.homeCampusContent>p{font-size:12px;color:#728894;line-height:1.65;margin:0 0 18px}
+.homeCampusFooter{border-top:1px solid #e1eaed;padding-top:13px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.homeCampusFooter>span{display:flex;align-items:center;gap:7px;font-size:11px;color:#507280;font-weight:700}
+.homeCampusLiveDot{width:8px;height:8px;border-radius:50%;background:#29a16b;box-shadow:0 0 0 3px #29a16b20}
+.homeCampusFooter button{display:flex;align-items:center;gap:4px;background:transparent;border:0;color:#176d7b;font-size:11px;font-weight:800;cursor:pointer;padding:6px}
+@media(max-width:1050px){.homePremiumBottom{grid-template-columns:1fr}.homeCampusPhoto{min-height:230px}.homeCampusPhoto img{max-height:350px}}
+@media(max-width:550px){.homePremiumBottom{gap:12px}.homeQuickPanel{padding:16px}.homeQuickPanel h3{font-size:20px}.homeQuickGrid{gap:8px}.homeQuickAction{min-height:59px;padding:8px;gap:7px}.homeQuickNumber{width:26px;height:26px;flex-basis:26px;font-size:10px}.homeQuickName{font-size:11px}.homeQuickAction svg{width:14px}.homeCampusContent{padding:17px}.homeCampusContent h3{font-size:17px}}
