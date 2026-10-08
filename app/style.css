@@ -523,3 +523,19 @@
 .hafDay.status-H,.hafDay.status-R,.hafDay.status-İ,.hafDay.status-T,.hafDay.status-M,.hafDay.status-G{background:#e6e9ec}
 .hafStageInput{width:46px;height:29px;border:1px solid #b6c5c9;border-radius:4px;font-size:11px}
 @media(max-width:700px){.hafTable .hafStudent{min-width:145px}}
+
+
+/* Hafızlık cetveli: ultra dar sütunlar ve okunaklı tek satır */
+.hafCetvelPage .hafTable{width:max-content;min-width:0;table-layout:fixed}
+.hafCetvelPage .hafTable thead th{min-width:29px;width:29px;height:27px;font-size:9px}
+.hafCetvelPage .hafTable th,.hafCetvelPage .hafTable td{border-right:1px solid #9bafb5;border-bottom:1px solid #9bafb5}
+.hafCetvelPage .hafTable .hafStudent{min-width:155px;width:155px;max-width:155px;padding:2px 4px;font-size:10px;line-height:1.15}
+.hafCetvelPage .hafTable .hafStudent .lessonStudentPhoto{width:19px;height:19px;flex:0 0 19px}
+.hafCetvelPage .hafTable .hafPace{min-width:45px;width:45px}
+.hafCetvelPage .hafTable .hafStage{min-width:47px;width:47px}
+.hafCetvelPage .hafTable td>select{height:28px;padding:0;font-size:10px}
+.hafCetvelPage .hafDay{min-width:29px;width:29px;height:29px}
+.hafCetvelPage .hafCompactInput{height:28px;width:100%;padding:0 1px;font-size:10px;letter-spacing:-.2px;text-overflow:clip}
+.hafCetvelPage .hafStageInput{width:41px;max-width:100%;height:25px;padding:0 1px;font-size:10px}
+.hafCetvelPage .hafHasText{font-size:9px}
+@media(max-width:700px){.hafCetvelPage .hafTable .hafStudent{min-width:130px;width:130px;max-width:130px}}
