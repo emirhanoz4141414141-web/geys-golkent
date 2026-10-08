@@ -695,3 +695,47 @@
 .eduPaceStudents span{font-size:11px;font-weight:600;color:#355568;background:white;border:1px solid #e0e9ec;border-radius:7px;padding:10px;overflow-wrap:anywhere}
 @media(max-width:800px){.eduPaceMetrics{grid-template-columns:repeat(2,minmax(0,1fr))}.eduPaceStudents{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.eduPaceHeading{padding:19px 15px;align-items:flex-start;flex-direction:column}.eduPaceHeading h3{font-size:20px!important}.eduPaceMetrics{padding:12px;gap:7px}.eduPaceMetrics>div{padding:10px}.eduPaceMetrics b{font-size:19px}.eduPaceChartArea{padding:16px 12px}.eduPaceDetails{margin:0 12px 14px}.eduPaceStudents{grid-template-columns:1fr}}
+
+
+/* Executive visual refinement — E-GÖLKENT dashboard */
+.eduDashHead{position:relative;isolation:isolate;overflow:hidden;min-height:146px;padding:27px 31px!important;border:1px solid #bd9854;border-radius:17px!important;background:linear-gradient(112deg,#081b30 0%,#10354d 56%,#174b62 100%)!important;box-shadow:0 12px 27px #102d4630,inset 0 1px #ffffff29}
+.eduDashHead:before{content:"";pointer-events:none;position:absolute;z-index:-1;right:-45px;top:-125px;width:430px;height:380px;border-radius:50%;border:1px solid #d5b4783d;box-shadow:0 0 0 34px #d5b4780c,0 0 0 72px #d5b47808}
+.eduDashHead:after{content:"";position:absolute;pointer-events:none;left:31px;bottom:0;width:140px;height:3px;background:linear-gradient(90deg,#c99847,#f7e4b3,transparent)}
+.eduDashHeadTitle{min-width:0;position:relative;z-index:1}
+.eduDashBrandLine{display:flex;align-items:center;gap:9px}
+.eduDashBrandLine small{font-size:10px!important;font-weight:800!important;letter-spacing:1.8px!important;color:#e8c68c!important;opacity:1!important}
+.eduDashBrandLine small span{color:#ffffff7d}
+.eduDashBrandMark{display:grid;place-items:center;width:29px;height:29px;border-radius:8px;border:1px solid #dfb87388;background:#d3aa5a24;color:#f3dca6;font-size:17px}
+.eduDashHead h2{font-family:Georgia,'Times New Roman',serif!important;font-size:clamp(25px,3.1vw,37px)!important;line-height:1.17!important;letter-spacing:-.5px;font-weight:700;margin:12px 0 8px!important;text-shadow:0 2px 10px #0002}
+.eduDashHead h2 em{font-style:normal;color:#f1d39c}
+.eduDashHeadTitle>p{color:#cfdee6!important;font-size:12px!important;margin:0!important;line-height:1.5}
+.eduDashActions{position:relative;z-index:1;display:flex;align-items:center;gap:9px;flex-wrap:wrap;justify-content:flex-end}
+.eduDashActions input{border:1px solid #e7d6b0!important;background:#fffaf0!important;color:#183e52!important;border-radius:9px!important;min-height:41px;box-shadow:0 2px 7px #0002}
+.eduDashActions .eduPdfButton{border:1px solid #d3b87f!important;background:linear-gradient(145deg,#f4e2bb,#d5b073)!important;color:#17354a!important;font-weight:800!important;border-radius:9px!important;min-height:41px;box-shadow:0 3px 10px #0003;transition:filter .2s,transform .2s}
+.eduDashActions .eduPdfButton:hover{filter:brightness(1.06);transform:translateY(-1px)}
+.eduPacePanel{border-color:#cbb487!important;box-shadow:0 15px 34px #102d461d,0 2px 4px #102d4608!important}
+.eduPaceHeading{position:relative;isolation:isolate;overflow:hidden;min-height:140px;padding:26px 30px!important;background:linear-gradient(110deg,#091b2f,#103c53 72%,#195368)!important;border-bottom:3px solid #c39a54}
+.eduPaceHeading:after{content:"";position:absolute;z-index:-1;right:70px;top:-85px;width:300px;height:300px;border:1px solid #d4b37b3c;border-radius:50%;box-shadow:0 0 0 26px #d4b37b0c,0 0 0 58px #d4b37b0b}
+.eduPaceHeadingSymbol{font-size:16px;vertical-align:middle;margin-right:5px}
+.eduPaceEyebrow{color:#e7c38b!important;letter-spacing:1.7px!important}
+.eduPaceHeading h3{font-family:Georgia,'Times New Roman',serif!important;font-size:clamp(25px,2.8vw,34px)!important;font-weight:700;letter-spacing:-.3px;margin:11px 0 9px!important}
+.eduPaceHeading h3 em{font-style:normal;color:#f1d29b}
+.eduPaceHeading p{color:#d4e1e8!important;max-width:590px}
+.eduPaceLive{background:#ffffff10!important;border-color:#d8bd8b66!important;color:#f1e3c6!important;padding:9px 13px!important}
+.eduPaceMetrics{background:linear-gradient(#f5f5f0,#f8fafb)!important;padding:19px 25px!important;gap:12px!important}
+.eduPaceMetrics>div{position:relative;overflow:hidden;border:1px solid #dcdedc!important;border-top:2px solid #cba363!important;border-radius:12px!important;padding:17px 17px!important;box-shadow:0 5px 14px #18374d0b;min-height:94px}
+.eduPaceMetrics>div:after{content:"";position:absolute;right:-22px;bottom:-31px;width:80px;height:80px;border-radius:50%;border:9px solid #d9e8eb55}
+.eduPaceMetrics span{color:#61717a!important;font-size:11px!important;letter-spacing:.2px}
+.eduPaceMetrics b{font-family:Georgia,'Times New Roman',serif;font-size:clamp(22px,2.4vw,29px)!important;color:#123a50!important;letter-spacing:-.3px}
+.eduPaceChartArea{background:linear-gradient(180deg,#ffffff,#f7fafb)!important;padding:26px 28px 30px!important}
+.eduPaceChartCaption{color:#375e6c!important;border-bottom:1px solid #e2e8e9;padding-bottom:13px;margin-bottom:18px!important;letter-spacing:1.1px!important}
+.eduPaceBars{height:242px!important;gap:9px!important;background:repeating-linear-gradient(to top,transparent 0,transparent 45px,#e4ecef 46px,#e4ecef 47px)!important}
+.eduPaceBarTrack{height:180px!important}
+.eduPaceBarTrack i{width:min(100%,31px)!important;border-radius:7px 7px 2px 2px!important;background:linear-gradient(180deg,#50c1c6 0%,#16839b 65%,#0d627f 100%)!important;box-shadow:inset 0 1px #ffffff8c,0 3px 7px #135d7533!important}
+.eduPaceBar.active .eduPaceBarTrack i,.eduPaceBar:hover .eduPaceBarTrack i,.eduPaceBar:focus-visible .eduPaceBarTrack i{background:linear-gradient(180deg,#f9df9e,#c79b51 70%,#9d712d)!important}
+.eduPaceBar>b{color:#193b4f!important;font-size:12px!important}
+.eduPaceBar small{color:#516d7a!important}
+.eduPaceDetails{border-color:#d6bd8c!important;box-shadow:0 5px 15px #16364d0b}
+.eduPaceDetailsHead{background:linear-gradient(100deg,#f4efe4,#e9f1f2)!important}
+@media(max-width:850px){.eduDashHead{flex-direction:column!important;align-items:stretch!important;padding:23px 20px!important}.eduDashActions{justify-content:flex-start!important}.eduPaceHeading{padding:23px 20px!important}.eduPaceMetrics{padding:13px!important}}
+@media(max-width:540px){.eduDashHead h2{font-size:27px!important}.eduDashBrandLine small{font-size:9px!important;letter-spacing:.9px!important}.eduDashActions{display:grid;grid-template-columns:1fr;align-items:stretch}.eduDashActions input,.eduDashActions .eduPdfButton{width:100%;max-width:none}.eduPaceHeading h3{font-size:27px!important}.eduPaceMetrics>div{padding:12px!important;min-height:81px}.eduPaceMetrics b{font-size:22px!important}.eduPaceChartArea{padding:18px 12px!important}}
