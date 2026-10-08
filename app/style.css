@@ -739,3 +739,21 @@
 .eduPaceDetailsHead{background:linear-gradient(100deg,#f4efe4,#e9f1f2)!important}
 @media(max-width:850px){.eduDashHead{flex-direction:column!important;align-items:stretch!important;padding:23px 20px!important}.eduDashActions{justify-content:flex-start!important}.eduPaceHeading{padding:23px 20px!important}.eduPaceMetrics{padding:13px!important}}
 @media(max-width:540px){.eduDashHead h2{font-size:27px!important}.eduDashBrandLine small{font-size:9px!important;letter-spacing:.9px!important}.eduDashActions{display:grid;grid-template-columns:1fr;align-items:stretch}.eduDashActions input,.eduDashActions .eduPdfButton{width:100%;max-width:none}.eduPaceHeading h3{font-size:27px!important}.eduPaceMetrics>div{padding:12px!important;min-height:81px}.eduPaceMetrics b{font-size:22px!important}.eduPaceChartArea{padding:18px 12px!important}}
+
+
+/* Canteen: compact premium finance overview, presentation only */
+.canteenStats{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:11px!important;margin:16px 0 21px!important;align-items:stretch}
+.canteenStats>div,.canteenStats>.canteenStatButton{box-sizing:border-box;min-width:0;min-height:102px!important;margin:0!important;display:flex!important;flex-direction:column;align-items:flex-start;justify-content:center;gap:10px;padding:16px 19px!important;border:1px solid #dce5e9!important;border-top:3px solid #c6a269!important;border-radius:13px!important;background:linear-gradient(155deg,#ffffff,#f7fafb)!important;box-shadow:0 5px 16px rgba(16,43,61,.055)!important;transition:transform .16s,box-shadow .16s}
+.canteenStats>div>span,.canteenStats>.canteenStatButton>span{display:block!important;font-size:12px!important;font-weight:650!important;letter-spacing:.15px;color:#657989!important;line-height:1.35!important;margin:0!important}
+.canteenStats>div>b,.canteenStats>.canteenStatButton>b{display:block!important;font-size:clamp(19px,1.75vw,27px)!important;font-weight:800!important;line-height:1.15!important;letter-spacing:-.5px;color:#10364b!important;overflow-wrap:anywhere}
+.canteenStats>div>small,.canteenStats>.canteenStatButton>small{display:block;font-size:11px!important;line-height:1.25;color:#718394;margin:0!important}
+.canteenStats>.canteenStatButton{cursor:pointer;text-align:left}
+.canteenStats>.canteenStatButton:hover,.canteenStats>.canteenStatButton:focus-visible{transform:translateY(-2px);box-shadow:0 9px 22px rgba(16,43,61,.12)!important;outline-offset:2px}
+.canteenStats>.canteenDebtStat{border:1px solid #efc7cb!important;border-top:3px solid #d34b55!important;background:linear-gradient(145deg,#fffafa,#fff1f2)!important}
+.canteenStats>.canteenDebtStat>span{color:#a43b47!important;display:flex!important;align-items:center;gap:8px}
+.canteenStats>.canteenDebtStat>span>span{font-size:15px;color:#c34954}
+.canteenStats>.canteenDebtStat>b{color:#c32e42!important}
+.canteenStats>.canteenDebtStat>small{color:#a9535d!important}
+@media(max-width:1050px){.canteenStats{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+@media(max-width:680px){.canteenStats{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}.canteenStats>div,.canteenStats>.canteenStatButton{padding:13px!important;min-height:94px!important}.canteenStats>div>b,.canteenStats>.canteenStatButton>b{font-size:20px!important}}
+@media(max-width:370px){.canteenStats{grid-template-columns:1fr!important}}
