@@ -657,3 +657,41 @@
 .golkentShowcaseContact .golkentShowcaseMap{color:#ffdf94}
 @media(max-width:900px){.golkentShowcaseHero{grid-template-columns:1fr}.golkentShowcasePhoto{min-height:240px}.golkentShowcasePrograms{grid-template-columns:1fr}.golkentShowcaseHeading{flex-direction:row;min-height:55px}.golkentShowcaseHeading>span{font-size:20px}.golkentShowcaseTiles{justify-content:center}}
 @media(max-width:540px){.golkentShowcase{border-radius:12px}.golkentShowcaseText{padding:24px 13px}.golkentShowcaseText h2{font-size:34px}.golkentShowcaseSub{font-size:9px}.golkentShowcaseText blockquote{font-size:12px}.golkentShowcaseMotto{font-size:18px}.golkentShowcaseTiles{gap:6px;padding:9px}.golkentShowcaseTile{flex-basis:27%;min-width:0;min-height:78px;padding:6px 3px}.golkentShowcaseTile>span{font-size:24px}.golkentShowcaseTile>b{font-size:10px}.golkentShowcaseContact{display:grid;grid-template-columns:1fr 1fr;padding:8px}.golkentShowcaseContact a{padding:10px 5px;font-size:11px;border-right:0;border-bottom:1px solid #ffffff24;overflow-wrap:anywhere}.golkentShowcaseContact a:nth-child(n+3){grid-column:1/-1}}
+
+
+/* Hafızlık süreçleri premium canlı analiz grafiği */
+.eduPacePanel{overflow:hidden;padding:0!important;border:1px solid #d6e3e9!important;border-radius:17px!important;box-shadow:0 9px 26px #183f5810}
+.eduPaceHeading{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:24px 25px 18px;background:linear-gradient(110deg,#0a2945,#134c66);color:white}
+.eduPaceEyebrow{font-size:10px;letter-spacing:1.5px;color:#f2c980;font-weight:800}
+.eduPaceHeading h3{font-size:23px!important;margin:7px 0 5px!important;color:white!important}
+.eduPaceHeading p{font-size:12px!important;color:#d4e5ed!important;margin:0!important;line-height:1.5}
+.eduPaceLive{display:flex;align-items:center;gap:7px;flex-shrink:0;border:1px solid #ffffff4a;border-radius:40px;padding:8px 11px;font-size:11px;font-weight:700;color:#e5f4ed;background:#ffffff13}
+.eduPaceLive i{width:8px;height:8px;border-radius:50%;background:#5ce2a2;box-shadow:0 0 0 3px #5ce2a228}
+.eduPaceMetrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;padding:17px 24px;background:#f2f7f9}
+.eduPaceMetrics>div{background:white;border:1px solid #dae6ec;border-radius:11px;padding:13px 14px;display:flex;flex-direction:column;gap:8px}
+.eduPaceMetrics span{font-size:11px;color:#647e8c;font-weight:600}
+.eduPaceMetrics b{font-size:22px;color:#133d54;font-weight:800}
+.eduPaceChartArea{padding:21px 24px 24px;background:linear-gradient(#fff,#f8fbfc)}
+.eduPaceChartCaption{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;font-size:11px;letter-spacing:.6px;font-weight:800;color:#2d6378;margin-bottom:14px}
+.eduPaceChartCaption span{font-size:10px;font-weight:500;letter-spacing:0;color:#78919b}
+.eduPaceBarScroll{overflow-x:auto;padding-bottom:8px}
+.eduPaceBars{min-width:650px;display:grid;grid-template-columns:repeat(20,minmax(23px,1fr));gap:7px;align-items:end;height:208px;padding:6px 0 0;border-bottom:1px solid #cbdde5;background:repeating-linear-gradient(to top,transparent 0,transparent 46px,#edf3f6 47px,#edf3f6 48px)}
+.eduPaceBar{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:end;gap:7px;padding:0 0 4px;background:transparent;border:0;cursor:pointer;color:#547284;min-width:0;border-radius:7px 7px 0 0}
+.eduPaceBar>b{font-size:12px;color:#264e63;font-weight:800}
+.eduPaceBarTrack{display:flex;align-items:end;justify-content:center;width:100%;height:150px;min-height:0}
+.eduPaceBarTrack i{display:block;width:min(100%,26px);min-height:3px;border-radius:6px 6px 2px 2px;background:linear-gradient(180deg,#37b5c5,#147b9a);box-shadow:0 2px 5px #137b9a20;transition:background .2s,filter .2s}
+.eduPaceBar:hover .eduPaceBarTrack i,.eduPaceBar:focus-visible .eduPaceBarTrack i{background:linear-gradient(180deg,#f1ca78,#bd8d35)}
+.eduPaceBar.active .eduPaceBarTrack i{background:linear-gradient(180deg,#f4d487,#bd8b2e)}
+.eduPaceBar:focus-visible{outline:2px solid #187f99;outline-offset:2px}
+.eduPaceBar small{font-size:11px;font-weight:700}
+.eduPaceBar.active small{color:#9b702c}
+.eduPaceDetails{margin:0 24px 24px;border:1px solid #b7d9df;border-radius:12px;overflow:hidden;background:#f5fafb}
+.eduPaceDetailsHead{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 16px;background:#e6f3f5}
+.eduPaceDetailsHead>div{display:flex;flex-direction:column;gap:3px}
+.eduPaceDetailsHead strong{color:#174b61;font-size:13px}
+.eduPaceDetailsHead span{color:#698694;font-size:11px}
+.eduPaceDetailsHead button{border:0;border-radius:6px;background:white;color:#436777;cursor:pointer;padding:6px 10px}
+.eduPaceStudents{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;padding:14px}
+.eduPaceStudents span{font-size:11px;font-weight:600;color:#355568;background:white;border:1px solid #e0e9ec;border-radius:7px;padding:10px;overflow-wrap:anywhere}
+@media(max-width:800px){.eduPaceMetrics{grid-template-columns:repeat(2,minmax(0,1fr))}.eduPaceStudents{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.eduPaceHeading{padding:19px 15px;align-items:flex-start;flex-direction:column}.eduPaceHeading h3{font-size:20px!important}.eduPaceMetrics{padding:12px;gap:7px}.eduPaceMetrics>div{padding:10px}.eduPaceMetrics b{font-size:19px}.eduPaceChartArea{padding:16px 12px}.eduPaceDetails{margin:0 12px 14px}.eduPaceStudents{grid-template-columns:1fr}}
