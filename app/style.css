@@ -757,3 +757,10 @@
 @media(max-width:1050px){.canteenStats{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
 @media(max-width:680px){.canteenStats{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}.canteenStats>div,.canteenStats>.canteenStatButton{padding:13px!important;min-height:94px!important}.canteenStats>div>b,.canteenStats>.canteenStatButton>b{font-size:20px!important}}
 @media(max-width:370px){.canteenStats{grid-template-columns:1fr!important}}
+
+/* Hafızlık ders cetveli: net, saf kalite renkleri; yalnızca bu cetvel */
+.hafTable td.hafDay.saglam{background:#00C853!important;color:#092B17!important}
+.hafTable td.hafDay.iyi{background:#00B8F0!important;color:#082B3A!important}
+.hafTable td.hafDay.orta{background:#FFEB00!important;color:#292300!important}
+.hafTable td.hafDay.zayif{background:#FF1744!important;color:#210009!important}
+.hafTable td.hafDay.saglam .hafCompactInput,.hafTable td.hafDay.iyi .hafCompactInput,.hafTable td.hafDay.orta .hafCompactInput,.hafTable td.hafDay.zayif .hafCompactInput{background:transparent!important;color:inherit!important;font-weight:800!important}
