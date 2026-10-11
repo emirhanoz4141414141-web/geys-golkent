@@ -1,10 +1,11 @@
 'use client';
 import {useCallback,useState} from 'react';
 import useLiveRefresh from '../hooks/useLiveRefresh';
-import {ClipboardCheck,ShieldCheck,LayoutDashboard,GraduationCap,CalendarDays,ArrowRight} from 'lucide-react';
+import {ClipboardCheck,ShieldCheck,LayoutDashboard,GraduationCap,CalendarDays,ArrowRight,FileSpreadsheet} from 'lucide-react';
 import PerformanceReviewPanel from './PerformanceReviewPanel';
 import PerformanceManagerPanel from './PerformanceManagerPanel';
 import PerformanceWeeklyDashboard from './PerformanceWeeklyDashboard';
+import PerformanceReportCenter from './PerformanceReportCenter';
 import './PerformanceWorkspace.css';
 
 export default function PerformanceWorkspace({supabase,students=[],classes=[],profile,performanceRefresh,onDecisionSaved}){
@@ -16,7 +17,8 @@ export default function PerformanceWorkspace({supabase,students=[],classes=[],pr
  const tabs=manager?[
   {id:'overview',title:'Genel Bakış',subtitle:'Haftalık cetvel ve kararlar',Icon:LayoutDashboard},
   {id:'review',title:'Öğrenci Değerlendirme',subtitle:'Ders, hazırlık ve davranış',Icon:GraduationCap},
-  {id:'approval',title:'Çıkış Onayları',subtitle:'Yönetici karar ekranı',Icon:ShieldCheck}
+  {id:'approval',title:'Çıkış Onayları',subtitle:'Yönetici karar ekranı',Icon:ShieldCheck},
+  {id:'reports',title:'Rapor Merkezi',subtitle:'Excel, Word ve PDF',Icon:FileSpreadsheet}
  ]:[{id:'review',title:'Öğrenci Değerlendirme',subtitle:'Yetkili öğrencileriniz',Icon:GraduationCap}];
  return <div className="perfWorkspace">
   <div className="perfHero">
@@ -31,10 +33,11 @@ export default function PerformanceWorkspace({supabase,students=[],classes=[],pr
     <span className="perfNavIcon"><Icon size={21}/></span><span className="perfNavText"><strong>{title}</strong><small>{subtitle}</small></span><ArrowRight className="perfNavArrow" size={16}/>
    </button>)}
   </div>
-  <div className="perfSectionIntro"><div><span className="perfSectionEyebrow">{tab==='overview'?'YÖNETİCİ GÖRÜNÜMÜ':tab==='approval'?'YÖNETİCİ İŞLEMLERİ':'ÖĞRETİCİ İŞLEMLERİ'}</span><h3>{tabs.find(t=>t.id===tab)?.title}</h3><p>{tab==='overview'?'Öğrencilerin haftalık durumlarını inceleyin, arama ve filtrelerle gerekli kayıtlara ulaşın.':tab==='approval'?'Ders ve hazırlık durumunu kontrol ederek çıkış kararlarını güvenle yönetin.':'Öğrenci seçerek haftalık performansını ve ders hazırlığını değerlendirin.'}</p></div></div>
+  <div className="perfSectionIntro"><div><span className="perfSectionEyebrow">{tab==='overview'?'YÖNETİCİ GÖRÜNÜMÜ':tab==='approval'?'YÖNETİCİ İŞLEMLERİ':tab==='reports'?'KURUMSAL RAPORLAMA':'ÖĞRETİCİ İŞLEMLERİ'}</span><h3>{tabs.find(t=>t.id===tab)?.title}</h3><p>{tab==='overview'?'Öğrencilerin haftalık durumlarını inceleyin, arama ve filtrelerle gerekli kayıtlara ulaşın.':tab==='approval'?'Ders ve hazırlık durumunu kontrol ederek çıkış kararlarını güvenle yönetin.':tab==='reports'?'Program, sınıf ve çıkış durumuna göre resmî raporları oluşturun.':'Öğrenci seçerek haftalık performansını ve ders hazırlığını değerlendirin.'}</p></div></div>
   <div className="perfSurface" role="tabpanel">
    {tab==='overview'&&manager&&<PerformanceWeeklyDashboard supabase={supabase} students={students} classes={classes} refreshKey={performanceRefresh+liveVersion}/>}
    {tab==='review'&&<PerformanceReviewPanel supabase={supabase} students={students} classes={classes} profile={profile} refreshKey={liveVersion}/>}
+   {tab==='reports'&&manager&&<PerformanceReportCenter supabase={supabase} students={students} classes={classes} refreshKey={performanceRefresh+liveVersion}/>}
    {tab==='approval'&&manager&&<PerformanceManagerPanel supabase={supabase} students={students} classes={classes} onDecisionSaved={onDecisionSaved} refreshKey={liveVersion}/>}
   </div>
  </div>;
