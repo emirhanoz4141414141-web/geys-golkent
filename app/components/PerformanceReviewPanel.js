@@ -6,7 +6,7 @@ const ACHIEVEMENT=['Ders çalışma disiplini','Ders verme performansı','Sistem
 const BEHAVIOR=['Hafta başı kursa zamanında giriş','Ders ve etüt saatlerinde sınıfa zamanında giriş','Namaz vakitlerinde mescide zamanında giriş','Etüt ve mütalaa disiplini','İbadet disiplini','Kılık kıyafet disiplini','Yemekhane disiplini','Yatakhane disiplini','Sınıf hocasıyla iletişim','Arkadaşlarıyla iletişim','Genel disiplin ve kurs kuralları'];
 const toMonday=(value)=>{if(!value)return '';const d=new Date(value+'T12:00:00');d.setDate(d.getDate()-(d.getDay()+6)%7);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')};
 const monday=()=>{const d=new Date();d.setDate(d.getDate()-(d.getDay()+6)%7);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')};
-export default function PerformanceReviewPanel({supabase,students=[],classes=[],profile}){
+export default function PerformanceReviewPanel({supabase,students=[],classes=[],profile,refreshKey=0}){
  const [authorizedIds,setAuthorizedIds]=useState(null);const [accessError,setAccessError]=useState('');const [hamOverrides,setHamOverrides]=useState({});const [week,setWeek]=useState(monday());const [ham,setHam]=useState('');const [student,setStudent]=useState('');const [summary,setSummary]=useState(null);const [deductions,setDeductions]=useState([]);const [category,setCategory]=useState('achievement');const [criterion,setCriterion]=useState(ACHIEVEMENT[0]);const [points,setPoints]=useState(5);const [reason,setReason]=useState('');const [note,setNote]=useState('');const [busy,setBusy]=useState(false);const [message,setMessage]=useState('');
  const visibleStudents=authorizedIds===null?[]:students.filter(s=>authorizedIds.has(s.id));
  const selected=visibleStudents.find(s=>s.id===student);
@@ -17,7 +17,7 @@ export default function PerformanceReviewPanel({supabase,students=[],classes=[],
  const {data:review}=await supabase.from('performance_weekly_reviews').select('id').eq('student_id',student).eq('week_monday',week).maybeSingle();
  if(review?.id){const {data:items}=await supabase.from('performance_deductions').select('id,category,criterion,points,reason,created_at').eq('review_id',review.id).is('voided_at',null).order('created_at');setDeductions(items||[]);}else setDeductions([]);
  }
- useEffect(()=>{refresh()},[student,week]);
+ useEffect(()=>{refresh()},[student,week,refreshKey]);
  async function savePreparation(status){setBusy(true);setMessage('');const {error}=await supabase.rpc('performance_set_preparation',{p_student:student,p_monday:week,p_status:status,p_note:note||null});setMessage(error?error.message:'Hazırlık durumu kaydedildi.');await refresh();setBusy(false);}
  async function addDeduction(e){e.preventDefault();setBusy(true);setMessage('');const {error}=await supabase.rpc('performance_add_deduction',{p_student:student,p_monday:week,p_category:category,p_criterion:criterion,p_points:Number(points),p_reason:reason});setMessage(error?error.message:'Puan kesintisi kaydedildi.');if(!error)setReason('');await refresh();setBusy(false);}
  return <section style={{padding:20,maxWidth:920,margin:'auto'}}>
