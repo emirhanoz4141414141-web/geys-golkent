@@ -30,8 +30,8 @@ export default function PerformanceWorkspace({supabase,students=[],classes=[],pr
   <div className="perfSectionIntro"><div><span className="perfSectionEyebrow">{tab==='overview'?'YÖNETİCİ GÖRÜNÜMÜ':tab==='approval'?'YÖNETİCİ İŞLEMLERİ':'ÖĞRETİCİ İŞLEMLERİ'}</span><h3>{tabs.find(t=>t.id===tab)?.title}</h3><p>{tab==='overview'?'Öğrencilerin haftalık durumlarını inceleyin, arama ve filtrelerle gerekli kayıtlara ulaşın.':tab==='approval'?'Ders ve hazırlık durumunu kontrol ederek çıkış kararlarını güvenle yönetin.':'Öğrenci seçerek haftalık performansını ve ders hazırlığını değerlendirin.'}</p></div></div>
   <div className="perfSurface" role="tabpanel">
    {tab==='overview'&&manager&&<PerformanceWeeklyDashboard supabase={supabase} students={students} classes={classes} refreshKey={performanceRefresh}/>}
-   {tab==='review'&&<PerformanceReviewPanel supabase={supabase} students={students} profile={profile}/>}
-   {tab==='approval'&&manager&&<PerformanceManagerPanel supabase={supabase} students={students} onDecisionSaved={onDecisionSaved}/>}
+   {tab==='review'&&<PerformanceReviewPanel supabase={supabase} students={students} classes={classes} profile={profile}/>}
+   {tab==='approval'&&manager&&<PerformanceManagerPanel supabase={supabase} students={students} classes={classes} onDecisionSaved={onDecisionSaved}/>}
   </div>
  </div>;
 }
