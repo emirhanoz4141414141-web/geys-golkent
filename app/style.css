@@ -764,3 +764,53 @@
 .hafTable td.hafDay.orta{background:#FFEB00!important;color:#292300!important}
 .hafTable td.hafDay.zayif{background:#FF1744!important;color:#210009!important}
 .hafTable td.hafDay.saglam .hafCompactInput,.hafTable td.hafDay.iyi .hafCompactInput,.hafTable td.hafDay.orta .hafCompactInput,.hafTable td.hafDay.zayif .hafCompactInput{background:transparent!important;color:inherit!important;font-weight:800!important}
+
+/* Yüzüne cetveli — kompakt masaüstü/tablet görünümü; mevcut kayıt davranışı değişmez. */
+.yuzMatrixPage{gap:10px}
+.yuzMatrixPage .matrixHero{padding:13px 16px;gap:10px}
+.yuzMatrixPage .matrixHero h2{font-size:21px}
+.yuzMatrixPage .matrixAdmin{padding:7px 9px;gap:7px}
+.yuzMatrixPage .matrixLegend{gap:5px}
+.yuzMatrixPage .matrixLegend span{padding:4px 8px}
+.yuzMatrixPage .matrixLegend .saglam{background:#168449;color:#fff;border-color:#126a3c}
+.yuzMatrixPage .matrixLegend .iyi{background:#6edb7c;color:#103c22;border-color:#40b65a}
+.yuzMatrixPage .matrixLegend .orta{background:#ffd534;color:#513d00;border-color:#d6a900}
+.yuzMatrixPage .matrixLegend .zayif{background:#e34a4a;color:#fff;border-color:#bf3030}
+.yuzMatrixPage .matrixWrap{max-height:75vh}
+.yuzMatrixPage .yuzMatrix{width:max-content!important;min-width:100%!important;table-layout:fixed}
+.yuzMatrixPage .yuzMatrix th:not(.stickyStudent),.yuzMatrixPage .yuzMatrix td:not(.stickyStudent){width:38px!important;min-width:38px!important;max-width:38px!important}
+.yuzMatrixPage .yuzMatrix thead th:not(.stickyStudent){height:114px!important;min-width:38px!important;padding:0!important}
+.yuzMatrixPage .yuzMatrix .columnHead{width:38px!important;height:114px!important}
+.yuzMatrixPage .yuzMatrix .columnTitle{height:90px!important;max-height:90px!important;width:36px!important;font-size:9px!important;line-height:1.05!important;letter-spacing:0!important}
+.yuzMatrixPage .yuzMatrix .columnTools{width:37px!important;height:24px!important;flex:0 0 24px!important;grid-template-columns:21px 14px!important;gap:2px!important}
+.yuzMatrixPage .yuzMatrix .columnTools .columnOrder{width:21px!important;min-width:21px!important;height:19px!important;font-size:9px!important;border-radius:3px!important}
+.yuzMatrixPage .yuzMatrix .columnTools .columnDelete{width:14px!important;min-width:14px!important;height:19px!important;flex:0 0 14px!important;font-size:13px!important;border-radius:3px!important}
+.yuzMatrixPage .yuzMatrix .stickyStudent{min-width:205px!important;width:205px!important;max-width:205px!important}
+.yuzMatrixPage .yuzMatrix thead .stickyStudent{padding:7px!important;height:114px!important}
+.yuzMatrixPage .yuzMatrix tbody .stickyStudent{height:44px!important;padding:3px 6px!important;gap:5px!important;font-size:11px!important;line-height:1.1!important}
+.yuzMatrixPage .yuzMatrix tbody .stickyStudent>b{min-width:16px!important;font-size:10px}
+.yuzMatrixPage .yuzMatrix tbody .stickyStudent>span:last-child{font-size:11px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.yuzMatrixPage .yuzMatrix .lessonStudentPhoto{width:29px!important;height:29px!important;min-width:29px!important;border-radius:7px!important;object-fit:cover}
+.yuzMatrixPage .yuzMatrix .matrixCell{min-width:38px!important;width:38px!important;grid-template-rows:22px 22px!important}
+.yuzMatrixPage .yuzMatrix .matrixCell select{height:22px!important;min-height:22px!important;width:38px!important;min-width:38px!important;padding:0!important;font-size:12px!important;line-height:22px!important;color:#142a37!important;opacity:1!important;cursor:pointer}
+.yuzMatrixPage .yuzMatrix .matrixCell select:disabled{opacity:.5!important;cursor:default}
+.yuzMatrixPage .yuzMatrix td.saglam{background:#168449!important}
+.yuzMatrixPage .yuzMatrix td.iyi{background:#6edb7c!important}
+.yuzMatrixPage .yuzMatrix td.orta{background:#ffd534!important}
+.yuzMatrixPage .yuzMatrix td.zayif{background:#e34a4a!important}
+.yuzMatrixPage .yuzMatrix td.saglam select,.yuzMatrixPage .yuzMatrix td.zayif select{color:#fff!important}
+.yuzMatrixPage .yuzMatrix td.saglam select:disabled,.yuzMatrixPage .yuzMatrix td.zayif select:disabled{opacity:.72!important}
+.yuzMatrixPage .yuzMatrix th,.yuzMatrixPage .yuzMatrix td{border-right-color:#d8e2e7!important;border-bottom-color:#d8e2e7!important}
+@media(max-width:700px){.yuzMatrixPage .yuzMatrix .stickyStudent{min-width:166px!important;width:166px!important;max-width:166px!important}.yuzMatrixPage .yuzMatrix tbody .stickyStudent>span:last-child{font-size:10px!important}.yuzMatrixPage .matrixHero{padding:12px}.yuzMatrixPage .matrixFilters{flex-direction:row;flex-wrap:wrap}.yuzMatrixPage .matrixFilters select,.yuzMatrixPage .matrixFilters input{min-width:0;flex:1 1 150px}}
+
+/* Yüzüne kalite renkleri: canlı yeşil, mavi, sarı ve kırmızı */
+.yuzMatrixPage .matrixLegend .saglam{background:#00b83f!important;color:#fff!important;border-color:#009b36!important}
+.yuzMatrixPage .matrixLegend .iyi{background:#1683f5!important;color:#fff!important;border-color:#0966c7!important}
+.yuzMatrixPage .matrixLegend .orta{background:#ffd400!important;color:#292300!important;border-color:#dbb500!important}
+.yuzMatrixPage .matrixLegend .zayif{background:#f12635!important;color:#fff!important;border-color:#cb1926!important}
+.yuzMatrixPage .yuzMatrix td.saglam{background:#00b83f!important}
+.yuzMatrixPage .yuzMatrix td.iyi{background:#1683f5!important}
+.yuzMatrixPage .yuzMatrix td.orta{background:#ffd400!important}
+.yuzMatrixPage .yuzMatrix td.zayif{background:#f12635!important}
+.yuzMatrixPage .yuzMatrix td.saglam select,.yuzMatrixPage .yuzMatrix td.iyi select,.yuzMatrixPage .yuzMatrix td.zayif select{color:#fff!important}
+.yuzMatrixPage .yuzMatrix td.orta select{color:#292300!important}
