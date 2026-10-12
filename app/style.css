@@ -802,3 +802,15 @@
 .yuzMatrixPage .yuzMatrix td.saglam select:disabled,.yuzMatrixPage .yuzMatrix td.zayif select:disabled{opacity:.72!important}
 .yuzMatrixPage .yuzMatrix th,.yuzMatrixPage .yuzMatrix td{border-right-color:#d8e2e7!important;border-bottom-color:#d8e2e7!important}
 @media(max-width:700px){.yuzMatrixPage .yuzMatrix .stickyStudent{min-width:166px!important;width:166px!important;max-width:166px!important}.yuzMatrixPage .yuzMatrix tbody .stickyStudent>span:last-child{font-size:10px!important}.yuzMatrixPage .matrixHero{padding:12px}.yuzMatrixPage .matrixFilters{flex-direction:row;flex-wrap:wrap}.yuzMatrixPage .matrixFilters select,.yuzMatrixPage .matrixFilters input{min-width:0;flex:1 1 150px}}
+
+/* Yüzüne kalite renkleri: canlı yeşil, mavi, sarı ve kırmızı */
+.yuzMatrixPage .matrixLegend .saglam{background:#00b83f!important;color:#fff!important;border-color:#009b36!important}
+.yuzMatrixPage .matrixLegend .iyi{background:#1683f5!important;color:#fff!important;border-color:#0966c7!important}
+.yuzMatrixPage .matrixLegend .orta{background:#ffd400!important;color:#292300!important;border-color:#dbb500!important}
+.yuzMatrixPage .matrixLegend .zayif{background:#f12635!important;color:#fff!important;border-color:#cb1926!important}
+.yuzMatrixPage .yuzMatrix td.saglam{background:#00b83f!important}
+.yuzMatrixPage .yuzMatrix td.iyi{background:#1683f5!important}
+.yuzMatrixPage .yuzMatrix td.orta{background:#ffd400!important}
+.yuzMatrixPage .yuzMatrix td.zayif{background:#f12635!important}
+.yuzMatrixPage .yuzMatrix td.saglam select,.yuzMatrixPage .yuzMatrix td.iyi select,.yuzMatrixPage .yuzMatrix td.zayif select{color:#fff!important}
+.yuzMatrixPage .yuzMatrix td.orta select{color:#292300!important}
