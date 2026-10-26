@@ -27,7 +27,7 @@ export default function HafizlikDersCetveli({supabase,students,classes,profile,i
   if(!canUpdate||!opClasses.includes(st.class_id)){setNotice('Bu işlem için düzenleme yetkiniz bulunmuyor.');return false}
   const input=raw.trim().toLocaleUpperCase('tr-TR'),date=prefix+String(d).padStart(2,'0'),key=st.id+'|'+date;
   const old=rec(st.id,d),qualityMap={S:'saglam',Y:'iyi',O:'orta',Z:'zayif'};
-  const match=input.match(/^(.*?)\\s*([SYOZ])$/u),status=statuses.includes(input)&&input!==''?input:null;
+  const match=input.match(/^(.*?)\s*([SYOZ])$/u),status=statuses.includes(input)&&input!==''?input:null;
   let work=input,quality=null;
   if(status)work='';
   else if(match&&match[1].trim()){work=match[1].trim();quality=qualityMap[match[2]]}
