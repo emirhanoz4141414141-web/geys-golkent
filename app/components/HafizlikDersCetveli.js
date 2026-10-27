@@ -14,7 +14,23 @@ export default function HafizlikDersCetveli({supabase,students,classes,profile,i
  useEffect(()=>{if(!profile?.id)return;Promise.all(classes.filter(c=>c.program==='hafizlik').map(async c=>{const {data}=await supabase.rpc('can_operate_class',{p_class_id:c.id,p_module:'hafizlik'});return data?c.id:null})).then(x=>setOpClasses(x.filter(Boolean)))},[profile?.id,classes,permissions])
  const list=useMemo(()=>students.filter(s=>s.status==='active'&&hClasses.some(c=>c.id===s.class_id)&&(!classId||s.class_id===classId)).sort((a,b)=>(a.first_name+' '+a.last_name).localeCompare(b.first_name+' '+b.last_name,'tr')),[students,classes,classId])
  const days=new Date(year,month,0).getDate(),prefix=year+'-'+String(month).padStart(2,'0')+'-'
- async function load(){const sequence=++loadSequence.current,from=prefix+'01',to=prefix+String(days).padStart(2,'0');const {data,error}=await supabase.from('hafizlik_daily_records').select('*').gte('lesson_date',from).lte('lesson_date',to);if(error||sequence!==loadSequence.current)return;setRows(previous=>{const incoming=new Map((data||[]).map(r=>[r.student_id+'|'+r.lesson_date,r]));for(const r of previous){const key=r.student_id+'|'+r.lesson_date;if(pendingCells.current.has(key)||editingCells.current.has(key))incoming.set(key,r)}return [...incoming.values()]})}
+ async function load(){
+  const sequence=++loadSequence.current,from=prefix+'01',to=prefix+String(days).padStart(2,'0'),all=[];
+  // PostgREST varsayılan 1000 satır sınırını aşan aylarda bütün kayıtları sayfalayarak getir.
+  for(let offset=0;offset<100000;offset+=500){
+   const {data,error}=await supabase.from('hafizlik_daily_records').select('*').gte('lesson_date',from).lte('lesson_date',to).order('lesson_date',{ascending:true}).order('student_id',{ascending:true}).range(offset,offset+499);
+   if(error){if(sequence===loadSequence.current)setNotice('Cetvel kayıtları yüklenemedi: '+error.message);return}
+   if(sequence!==loadSequence.current)return;
+   all.push(...(data||[]));
+   if((data||[]).length<500)break;
+  }
+  if(sequence!==loadSequence.current)return;
+  setRows(previous=>{
+   const incoming=new Map(all.map(r=>[r.student_id+'|'+r.lesson_date,r]));
+   for(const r of previous){const key=r.student_id+'|'+r.lesson_date;if(pendingCells.current.has(key)||editingCells.current.has(key))incoming.set(key,r)}
+   return [...incoming.values()]
+  })
+ }
  useEffect(()=>{load()},[year,month])
  const rec=(sid,d)=>rows.find(r=>r.student_id===sid&&r.lesson_date===prefix+String(d).padStart(2,'0'))
  async function saveState(st,field,value){if(!canUpdate||!opClasses.includes(st.class_id)){setNotice('Bu işlem için düzenleme yetkiniz bulunmuyor.');return}const next={pace:parseInt(st.hafizlik_pace)||null,ham:st.hafizlik_ham_pages??null,hamhas:st.hafizlik_ham_has_pages??null,has:st.hafizlik_has_pages??null};next[field]=value===''?null:Number(value);setBusy(true);const {error}=await supabase.rpc('set_hafizlik_student_state',{p_student:st.id,p_pace:next.pace,p_ham:next.ham,p_ham_has:next.hamhas,p_has:next.has});setNotice(error?'Kaydedilemedi: '+error.message:'Hafızlık sayfa durumu kaydedildi.');if(!error){st.hafizlik_pace=next.pace;st.hafizlik_ham_pages=next.ham;st.hafizlik_ham_has_pages=next.hamhas;st.hafizlik_has_pages=next.has}setBusy(false)}
