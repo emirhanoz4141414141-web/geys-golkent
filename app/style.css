@@ -814,3 +814,24 @@
 .yuzMatrixPage .yuzMatrix td.zayif{background:#f12635!important}
 .yuzMatrixPage .yuzMatrix td.saglam select,.yuzMatrixPage .yuzMatrix td.iyi select,.yuzMatrixPage .yuzMatrix td.zayif select{color:#fff!important}
 .yuzMatrixPage .yuzMatrix td.orta select{color:#292300!important}
+
+/* Mobil modül navigasyonu: masaüstü görünümünü değiştirmez. */
+.mobileMenuToggle,.mobileMenuClose,.mobileMenuBackdrop{display:none}
+@media(max-width:900px){
+ .app{display:block;min-width:0}
+ .app aside{position:fixed!important;top:0;bottom:0;left:0;z-index:1202;width:min(330px,86vw)!important;height:100dvh!important;max-height:100dvh;padding:16px 12px!important;display:flex!important;flex-direction:column!important;transform:translateX(-105%);transition:transform .22s ease;overflow:hidden;box-shadow:12px 0 40px rgba(0,0,0,.22)}
+ .app aside.mobileMenuOpen{transform:translateX(0)}
+ .app aside .sideBrand{display:flex;align-items:center;gap:9px;padding:0 4px 12px}
+ .app aside .sideBrand div{display:block!important;min-width:0;flex:1}
+ .app aside .sideBrand img{width:43px;height:43px}
+ .app aside nav{display:flex!important;flex-direction:column;flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:5px 2px 16px;gap:3px}
+ .app aside nav button{justify-content:flex-start!important;text-align:left!important;gap:12px!important;padding:12px 13px!important;min-height:44px;flex-shrink:0}
+ .app aside nav button span{display:inline!important;white-space:normal;line-height:1.25}
+ .app aside .user{display:flex!important;flex-shrink:0;margin-top:5px}
+ .app aside .user div:not(.avatar),.app aside .user button{display:block!important}
+ .mobileMenuToggle{display:flex;position:fixed;top:10px;left:10px;z-index:1100;align-items:center;gap:7px;background:#082e4a;color:white;border:1px solid #41667d;border-radius:11px;padding:9px 12px;box-shadow:0 3px 12px #082e4a44;font-size:13px;font-weight:750;cursor:pointer}
+ .mobileMenuClose{display:grid;place-items:center;flex:0 0 34px;width:34px;height:34px;border:1px solid #ffffff55;border-radius:9px;background:#ffffff15;color:white;cursor:pointer}
+ .mobileMenuBackdrop{display:block;position:fixed;inset:0;z-index:1201;background:rgba(5,19,34,.58);border:0;width:100%;height:100%}
+ .app .content{min-width:0;padding:65px 13px 24px!important}
+ .app .content header{min-width:0}
+}
