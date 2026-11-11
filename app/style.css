@@ -844,3 +844,61 @@
  .app aside nav button{flex:0 0 auto;min-height:40px}
  .app aside .user{flex:0 0 auto;margin-top:8px}
 }
+
+
+/* Talep ve şikâyet yönetimi — kurumsal, okunabilir, responsive arayüz */
+.supportHub{--support-ink:#17384b;--support-muted:#637d89;--support-border:#dce7eb;gap:20px;min-width:0;color:var(--support-ink)}
+.supportHub *{box-sizing:border-box}
+.supportHub .supportHero{padding:28px 32px;border-radius:20px;background:linear-gradient(115deg,#09344d 0%,#11616b 70%,#21817f 100%);box-shadow:0 12px 28px #073d5117}
+.supportHub .supportHero small{font-size:11px;letter-spacing:1.5px;color:#c7e6e7;opacity:1}
+.supportHub .supportHero h2{font-size:clamp(20px,2vw,29px);letter-spacing:-.5px;line-height:1.25;margin:9px 0}
+.supportHub .supportHero p{font-size:13px;color:#e2f1f0;opacity:1}
+.supportHub .supportHero>b{font-size:10px;padding:10px 14px;border-color:#ffffff55;color:#f3ffff}
+.supportHub .supportStats{gap:14px}
+.supportHub .supportStats>div{padding:20px 22px;border-radius:16px;border:1px solid var(--support-border);box-shadow:0 4px 15px #17384b08;position:relative;overflow:hidden}
+.supportHub .supportStats>div:before{content:'';position:absolute;top:0;left:0;bottom:0;width:4px;background:#1b7680}
+.supportHub .supportStats>div:nth-child(2):before{background:#e5a544}
+.supportHub .supportStats>div:nth-child(3):before{background:#7a83b9}
+.supportHub .supportStats>div:nth-child(4):before{background:#399477}
+.supportHub .supportStats b{font-size:29px;line-height:1.1;color:#173e50}
+.supportHub .supportStats span{display:block;margin-top:7px;font-size:11px;letter-spacing:.45px;color:#647d88}
+.supportHub .supportToolbar{gap:12px}
+.supportHub .supportToolbar input,.supportHub .supportToolbar select{min-height:46px;border-radius:12px;border:1px solid #d8e4e8;padding:12px 15px;font-size:13px;box-shadow:0 2px 8px #17384b06}
+.supportHub .supportToolbar input:focus,.supportHub select:focus,.supportHub textarea:focus{outline:2px solid #72b9b7;outline-offset:1px}
+.supportHub .supportLayout{grid-template-columns:minmax(270px,.88fr) minmax(0,1.12fr);gap:18px;align-items:start;min-width:0}
+.supportHub .supportList{gap:10px;min-width:0}
+.supportHub .supportTicket{padding:17px 18px;border-radius:15px;border:1px solid var(--support-border);box-shadow:0 3px 12px #17384b06;transition:border-color .15s,box-shadow .15s,background .15s}
+.supportHub .supportTicket:hover{border-color:#87b8be;background:#f9fcfc;box-shadow:0 5px 16px #17384b10}
+.supportHub .supportTicket.active{border-color:#25828c;background:#f1fafa;box-shadow:inset 4px 0 0 #177987,0 4px 16px #17384b12}
+.supportHub .supportTicket>div{gap:7px;flex-wrap:wrap}
+.supportHub .supportTicket>div span,.supportHub .supportTicket>div em{font-size:10px;padding:5px 9px}
+.supportHub .supportTicket>b{font-size:15px;line-height:1.4;margin:11px 0 6px;color:#173e50;overflow-wrap:anywhere}
+.supportHub .supportTicket p{font-size:12px;line-height:1.6;color:#58717e}
+.supportHub .supportTicket footer{font-size:10px;gap:8px;margin-top:13px;padding-top:11px;color:#68818c;flex-wrap:wrap}
+.supportHub .supportTicket footer strong{font-size:10px;color:#1a7377}
+.supportHub .supportDetail{position:sticky;top:16px;min-width:0;max-height:calc(100dvh - 32px);overflow-y:auto;overscroll-behavior:contain;padding:25px;background:#fff;border:1px solid var(--support-border);border-radius:18px;box-shadow:0 9px 28px #17384b0c;scrollbar-width:thin}
+.supportHub .supportDetail>small{font-size:11px;color:#68828d;letter-spacing:.5px}
+.supportHub .supportDetail h3{font-size:23px;line-height:1.35;margin:8px 0 18px;color:#123d50;overflow-wrap:anywhere}
+.supportHub .supportIdentity,.supportHub .supportComplaint{padding:15px 17px;border:1px solid #e1eaed;border-radius:12px;background:#f5f9fa;gap:6px;margin-bottom:12px}
+.supportHub .supportIdentity small,.supportHub .supportComplaint small{font-size:10px;color:#657d87}
+.supportHub .supportIdentity b,.supportHub .supportComplaint b{font-size:14px;color:#1a4253}
+.supportHub .supportIdentity span{font-size:12px;color:#58717e}
+.supportHub .supportIdentity em{font-size:11px;line-height:1.5}
+.supportHub .supportBody{background:#f8fbfc;border:1px solid #dae7eb;border-radius:12px;padding:19px;margin:17px 0;color:#244b5b;font-size:14px;line-height:1.8;overflow-wrap:anywhere}
+.supportHub .supportActions{gap:12px}
+.supportHub .supportActions label{font-size:11px;color:#4d6875;gap:7px}
+.supportHub .supportActions select{width:100%;min-width:0;min-height:43px;font-size:12px;padding:10px 12px;border-radius:10px}
+.supportHub .supportReply{margin-top:19px;gap:10px}
+.supportHub .supportReply textarea,.supportHub .supportInternal textarea{width:100%;font-size:13px;line-height:1.65;padding:13px;border-radius:11px;min-height:110px}
+.supportHub .supportReply button{padding:12px 19px;font-size:12px;border-radius:10px;background:#116a74}
+.supportHub .supportReply button:hover:not(:disabled){background:#09515c}
+.supportHub button:disabled{opacity:.6;cursor:not-allowed}
+.supportHub .supportInternal{margin-top:20px;padding:16px;border-radius:13px;background:#fffbf2;border-color:#ecdfbe}
+.supportHub .supportInternal textarea{min-height:84px}
+.supportHub .supportAudit{margin-top:22px;padding-top:16px;border-top:1px solid #dce7eb}
+.supportHub .supportAudit>b{font-size:13px;color:#244c5c}
+.supportHub .supportAudit>div{padding:10px 0;border-bottom:1px solid #edf2f4;display:flex;justify-content:space-between;gap:12px;align-items:start}
+.supportHub .supportAudit span{font-size:11px;line-height:1.5;color:#4b6774}
+.supportHub .supportAudit time{font-size:10px;color:#82949d;white-space:nowrap}
+@media(max-width:1150px){.supportHub .supportLayout{grid-template-columns:minmax(0,1fr)}.supportHub .supportDetail{position:static;max-height:none;overflow:visible}}
+@media(max-width:650px){.supportHub{gap:13px}.supportHub .supportHero{padding:22px 19px}.supportHub .supportStats{gap:8px;grid-template-columns:repeat(2,minmax(0,1fr))}.supportHub .supportStats>div{padding:15px}.supportHub .supportStats b{font-size:25px}.supportHub .supportToolbar{flex-direction:column}.supportHub .supportToolbar input,.supportHub .supportToolbar select{width:100%}.supportHub .supportDetail{padding:18px}.supportHub .supportDetail h3{font-size:20px}.supportHub .supportActions{grid-template-columns:1fr}.supportHub .supportAudit>div{flex-direction:column;gap:3px}}
