@@ -1139,3 +1139,31 @@
 .supportV2 .supportTicketArrow{display:grid;place-items:center;width:23px;height:23px;background:#eff5f6;border-radius:50%;color:#387b83}
 .supportV2 .supportTicket:hover .supportTicketArrow,.supportV2 .supportTicket.active .supportTicketArrow{background:#d9eeef;color:#087b83}
 @media(max-width:500px){.supportV2 .supportTicket{padding:12px}.supportV2 .supportTicketMain{grid-template-columns:30px minmax(0,1fr);gap:9px}.supportV2 .supportTicketAvatar{width:30px;height:30px;font-size:16px;border-radius:8px}.supportV2 .supportTicketBottom{margin-left:39px}.supportV2 .supportTicketText p{-webkit-line-clamp:1}}
+
+
+/* Premium case-file details: stronger hierarchy, clean administrative forms */
+.supportV2 .supportDetailHead{background:linear-gradient(120deg,#f7fbfb,#fff);border-bottom:1px solid #dce9ec}
+.supportV2 .supportDetailHead small{letter-spacing:1.8px;font-size:10px}
+.supportV2 .supportDetailHead h3{font-size:19px;letter-spacing:-.45px}
+.supportV2 .supportDetailContent{padding:22px}
+.supportV2 .supportDetailIntro{position:relative;margin-bottom:18px;padding:16px 17px 17px;border:1px solid #e0ebee;border-radius:12px;background:linear-gradient(135deg,#f9fcfc,#f0f7f7)}
+.supportV2 .supportDetailEyebrow{display:flex;align-items:center;gap:7px;margin-bottom:12px;font-size:10px;font-weight:850;letter-spacing:1.25px;color:#087e86}
+.supportV2 .supportDetailEyebrowIcon{display:grid;place-items:center;width:23px;height:23px;border-radius:6px;background:#e1f1f1;color:#087e86;font-size:15px}
+.supportV2 .supportDetailMeta{gap:9px;flex-wrap:wrap}
+.supportV2 .supportDetailIntro h3{font-size:22px;margin:11px 0 6px;line-height:1.3}
+.supportV2 .supportDetailDate{font-size:11px;color:#6f8997}
+.supportV2 .supportInfoBox,.supportV2 .supportComplaint{border-left:3px solid #0c838a;border-radius:10px;padding:16px 17px;gap:6px}
+.supportV2 .supportInfoBox small,.supportV2 .supportComplaint small{letter-spacing:1.3px}
+.supportV2 .supportInfoBox b,.supportV2 .supportComplaint b{font-size:15px}
+.supportV2 .supportDetailSection{border-top:1px solid #e2ebef;margin-top:18px;padding-top:18px}
+.supportV2 .supportDetailSection h4{display:flex;align-items:center;gap:9px;font-size:13px;margin-bottom:12px;flex-wrap:wrap}
+.supportV2 .supportSectionSymbol{display:inline-grid;place-items:center;width:27px;height:27px;flex:none;border-radius:8px;background:#eaf4f5;color:#0b7882;font-size:16px;font-weight:800}
+.supportV2 .supportBody{padding:17px;border:1px solid #e0e9ec;border-left:3px solid #a6cdd0;background:#fbfdfd;line-height:1.8}
+.supportV2 .supportActions{gap:10px}
+.supportV2 .supportActions label{font-size:11px;color:#4d6b7d;font-weight:800}
+.supportV2 .supportActions select{margin-top:7px;background:#fbfdfd;padding:11px;border:1px solid #d7e5e9}
+.supportV2 .supportDetail textarea{background:#fbfdfd;border:1px solid #d8e6e9;line-height:1.65;resize:vertical}
+.supportV2 .supportDetail textarea:focus{outline:2px solid #0c87902b;outline-offset:1px}
+.supportV2 .supportDraftCount{margin-top:6px;color:#6e8795}
+.supportV2 .supportDetail button:focus-visible{outline:3px solid #0b858d;outline-offset:2px}
+@media(max-width:740px){.supportV2 .supportDetailContent{padding:14px}.supportV2 .supportDetailIntro{padding:13px}.supportV2 .supportDetailIntro h3{font-size:19px}.supportV2 .supportDetailSection{margin-top:15px;padding-top:15px}}
