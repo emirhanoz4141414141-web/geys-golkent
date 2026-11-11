@@ -999,3 +999,54 @@
 .supportV2 .supportCopyTracking:hover{background:#e4f3f4}
 .supportV2 .supportCopyTracking:focus-visible,.supportV2 .supportListSummary button:focus-visible{outline:3px solid #0b858d;outline-offset:2px}
 @media(max-width:600px){.supportV2 .supportListSummary{padding:0 12px 12px}.supportV2 .supportTrackingLine{gap:5px}}
+
+
+/* Institutional premium visual system: support administration only */
+.supportV2{--sv-ink:#132c40;--sv-muted:#687f8e;--sv-line:#dce7eb;--sv-teal:#006c75;--sv-soft:#f4f8f9;background:linear-gradient(180deg,#f3f7f9 0%,#f8fafb 100%);font-family:inherit}
+.supportV2 .supportHero{min-height:178px;padding:32px 38px;gap:25px;border-radius:17px;background:linear-gradient(114deg,#102b42 0%,#10465a 51%,#007b7d 100%);box-shadow:0 17px 34px #0c314a1c,inset 0 1px #ffffff2b}
+.supportV2 .supportHero:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(135deg,transparent 0,transparent 32px,#ffffff06 33px,#ffffff06 34px);mask-image:linear-gradient(90deg,transparent 40%,black);pointer-events:none}
+.supportV2 .supportHero:after{right:-55px;bottom:-180px;width:390px;height:390px;border:1px solid #d9f2e825;box-shadow:0 0 0 44px #ffffff06,0 0 0 92px #ffffff05}
+.supportV2 .supportHeroIcon{width:75px;height:75px;border-radius:18px;background:linear-gradient(145deg,#ffffff25,#ffffff0c);border:1px solid #c4e8e255;box-shadow:inset 0 1px #ffffff2b,0 8px 20px #00252c30;font-size:32px}
+.supportV2 .supportHero small{font-size:10px;letter-spacing:2.3px;color:#b6dfe0}
+.supportV2 .supportHero h2{font-size:clamp(23px,2.4vw,34px);letter-spacing:-.65px;margin:8px 0 10px}
+.supportV2 .supportHero p{font-size:13px;max-width:560px;color:#e0edef}
+.supportV2 .supportHeroMark{border:1px solid #d6f4e84d;background:#ffffff12;letter-spacing:1.2px}
+.supportV2 .supportStats{gap:14px;margin:23px 0 26px}
+.supportV2 .supportStatCard{position:relative;overflow:hidden;min-height:116px;border:1px solid #dce8eb;border-radius:15px;padding:19px 21px;gap:16px;box-shadow:0 8px 22px #163f4d0b,0 1px 1px #1a4d5707;transition:transform .2s,box-shadow .2s}
+.supportV2 .supportStatCard:hover{transform:translateY(-2px);box-shadow:0 13px 25px #163f4d15}
+.supportV2 .supportStatCard:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:#087e91}
+.supportV2 .supportStatCard:nth-child(2):before{background:#c39239}.supportV2 .supportStatCard:nth-child(3):before{background:#8274ad}.supportV2 .supportStatCard:nth-child(4):before{background:#1d9879}
+.supportV2 .supportStatIcon{width:52px;height:52px;border-radius:15px;font-size:23px}
+.supportV2 .supportStatCard small{font-size:12px;color:#466477;font-weight:750}
+.supportV2 .supportStatCard b{font-size:34px;font-weight:850;letter-spacing:-1px}
+.supportV2 .supportStatCard div>span{font-size:10px;letter-spacing:.35px;font-weight:700;text-transform:uppercase}
+.supportV2 .supportQuickFilters{gap:8px}
+.supportV2 .supportQuickFilters button{border-radius:9px;font-weight:750;transition:background .18s,transform .18s,box-shadow .18s}
+.supportV2 .supportQuickFilters button.active{background:#006f79;box-shadow:0 5px 13px #006f7926}
+.supportV2 .supportInbox,.supportV2 .supportDetail{border:1px solid #dce7eb;border-radius:17px;box-shadow:0 12px 30px #163b4b0d}
+.supportV2 .supportSectionHeading,.supportV2 .supportDetailHead{background:linear-gradient(180deg,#fff,#fbfdfd);border-bottom:1px solid #e7eef0}
+.supportV2 .supportSectionHeading{padding:23px 25px 20px;margin-bottom:17px}
+.supportV2 .supportSectionHeading small,.supportV2 .supportDetailHead small{color:#007c85;letter-spacing:1.6px}
+.supportV2 .supportSectionHeading h3,.supportV2 .supportDetailHead h3{font-size:21px;letter-spacing:-.4px;color:#13374a}
+.supportV2 .supportRefresh{border-color:#d9e7ea;background:#f9fcfc}
+.supportV2 .supportToolbar{padding:0 24px 18px}
+.supportV2 .supportSearch,.supportV2 .supportToolbar select{background:#f8fafb;border-color:#dce8ec}
+.supportV2 .supportSearch:focus-within{border-color:#087c84;box-shadow:0 0 0 3px #087c8415}
+.supportV2 .supportTicket{position:relative;border:1px solid #e1e9ed;border-radius:12px;padding:16px 18px;background:linear-gradient(180deg,#fff,#fdfefe);box-shadow:0 2px 6px #1c455908;transition:transform .16s,box-shadow .16s,border-color .16s}
+.supportV2 .supportTicket:hover{transform:translateY(-1px);box-shadow:0 8px 20px #1c455914;border-color:#b8d7d9}
+.supportV2 .supportTicket.active{background:#f2faf9;border-color:#00828b;box-shadow:inset 3px 0 #00828b,0 6px 17px #00575e12}
+.supportV2 .supportTicketTitle{font-size:15px;letter-spacing:-.15px}
+.supportV2 .supportTicket p{color:#698293}
+.supportV2 .supportType,.supportV2 .supportStatus{border-radius:7px;font-size:10px;letter-spacing:.1px}
+.supportV2 .supportTicketNo{border-radius:50px;background:#edf3f5;padding:5px 9px;color:#4e7486}
+.supportV2 .supportDetailHead{padding:24px 26px}
+.supportV2 .supportDetailContent{padding:26px}
+.supportV2 .supportDetailIntro h3{font-size:23px;letter-spacing:-.5px}
+.supportV2 .supportInfoBox,.supportV2 .supportComplaint{background:linear-gradient(135deg,#f0f8f8,#f8fbfb);border:1px solid #d9ebed;border-left:3px solid #0c8b91;border-radius:12px;padding:19px}
+.supportV2 .supportDetailSection h4,.supportV2 .supportAudit h4{font-size:14px;color:#183d50;letter-spacing:-.1px}
+.supportV2 .supportBody{background:#f7fafb;border-color:#e0e9ed;border-radius:12px}
+.supportV2 .supportActions select,.supportV2 .supportDetail textarea{border-radius:10px;border-color:#d8e5e9;background:#fbfdfd}
+.supportV2 .supportActions select:focus,.supportV2 .supportDetail textarea:focus{outline:2px solid #0d89903b;border-color:#0b8289}
+@media(max-width:800px){.supportV2 .supportHero{min-height:0;padding:24px 20px;gap:14px}.supportV2 .supportHeroIcon{width:54px;height:54px;border-radius:13px;font-size:25px}.supportV2 .supportHero h2{font-size:23px}.supportV2 .supportStatCard{min-height:105px;padding:15px;gap:11px}.supportV2 .supportStatIcon{width:44px;height:44px;border-radius:12px}.supportV2 .supportStatCard b{font-size:29px}.supportV2 .supportSectionHeading{padding:19px 16px 17px}.supportV2 .supportDetailContent{padding:17px}.supportV2 .supportDetailHead{padding:19px 17px}}
+@media(max-width:480px){.supportV2 .supportHeroMark{display:none}.supportV2 .supportHero small{font-size:9px;letter-spacing:1.3px}.supportV2 .supportHero h2{font-size:20px}.supportV2 .supportHero p{font-size:11px}.supportV2 .supportStats{gap:9px}.supportV2 .supportStatCard{padding:12px 10px;gap:8px}.supportV2 .supportStatIcon{width:37px;height:37px;font-size:18px}.supportV2 .supportStatCard small{font-size:10px}.supportV2 .supportStatCard b{font-size:26px}.supportV2 .supportStatCard div>span{font-size:8px;letter-spacing:0}}
+@media(prefers-reduced-motion:reduce){.supportV2 .supportStatCard,.supportV2 .supportTicket{transition:none}.supportV2 .supportStatCard:hover,.supportV2 .supportTicket:hover{transform:none}}
