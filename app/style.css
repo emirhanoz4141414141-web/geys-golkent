@@ -1196,3 +1196,43 @@
 .supportV2 .supportTicketBottom{gap:5px}
 .supportV2 .supportTicketBottom time{font-size:9px}
 }
+
+
+/* Responsive to actual module width (including desktop mode on phones with sidebar).
+   Viewport-only breakpoints do not reflect the space available to this panel. */
+.supportV2{container-type:inline-size}
+@container (max-width:1100px){
+ .supportV2 .supportWorkspace{display:block}
+ .supportV2 .supportList{max-height:none;overflow:visible}
+ .supportV2:not(.supportViewingDetail) .supportDetail{display:none}
+ .supportV2.supportViewingDetail .supportHero,
+ .supportV2.supportViewingDetail .supportStats,
+ .supportV2.supportViewingDetail .supportQuickFilters,
+ .supportV2.supportViewingDetail .supportInbox{display:none}
+ .supportV2.supportViewingDetail .supportWorkspace{display:block}
+ .supportV2.supportViewingDetail .supportDetail{display:block;position:static;max-height:none;overflow:visible;width:100%}
+ .supportV2 .supportMobileBack{display:inline-flex;align-items:center;gap:7px;border:0;background:transparent;color:#08777e;font-weight:800;font-size:12px;cursor:pointer;padding:8px 4px;margin:-8px 0 9px}
+ .supportV2 .supportDetailHead{flex-wrap:wrap}
+ .supportV2 .supportDetailHead .supportMobileBack{flex-basis:100%}
+}
+@container (max-width:800px){
+ .supportV2 .supportStats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .supportV2 .supportStatCard{grid-template-columns:46px minmax(0,1fr);min-height:92px;gap:12px;padding:14px}
+ .supportV2 .supportToolbar{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .supportV2 .supportSearch{grid-column:1/-1}
+ .supportV2 .supportToolbar select:last-child{grid-column:1/-1}
+}
+@container (max-width:470px){
+ .supportV2 .supportStats{gap:9px}
+ .supportV2 .supportStatCard{grid-template-columns:36px minmax(0,1fr);gap:9px;padding:11px 9px;min-height:88px}
+ .supportV2 .supportStatIcon{width:36px;height:36px;border-radius:10px}
+ .supportV2 .supportStatIcon svg{width:22px;height:22px}
+ .supportV2 .supportStatCard .supportStatCopy small{font-size:10px}
+ .supportV2 .supportStatCard .supportStatCopy b{font-size:25px}
+ .supportV2 .supportStatCard .supportStatCopy>span{font-size:9px}
+ .supportV2 .supportHeroMark{display:none}
+ .supportV2 .supportHeroIcon{display:none}
+ .supportV2 .supportHero{padding:17px}
+ .supportV2 .supportHero h2{font-size:19px}
+ .supportV2 .supportActions{grid-template-columns:1fr}
+}
