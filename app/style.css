@@ -1167,3 +1167,32 @@
 .supportV2 .supportDraftCount{margin-top:6px;color:#6e8795}
 .supportV2 .supportDetail button:focus-visible{outline:3px solid #0b858d;outline-offset:2px}
 @media(max-width:740px){.supportV2 .supportDetailContent{padding:14px}.supportV2 .supportDetailIntro{padding:13px}.supportV2 .supportDetailIntro h3{font-size:19px}.supportV2 .supportDetailSection{margin-top:15px;padding-top:15px}}
+
+
+/* Support administration: readable controls and touch-friendly responsive finish */
+.supportV2 .supportQuickFilters button{min-height:40px;line-height:1.35}
+.supportV2 .supportRefresh{min-height:40px}
+.supportV2 .supportToolbar select,.supportV2 .supportSearch input{min-height:43px}
+.supportV2 .supportTicket{min-height:104px}
+.supportV2 .supportTicket:focus-visible{outline:3px solid #0c8990;outline-offset:2px}
+.supportV2 .supportStatus,.supportV2 .supportType{line-height:1.3}
+.supportV2 .supportDetailSection h4{line-height:1.45}
+.supportV2 .supportDetail .supportActions select{min-height:44px}
+.supportV2 .supportDetail .supportCopyTracking{min-height:30px}
+.supportV2 .supportTicketText p{overflow-wrap:anywhere}
+.supportV2 .supportBody{overflow-wrap:anywhere}
+@media(max-width:740px){
+.supportV2 .supportQuickFilters{display:flex;overflow-x:auto;scrollbar-width:thin;gap:7px;padding:0 0 9px;flex-wrap:nowrap}
+.supportV2 .supportQuickFilters button{flex:none;white-space:nowrap}
+.supportV2 .supportToolbar{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.supportV2 .supportSearch{grid-column:1/-1}
+.supportV2 .supportToolbar select:last-child{grid-column:1/-1}
+.supportV2 .supportTicket{min-height:100px}
+.supportV2 .supportDetailHead{gap:8px}
+}
+@media(max-width:420px){
+.supportV2 .supportActions{grid-template-columns:1fr}
+.supportV2 .supportStatCard .supportStatCopy>span{font-size:9px}
+.supportV2 .supportTicketBottom{gap:5px}
+.supportV2 .supportTicketBottom time{font-size:9px}
+}
