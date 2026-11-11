@@ -1122,3 +1122,20 @@
 @media(min-width:1151px) and (max-width:1450px){.supportV2 .supportStats{grid-template-columns:repeat(4,minmax(0,1fr))}.supportV2 .supportStatCard{grid-template-columns:1fr;gap:8px;align-content:start;min-height:145px}.supportV2 .supportStatCopy{gap:3px}}
 @media(max-width:900px){.supportV2 .supportStats{grid-template-columns:repeat(2,minmax(0,1fr))}.supportV2 .supportStatCard{grid-template-columns:46px minmax(0,1fr);min-height:92px;gap:12px;padding:14px}}
 @media(max-width:470px){.supportV2 .supportStats{gap:9px}.supportV2 .supportStatCard{grid-template-columns:36px minmax(0,1fr);gap:9px;padding:11px 9px;min-height:88px}.supportV2 .supportStatIcon{width:36px;height:36px;border-radius:10px}.supportV2 .supportStatIcon svg{width:22px;height:22px}.supportV2 .supportStatCard .supportStatCopy small{font-size:10px}.supportV2 .supportStatCard .supportStatCopy b{font-size:25px}.supportV2 .supportStatCard .supportStatCopy>span{font-size:8px}}
+
+
+/* Ticket cards v3: refined category markers and readable content */
+.supportV2 .supportTicket{border-color:#e0e9ed;background:#fff;padding:13px 15px;position:relative}
+.supportV2 .supportTicket:before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:0 4px 4px 0;background:#d5e4e8}
+.supportV2 .supportTicket.active:before{background:#07838c}
+.supportV2 .supportTicketMain{display:grid;grid-template-columns:36px minmax(0,1fr);gap:11px;align-items:start}
+.supportV2 .supportTicketAvatar{width:36px;height:36px;display:grid;place-items:center;border-radius:10px;background:#eaf5f5;color:#087b83;font-size:18px;font-weight:800;line-height:1}
+.supportV2 .supportTicketText{min-width:0}
+.supportV2 .supportTicketTitle{font-size:14px;line-height:1.35;color:#163b50;letter-spacing:-.2px}
+.supportV2 .supportTicketText p{margin:5px 0 9px;font-size:11px;line-height:1.55;color:#748b9a;-webkit-line-clamp:2}
+.supportV2 .supportTicketTop{margin-bottom:10px}
+.supportV2 .supportTicketBottom{margin-left:47px;padding-top:9px}
+.supportV2 .supportTicketNo{font-size:10px}
+.supportV2 .supportTicketArrow{display:grid;place-items:center;width:23px;height:23px;background:#eff5f6;border-radius:50%;color:#387b83}
+.supportV2 .supportTicket:hover .supportTicketArrow,.supportV2 .supportTicket.active .supportTicketArrow{background:#d9eeef;color:#087b83}
+@media(max-width:500px){.supportV2 .supportTicket{padding:12px}.supportV2 .supportTicketMain{grid-template-columns:30px minmax(0,1fr);gap:9px}.supportV2 .supportTicketAvatar{width:30px;height:30px;font-size:16px;border-radius:8px}.supportV2 .supportTicketBottom{margin-left:39px}.supportV2 .supportTicketText p{-webkit-line-clamp:1}}
