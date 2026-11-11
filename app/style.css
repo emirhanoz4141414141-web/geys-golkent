@@ -956,3 +956,23 @@
 .supportV2 .supportToolbar select{min-width:0}
 @media(max-width:1250px){.supportV2 .supportToolbar{grid-template-columns:repeat(3,minmax(0,1fr))}.supportV2 .supportSearch{grid-column:1/-1}}
 @media(max-width:600px){.supportV2 .supportQuickFilters{gap:6px;margin:0 0 13px}.supportV2 .supportQuickFilters button{font-size:10px;padding:9px 10px}.supportV2 .supportToolbar{grid-template-columns:repeat(2,minmax(0,1fr))}.supportV2 .supportSearch{grid-column:1/-1}.supportV2 .supportToolbar select:last-child{grid-column:1/-1}}
+
+
+/* Support responsive inbox-detail navigation: no changes to the global sidebar */
+.supportV2 .supportMobileBack{display:none}
+@media(max-width:800px){
+.supportV2.supportViewingDetail .supportHero,.supportV2.supportViewingDetail .supportStats,.supportV2.supportViewingDetail .supportQuickFilters,.supportV2.supportViewingDetail .supportInbox{display:none}
+.supportV2.supportViewingDetail .supportWorkspace{display:block}
+.supportV2.supportViewingDetail .supportDetail{display:block;position:static;max-height:none;overflow:visible;width:100%;margin:0}
+.supportV2 .supportMobileBack{display:inline-flex;align-items:center;gap:7px;border:0;background:transparent;color:#08777e;font-weight:800;font-size:12px;cursor:pointer;padding:8px 4px;margin:-8px 0 9px}
+.supportV2 .supportMobileBack span{font-size:12px}
+.supportV2 .supportDetailHead{flex-wrap:wrap}
+.supportV2 .supportDetailHead .supportMobileBack{flex-basis:100%}
+.supportV2:not(.supportViewingDetail) .supportDetail{display:none}
+.supportV2 .supportTicket p{-webkit-line-clamp:1;margin-bottom:10px}
+.supportV2 .supportTicket{padding:12px 14px}
+.supportV2 .supportTicketTop{margin-bottom:7px}
+.supportV2 .supportTicketBottom{padding-top:9px}
+.supportV2 .supportList{max-height:none;overflow:visible}
+}
+@media(min-width:801px){.supportV2 .supportMobileBack{display:none}}
