@@ -1104,3 +1104,21 @@
 }
 @media(max-width:740px){.supportV2 .supportStats{grid-template-columns:repeat(2,minmax(0,1fr))}.supportV2 .supportHero{min-height:100px;padding:18px}.supportV2 .supportHeroMark{display:none}.supportV2 .supportToolbar{grid-template-columns:repeat(3,minmax(0,1fr))}.supportV2 .supportSearch{grid-column:1/-1}.supportV2 .supportToolbar select{min-width:0}.supportV2 .supportList{padding:0 10px 12px}}
 @media(max-width:430px){.supportV2 .supportStatCard{padding:10px}.supportV2 .supportStatIcon{width:34px;height:34px;font-size:18px}.supportV2 .supportStatCard b{font-size:23px}.supportV2 .supportHeroIcon{display:none}.supportV2 .supportHero h2{font-size:19px}.supportV2 .supportQuickFilters{display:flex;overflow-x:auto;flex-wrap:nowrap;padding-bottom:5px}.supportV2 .supportQuickFilters button{white-space:nowrap;flex-shrink:0}}
+
+
+/* Rebuilt metrics: legible icons, balanced content and responsive spacing */
+.supportV2 .supportStats{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.supportV2 .supportStatCard{display:grid;grid-template-columns:46px minmax(0,1fr);align-items:center;gap:13px;min-height:104px;padding:17px 15px;border-radius:13px}
+.supportV2 .supportStatIcon{display:grid;place-items:center;width:46px;height:46px;border-radius:12px}
+.supportV2 .supportStatIcon svg{width:26px;height:26px;display:block;flex:none}
+.supportV2 .supportStatCopy{display:grid;grid-template-columns:1fr;align-content:center;gap:2px;min-width:0}
+.supportV2 .supportStatCard .supportStatCopy small{font-size:12px;line-height:1.25;font-weight:800;color:#3c5d70}
+.supportV2 .supportStatCard .supportStatCopy b{font-size:29px;line-height:1.08;color:#113b50;letter-spacing:-.7px}
+.supportV2 .supportStatCard .supportStatCopy>span{font-size:9px;line-height:1.3;letter-spacing:.1px;text-transform:none;color:#748c9b;font-weight:650}
+.supportV2 .supportStatNew:before{background:#087f95}
+.supportV2 .supportStatWork:before{background:#d39b37}
+.supportV2 .supportStatPrivate:before{background:#8071b5}
+.supportV2 .supportStatDone:before{background:#1a9477}
+@media(min-width:1151px) and (max-width:1450px){.supportV2 .supportStats{grid-template-columns:repeat(4,minmax(0,1fr))}.supportV2 .supportStatCard{grid-template-columns:1fr;gap:8px;align-content:start;min-height:145px}.supportV2 .supportStatCopy{gap:3px}}
+@media(max-width:900px){.supportV2 .supportStats{grid-template-columns:repeat(2,minmax(0,1fr))}.supportV2 .supportStatCard{grid-template-columns:46px minmax(0,1fr);min-height:92px;gap:12px;padding:14px}}
+@media(max-width:470px){.supportV2 .supportStats{gap:9px}.supportV2 .supportStatCard{grid-template-columns:36px minmax(0,1fr);gap:9px;padding:11px 9px;min-height:88px}.supportV2 .supportStatIcon{width:36px;height:36px;border-radius:10px}.supportV2 .supportStatIcon svg{width:22px;height:22px}.supportV2 .supportStatCard .supportStatCopy small{font-size:10px}.supportV2 .supportStatCard .supportStatCopy b{font-size:25px}.supportV2 .supportStatCard .supportStatCopy>span{font-size:8px}}
