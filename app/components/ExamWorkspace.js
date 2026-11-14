@@ -1,5 +1,5 @@
 'use client'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { gradeExam } from '../lib/examGrading.js'
 import { validateExamDraft } from '../lib/examDraft.js'
 import OpticalAnswerSheet from './OpticalAnswerSheet.js'
@@ -13,7 +13,7 @@ const letters = ['A', 'B', 'C', 'D']
  * Bilinçli olarak Supabase erişimi / otomatik kayıt / veliye yayın içermez.
  * Canlıya bağlanmadan önce yetki ve veri modeli ayrıca doğrulanmalıdır.
  */
-export default function ExamWorkspace({students = [], classes = [], institution = null}) {
+export default function ExamWorkspace({students = [], classes = [], institution = null, supabase = null}) {
   const [examCode, setExamCode] = useState('DENEME')
   const [title, setTitle] = useState('Tecvid 1. Dönem 2. Yazılı')
   const [questions, setQuestions] = useState(() => Array.from({ length: 20 }, EMPTY))
@@ -21,8 +21,25 @@ export default function ExamWorkspace({students = [], classes = [], institution 
   const [mode, setMode] = useState('questions')
   const [showKey, setShowKey] = useState(false)
   const [selectedStudentId,setSelectedStudentId] = useState('')
+  const [studentTc,setStudentTc] = useState('')
+  const [tcError,setTcError] = useState('')
+  const [tcLoading,setTcLoading] = useState(false)
   const [examDate,setExamDate] = useState(() => new Date().toLocaleDateString('en-CA'))
   const [selectedClassId,setSelectedClassId] = useState('')
+  useEffect(()=>{setStudentTc('');setTcError('')},[selectedStudentId,mode])
+  async function fetchStudentTc(){
+    if(!selectedStudentId||!supabase)return
+    setStudentTc('');setTcError('');setTcLoading(true)
+    const id=selectedStudentId
+    try{
+      const {data,error}=await supabase.rpc('get_student_national_id_for_optical',{p_student:id})
+      if(error)throw error
+      if(String(data||'').match(/^[0-9]{11}$/)&&id===selectedStudentId)setStudentTc(String(data))
+      else if(!data)setTcError('Bu öğrencinin T.C. kimlik numarası kayıtlı değil.')
+      else setTcError('T.C. kimlik numarası alınamadı.')
+    }catch(e){setTcError('T.C. kimlik numarasına erişilemedi. Yetkinizi ve bağlantınızı kontrol ediniz.')}
+    finally{setTcLoading(false)}
+  }
   const selectedStudent=students.find(s=>String(s.id)===selectedStudentId)
   const selectedClass=classes.find(c=>String(c.id)===selectedClassId)
   const visibleStudents=students.filter(s=>!selectedClassId||String(s.class_id)===selectedClassId)
@@ -67,8 +84,13 @@ export default function ExamWorkspace({students = [], classes = [], institution 
       <label>Sınav tarihi <input type="date" aria-label="Sınav tarihi" value={examDate} onChange={e=>setExamDate(e.target.value)}/></label>
       <label>Sınıf <select aria-label="Optik sınıf seçimi" value={selectedClassId} onChange={e=>{setSelectedClassId(e.target.value);setSelectedStudentId('')}}><option value="">Tüm sınıflar</option>{classes.map(c=><option key={c.id} value={String(c.id)}>{c.code} {c.name||''}</option>)}</select></label>
       <label>Öğrenci <select aria-label="Optik öğrenci seçimi" value={selectedStudentId} onChange={e=>setSelectedStudentId(e.target.value)}><option value="">Öğrenci seçiniz</option>{visibleStudents.map(s=><option key={s.id} value={String(s.id)}>{s.first_name} {s.last_name}</option>)}</select></label>
-      <p style={{width:'100%',margin:0}}>Sınav kodu: <strong>{derivedExamCode}</strong> · Öğrenci: <strong>{studentName||'Seçilmedi'}</strong> · Sınıf: <strong>{studentClass||'—'}</strong>. T.C. kimlik numarası bu aşamada güvenli kaynaktan çekilmediğinden basılı formda boş alan olarak bırakılır.</p>
-    </div><div style={{display:'flex',gap:10,margin:'10px 0'}}><button type="button" className="primary" onClick={()=>window.print()} disabled={!selectedStudent}>Yazdır / PDF olarak kaydet</button><small>PDF için açılan yazdırma penceresinde «PDF olarak kaydet» seçeneğini kullanınız. A4 ve %100 ölçek seçiniz.</small></div><OpticalAnswerSheet logoUrl={institution?.logo_url||'/golkent-logo.png'} questionCount={questions.length} examCode={derivedExamCode} examTitle={title} examDate={examDate} studentName={studentName} studentId={selectedStudent?.id ? String(selectedStudent.id) : ''} studentNumber={studentNumber} studentClass={studentClass}/></> : mode==='photo' ? <OpticalPhotoReview questionCount={questions.length} examCode={derivedExamCode} answerKey={validation.valid ? questions.map(q=>q.correctAnswer) : null} expectedStudentNumber={studentNumber.trim()}/> : mode==='questions' ? questions.map((q,i)=><fieldset key={i} style={{border:'1px solid #d6e1e9',borderRadius:12,padding:14,marginBottom:12}}>
+      <p style={{width:'100%',margin:0}}>Sınav kodu: <strong>{derivedExamCode}</strong> · Öğrenci: <strong>{studentName||'Seçilmedi'}</strong> · Sınıf: <strong>{studentClass||'—'}</strong>. T.C. kimlik numarası yalnızca yetkili istek üzerine getirilir; öğrenci değiştirildiğinde temizlenir.</p>
+      <div style={{width:'100%',display:'flex',gap:10,alignItems:'center',flexWrap:'wrap'}}>
+        <button type="button" disabled={!selectedStudent||tcLoading} onClick={fetchStudentTc}>{tcLoading?'Kontrol ediliyor…':'T.C. Kimlik Numarasını Getir'}</button>
+        <small>{studentTc?'T.C. kimlik numarası yalnızca bu baskı önizlemesine aktarıldı.':'T.C. kimlik numarası henüz yüklenmedi.'}</small>
+        {tcError&&<small role="alert">{tcError}</small>}
+      </div>
+    </div><div style={{display:'flex',gap:10,margin:'10px 0'}}> <button type="button" className="primary" onClick={()=>window.print()} disabled={!selectedStudent}>Yazdır / PDF olarak kaydet</button><small>PDF için açılan yazdırma penceresinde «PDF olarak kaydet» seçeneğini kullanınız. A4 ve %100 ölçek seçiniz.</small></div><OpticalAnswerSheet logoUrl={institution?.logo_url||'/golkent-logo.png'} questionCount={questions.length} examCode={derivedExamCode} examTitle={title} examDate={examDate} studentName={studentName} studentId={selectedStudent?.id ? String(selectedStudent.id) : ''} studentNumber={studentNumber} studentClass={studentClass} studentTc={studentTc}/></> : mode==='photo' ? <OpticalPhotoReview questionCount={questions.length} examCode={derivedExamCode} answerKey={validation.valid ? questions.map(q=>q.correctAnswer) : null} expectedStudentNumber={studentNumber.trim()}/> : mode==='questions' ? questions.map((q,i)=><fieldset key={i} style={{border:'1px solid #d6e1e9',borderRadius:12,padding:14,marginBottom:12}}>
       <legend style={{fontWeight:700}}>{i+1}. Soru</legend>
       <textarea aria-label={`${i+1}. soru metni`} dir="auto" rows={2} value={q.text} placeholder="Türkçe veya harekeli Arapça soru metni" onChange={e=>editQuestion(i,{text:e.target.value})} style={{width:'100%',padding:10}}/>
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:10,marginTop:10}}>
