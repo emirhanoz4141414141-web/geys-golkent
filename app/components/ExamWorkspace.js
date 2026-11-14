@@ -37,6 +37,8 @@ export default function ExamWorkspace({students = [], classes = [], institution 
   const [examResults,setExamResults] = useState([])
   const [resultsMessage,setResultsMessage] = useState('')
   const [resultsLoading,setResultsLoading] = useState(false)
+  const [approvingResultId,setApprovingResultId] = useState('')
+  const [reviewedResultId,setReviewedResultId] = useState('')
   async function refreshSavedExams(){
     if(!supabase)return
     setExamLoading(true)
@@ -56,11 +58,28 @@ export default function ExamWorkspace({students = [], classes = [], institution 
     else{setExamResults(data||[]);setResultsMessage(data?.length?'Kayıtlı sonuçlar listelendi.':'Bu sınav için henüz kaydedilmiş sonuç yok.')}
     setResultsLoading(false)
   }
+  async function approveExamResult(result){
+    if(!supabase||!activeExamId||approvingResultId||result.status!=='pending_review'||result.review_count!==0||reviewedResultId!==result.id)return
+    setApprovingResultId(result.id);setResultsMessage('')
+    try{
+      const {data:authData,error:authError}=await supabase.auth.getUser()
+      if(authError||!authData?.user?.id)throw new Error('Yönetici oturumu doğrulanamadı.')
+      const {data,error}=await supabase.from('optical_exam_results')
+        .update({status:'approved',reviewed_by:authData.user.id,updated_at:new Date().toISOString()})
+        .eq('id',result.id).eq('exam_id',activeExamId).eq('status','pending_review')
+        .eq('review_count',0).select('id').single()
+      if(error||!data)throw new Error(error?.message||'Sonuç güncellenemedi.')
+      setReviewedResultId('')
+      await loadExamResults()
+      setResultsMessage('Sonuç yönetici tarafından onaylandı. Öğrenci ana not kayıtlarına veya veli ekranına otomatik aktarılmadı.')
+    }catch(e){setResultsMessage('Onay işlemi başarısız: '+(e?.message||'Bilinmeyen hata'))}
+    finally{setApprovingResultId('')}
+  }
   function openSavedExam(id){
     const exam=savedExams.find(x=>x.id===id)
     if(!exam)return
     setActiveExamId(exam.id)
-    setExamResults([]);setResultsMessage('')
+    setExamResults([]);setResultsMessage('');setReviewedResultId('')
     setExamCode(exam.exam_code)
     setTitle(exam.title)
     setExamDate(exam.exam_date)
@@ -153,7 +172,7 @@ export default function ExamWorkspace({students = [], classes = [], institution 
       <p>Sonuçlar yalnızca yetkili yönetici tarafından görüntülenir. Fotoğraf incelemesi henüz otomatik kayıt yapmaz.</p>
       <button type="button" disabled={!activeExamId||resultsLoading} onClick={loadExamResults}>{resultsLoading?'Yükleniyor…':'Seçili Sınavın Sonuçlarını Getir'}</button>
       {resultsMessage&&<p role="status">{resultsMessage}</p>}
-      {examResults.length>0&&<div style={{overflowX:'auto',marginTop:12}}><table style={{width:'100%',borderCollapse:'collapse'}}><thead><tr><th>Öğrenci</th><th>Puan</th><th>Doğru</th><th>Yanlış</th><th>Boş</th><th>Kontrol</th><th>Durum</th></tr></thead><tbody>{examResults.map(r=>{const student=students.find(s=>String(s.id)===String(r.student_id));return <tr key={r.id}><td>{student?[student.first_name,student.last_name].filter(Boolean).join(' '):'Kayıtlı öğrenci'}</td><td>{r.score}</td><td>{r.correct_count}</td><td>{r.wrong_count}</td><td>{r.blank_count}</td><td>{r.review_count}</td><td>{r.status==='approved'?'Onaylandı':'İnceleme bekliyor'}</td></tr>})}</tbody></table></div>}
+      {examResults.length>0&&<div style={{overflowX:'auto',marginTop:12}}><table style={{width:'100%',borderCollapse:'collapse'}}><thead><tr><th>Öğrenci</th><th>Puan</th><th>Doğru</th><th>Yanlış</th><th>Boş</th><th>Kontrol</th><th>Durum</th><th>Yönetici kontrolü</th></tr></thead><tbody>{examResults.map(r=>{const student=students.find(s=>String(s.id)===String(r.student_id));return <tr key={r.id}><td>{student?[student.first_name,student.last_name].filter(Boolean).join(' '):'Kayıtlı öğrenci'}</td><td>{r.score}</td><td>{r.correct_count}</td><td>{r.wrong_count}</td><td>{r.blank_count}</td><td>{r.review_count}</td><td>{r.status==='approved'?'Onaylandı':'İnceleme bekliyor'}</td><td>{r.status==='pending_review'&&r.review_count===0?<div><label style={{display:'flex',gap:5,alignItems:'center'}}><input type="checkbox" checked={reviewedResultId===r.id} onChange={e=>setReviewedResultId(e.target.checked?r.id:'')}/> Bu öğrencinin kâğıdını kontrol ettim</label><button type="button" disabled={reviewedResultId!==r.id||Boolean(approvingResultId)} onClick={()=>approveExamResult(r)}>{approvingResultId===r.id?'Onaylanıyor…':'Sonucu Onayla'}</button></div>:r.status==='approved'?'Kesinleştirildi':'Belirsiz cevaplar çözülmeli'}</td></tr>})}</tbody></table></div>}
     </div> : mode==='sheet' ? <><p>Optik form önizlemesi: Yazdırma ölçüleri henüz fiziksel olarak doğrulanmadı. Öğrenci bilgileri yalnızca bu formun baskısına yazılır; sisteme kaydedilmez.</p><div style={{display:'flex',gap:10,flexWrap:'wrap',marginBottom:12}}>
       <label>Sınav tarihi <input type="date" aria-label="Sınav tarihi" value={examDate} onChange={e=>setExamDate(e.target.value)}/></label>
       <label>Sınıf <select aria-label="Optik sınıf seçimi" value={selectedClassId} onChange={e=>{setSelectedClassId(e.target.value);setSelectedStudentId('')}}><option value="">Tüm sınıflar</option>{classes.map(c=><option key={c.id} value={String(c.id)}>{c.code} {c.name||''}</option>)}</select></label>
