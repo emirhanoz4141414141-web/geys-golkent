@@ -6,7 +6,7 @@ import { buildPrintPages, PAPER, REGISTRATION_MARKS } from '../lib/opticalTempla
 /** Önizleme ve baskı aynı milimetre koordinatlarını kullanır.
  * Fiziksel baskı/telefon kalibrasyonu henüz doğrulanmamıştır.
  */
-export default function OpticalAnswerSheet({ questionCount = 20, examCode = '', examTitle = 'Sınav', examDate = '', logoUrl = '/golkent-logo.png', studentName = '', studentNumber = '', studentId = '', studentClass = '' }) {
+export default function OpticalAnswerSheet({ questionCount = 20, examCode = '', examTitle = 'Sınav', examDate = '', logoUrl = '/golkent-logo.png', studentName = '', studentNumber = '', studentId = '', studentClass = '', studentTc = '' }) {
   const layout = buildOpticalLayout({ questionCount, examCode })
   const pages = buildPrintPages(layout.questionCount)
   return <section className="geys-optical-document" aria-label="Optik cevap formları">
@@ -59,7 +59,7 @@ export default function OpticalAnswerSheet({ questionCount = 20, examCode = '', 
       <div className="geys-optical-fields">
         <div className="geys-optical-field">Adı Soyadı: {studentName}</div>
         <div className="geys-optical-field">Sınıfı: {studentClass}</div>
-        <div className="geys-optical-field">T.C. Kimlik No: ____________________</div>
+        <div className="geys-optical-field">T.C. Kimlik No: {studentTc || '____________________'}</div>
         <div className="geys-optical-field">Tarih: {examDate}</div>
       </div>
       {(()=>{const identity=studentId?buildCompactFormIdentity({examCode:layout.examCode,studentId,pageNumber:page.pageNumber}):buildFormIdentity({examCode:layout.examCode,studentNumber,pageNumber:page.pageNumber});const encoded=identity&&code39Bars(identity);return encoded?<div className="geys-optical-barcode"><svg viewBox={`0 0 ${encoded.width} 36`} preserveAspectRatio="none" role="img" aria-label="Forma özel Code 39 barkod"><rect width={encoded.width} height="36" fill="white"/>{encoded.bars.map((bar,i)=><rect key={i} x={bar.x} y="0" width={bar.width} height="36" fill="black"/>)}</svg><span>Form kimliği: {identity}</span></div>:null})()}
