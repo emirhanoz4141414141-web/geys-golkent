@@ -27,6 +27,8 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
   const [confirmedStudentNumber,setConfirmedStudentNumber]=useState('')
   const [confirmedFormIdentity,setConfirmedFormIdentity]=useState('')
   const [busy,setBusy]=useState(false)
+  const [barcodeBusy,setBarcodeBusy]=useState(false)
+  const [barcodeMessage,setBarcodeMessage]=useState('')
   const [autoCandidate,setAutoCandidate]=useState(false)
   useEffect(()=>{setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('');setConfirmedFormIdentity('')},[questionCount,examCode,answerKey?.join('|'),expectedStudentNumber,expectedFormIdentity])
   const imageRef=useRef(null)
@@ -34,7 +36,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
   useEffect(()=>()=>{if(urlRef.current)URL.revokeObjectURL(urlRef.current)},[])
   function chooseFile(event) {
     const file=event.target.files?.[0]
-    setError('');setCorners([]);setAutoCandidate(false);setDimensions(null);setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('');setConfirmedFormIdentity('')
+    setError('');setCorners([]);setAutoCandidate(false);setDimensions(null);setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('');setConfirmedFormIdentity('');setBarcodeMessage('')
     if(urlRef.current){URL.revokeObjectURL(urlRef.current);urlRef.current=''}
     setUrl('')
     if(!file)return
@@ -45,6 +47,28 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
     const next=URL.createObjectURL(file)
     urlRef.current=next
     setUrl(next)
+  }
+  async function scanBarcode(){
+    const image=imageRef.current
+    setBarcodeMessage('')
+    if(!image?.naturalWidth){setBarcodeMessage('Önce fotoğraf yükleyiniz.');return}
+    if(typeof window.BarcodeDetector!=='function'){setBarcodeMessage('Bu tarayıcı Code 39 barkod okumayı desteklemiyor. Form kimliğini elle giriniz.');return}
+    setBarcodeBusy(true)
+    try{
+      const supported=await window.BarcodeDetector.getSupportedFormats()
+      if(!supported.includes('code_39'))throw new Error('Bu cihazda Code 39 barkod okuyucu desteklenmiyor.')
+      const detector=new window.BarcodeDetector({formats:['code_39']})
+      const results=await detector.detect(image)
+      const values=[...new Set(results.map(x=>String(x.rawValue||'').trim().toUpperCase()).filter(Boolean))]
+      if(values.length!==1)throw new Error(values.length?'Birden fazla barkod algılandı; formu kontrol ediniz.':'Barkod algılanamadı. Daha net fotoğraf çekiniz veya elle giriniz.')
+      if(!expectedFormIdentity)throw new Error('Önce sistemde öğrenci seçiniz; barkod öğrenciyle eşleştirilemedi.')
+      if(values[0]!==expectedFormIdentity)throw new Error('Barkod seçili öğrencinin beklenen form kimliğiyle eşleşmiyor. Başka öğrenci veya sınav formu olabilir.')
+      setConfirmedFormIdentity(values[0])
+      setConfirmedCode(examCode)
+      setConfirmedPage(true)
+      setBarcodeMessage('Barkod seçili öğrenci ve sınav formuyla eşleşti. Kâğıdın sayfa ve köşe konumlarını ayrıca kontrol ediniz.')
+    }catch(e){setBarcodeMessage(e?.message||'Barkod okunamadı. Elle doğrulayınız.')}
+    finally{setBarcodeBusy(false)}
   }
   function addCorner(event) {
     if(!dimensions||corners.length===4)return
@@ -125,6 +149,11 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
         <input type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={chooseFile} style={{display:'block',width:'100%',marginTop:8}}/>
       </label>
     </div>
+    {url&&<div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap',marginTop:10}}>
+      <button type="button" onClick={scanBarcode} disabled={barcodeBusy||!dimensions}>{barcodeBusy?'Barkod aranıyor…':'Barkodu Otomatik Oku (Deneme)'}</button>
+      <small>Barkod algılama cihaz ve tarayıcı desteğine bağlıdır. Eşleşmeyen barkod kabul edilmez.</small>
+    </div>}
+    {barcodeMessage&&<p role="status">{barcodeMessage}</p>}
     {error&&<p role="alert" style={{color:'#b91c1c'}}>{error}</p>}
     {url&&<div style={{marginTop:16}}>
       <p>{corners.length<4?`Sıradaki köşe: ${LABELS[corners.length]} — fotoğrafın üzerine dokunun.`:'Dört köşe seçildi. Konumları kontrol edin.'}</p>
