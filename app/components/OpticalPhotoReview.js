@@ -7,6 +7,7 @@ import { measurePhotoPage } from '../lib/opticalPhotoMeasure.js'
 const PAPER=[{x:0,y:0},{x:1,y:0},{x:1,y:1},{x:0,y:1}]
 const LABELS=['Sol üst','Sağ üst','Sağ alt','Sol alt']
 const MAX_BYTES=12*1024*1024
+const REVIEW_REASONS={multiple_marks:'Birden fazla işaret',weak_mark:'Silik / kararsız işaret',ambiguous_mark:'Birbirine yakın işaretler'}
 
 /**
  * Kamera/fotoğraf inceleme prototipi. Yalnızca cihazda çalışır.
@@ -104,7 +105,8 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '' }
       {reading&&<div role="status" style={{marginTop:16,padding:12,border:'1px solid #d1d5db',borderRadius:8}}>
         <strong>Geçici optik inceleme — kayıt yapılmadı</strong>
         <p>İşaretli: {reading.rows.filter(r=>r.status==='marked').length} · Boş: {reading.rows.filter(r=>r.status==='blank').length} · Kontrol gerekli: {reading.rows.filter(r=>r.status==='review').length}</p>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(95px,1fr))',gap:6}}>{reading.rows.map(r=><div key={r.number} style={{padding:7,border:'1px solid #e5e7eb',borderRadius:6}}>{r.number}. {r.status==='marked'?r.answer:r.status==='blank'?'Boş':'İncele'}</div>)}</div>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(95px,1fr))',gap:6}}>{reading.rows.map(r=><div key={r.number} style={{padding:7,border:'1px solid #e5e7eb',borderRadius:6}}>{r.number}. {r.status==='marked'?r.answer:r.status==='blank'?'Boş':'İncele'}{r.status==='review'&&<small style={{display:'block',color:'#b45309'}}>{REVIEW_REASONS[r.reason]||'Kontrol gerekli'}</small>}</div>)}</div>
+        {reading.rows.some(r=>r.status==='review')&&<p style={{color:'#92400e',fontWeight:600}}>Belirsiz işaretler öğretici tarafından kâğıt üzerinden kontrol edilmelidir. Bu ekrandaki sonuçlar kesinleştirilemez.</p>}
         <p style={{fontSize:12}}>Bu sonuçlar otomatik notlandırılmaz, kaydedilmez veya veliye gösterilmez. Gerçek baskı ve kamera kalibrasyonu yapılmamıştır.</p>
       </div>}
       {corners.length===4&&<p role="status">{valid?'Dört köşe matematiksel olarak eşleştirildi. Bu, optik okuma doğrulaması değildir.':'Köşeler geçersiz. Yeniden seçin.'}</p>}
