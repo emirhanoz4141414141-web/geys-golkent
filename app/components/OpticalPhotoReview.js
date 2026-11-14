@@ -111,15 +111,20 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
     <p><strong>İncelenecek soru sayısı: {questionCount}</strong> · Yalnızca ilk optik sayfa (en fazla 40 soru)</p>
     <p><strong>Beklenen sınav kodu: {examCode || 'Tanımlanmadı'}</strong></p>
     {expectedFormIdentity&&<p><strong>Beklenen form kimliği: {expectedFormIdentity}</strong> · Barkod otomatik okunmaz; formun altındaki kimliği gözle karşılaştırınız.</p>}
-    <p><strong>Beklenen öğrenci numarası: {expectedStudentNumber || 'Tanımlanmadı — öğrenci eşleştirmesi yapılmayacak'}</strong></p>
+    {expectedStudentNumber&&<p><strong>Beklenen öğrenci numarası: {expectedStudentNumber}</strong></p>}
     <label>Fotoğraftaki formun sınav kodunu okuyup yazınız <input aria-label="Formdaki sınav kodu" value={confirmedCode} onChange={e=>{setConfirmedCode(e.target.value);setReading(null);setManualAnswers({})}} autoComplete="off"/></label>
     <label style={{display:'block',marginTop:8}}><input type="checkbox" checked={confirmedPage} onChange={e=>{setConfirmedPage(e.target.checked);setReading(null);setManualAnswers({})}}/> Fotoğraftaki formun 1. sayfa olduğunu gözle doğruladım.</label>
     {expectedFormIdentity&&<label style={{display:'block',marginTop:8}}>Fotoğraftaki form kimliğini yazınız <input aria-label="Formdaki form kimliği" value={confirmedFormIdentity} onChange={e=>{setConfirmedFormIdentity(e.target.value);setReading(null);setManualAnswers({})}} autoComplete="off"/></label>}
     {expectedStudentNumber&&<label style={{display:'block',marginTop:8}}>Formdaki öğrenci numarasını okuyup yazınız <input aria-label="Formdaki öğrenci numarası" value={confirmedStudentNumber} onChange={e=>{setConfirmedStudentNumber(e.target.value);setReading(null);setManualAnswers({})}} autoComplete="off"/></label>}
     <p style={{fontSize:12}}>Kod, sayfa ve öğrenci numarası fotoğraftan otomatik okunmaz; bu kontrolü öğretici yapar. Kod eşleşmezse analiz kapalıdır.</p>
-    <label>Fotoğraf seç veya telefon kamerasıyla çek
-      <input type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={chooseFile} style={{display:'block',marginTop:8}}/>
-    </label>
+    <div style={{display:'flex',gap:12,flexWrap:'wrap',marginTop:12}}>
+      <label style={{flex:'1 1 210px'}}>Galeriden veya dosyalardan yükle
+        <input type="file" accept="image/jpeg,image/png,image/webp" onChange={chooseFile} style={{display:'block',width:'100%',marginTop:8}}/>
+      </label>
+      <label style={{flex:'1 1 210px'}}>Kamera ile fotoğraf çek
+        <input type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={chooseFile} style={{display:'block',width:'100%',marginTop:8}}/>
+      </label>
+    </div>
     {error&&<p role="alert" style={{color:'#b91c1c'}}>{error}</p>}
     {url&&<div style={{marginTop:16}}>
       <p>{corners.length<4?`Sıradaki köşe: ${LABELS[corners.length]} — fotoğrafın üzerine dokunun.`:'Dört köşe seçildi. Konumları kontrol edin.'}</p>
@@ -134,7 +139,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
       <div style={{display:'flex',gap:8,flexWrap:'wrap',marginTop:12}}>
     <button type="button" onClick={findCorners} disabled={!dimensions||busy}>Köşeleri otomatik bul (deneme)</button>
     {autoCandidate&&<button type="button" onClick={()=>setAutoCandidate(false)}>Gösterilen köşeleri gözle doğruladım</button>}
-        <button type="button" onClick={analyzePhoto} disabled={!valid||autoCandidate||busy||questionCount>40||!examCode||confirmedCode.trim().toUpperCase()!==examCode||!confirmedPage||(expectedStudentNumber&&confirmedStudentNumber.trim()!==expectedStudentNumber)}>{busy?'İnceleniyor…':'Fotoğraftaki cevapları incele'}</button>
+        <button type="button" onClick={analyzePhoto} disabled={!valid||autoCandidate||busy||questionCount>40||!examCode||confirmedCode.trim().toUpperCase()!==examCode||!confirmedPage||(expectedStudentNumber&&confirmedStudentNumber.trim()!==expectedStudentNumber)||(expectedFormIdentity&&confirmedFormIdentity.trim().toUpperCase()!==expectedFormIdentity)}>{busy?'İnceleniyor…':'Fotoğraftaki cevapları incele'}</button>
         <button type="button" onClick={()=>{setReading(null);setManualAnswers({});setAutoCandidate(false);setCorners(old=>old.slice(0,-1))}} disabled={!corners.length}>Son köşeyi geri al</button>
         <button type="button" onClick={()=>{setReading(null);setManualAnswers({});setAutoCandidate(false);setCorners([])}}>Köşeleri yeniden seç</button>
       </div>
