@@ -10,13 +10,14 @@ import { buildCompactFormIdentity } from '../lib/opticalFormIdentity.js'
 const PAPER=[{x:0,y:0},{x:1,y:0},{x:1,y:1},{x:0,y:1}]
 const LABELS=['Sol üst','Sağ üst','Sağ alt','Sol alt']
 const MAX_BYTES=12*1024*1024
+function validCornersForSave(corners){return corners.length===4&&validatePaperCorners(corners).valid}
 const REVIEW_REASONS={multiple_marks:'Birden fazla işaret',weak_mark:'Silik / kararsız işaret',ambiguous_mark:'Birbirine yakın işaretler'}
 
 /**
  * Kamera/fotoğraf inceleme prototipi. Yalnızca cihazda çalışır.
  * Köşeler öğretici tarafından seçilir; otomatik algılama ve puanlama yapmaz.
  */
-export default function OpticalPhotoReview({ questionCount = 20, examCode = '', answerKey = null, expectedStudentNumber = '', expectedFormIdentity = '', studentCandidates = [] }) {
+export default function OpticalPhotoReview({ questionCount = 20, examCode = '', answerKey = null, expectedStudentNumber = '', expectedFormIdentity = '', studentCandidates = [], supabase = null, savedExamId = '' }) {
   const [url,setUrl]=useState('')
   const [dimensions,setDimensions]=useState(null)
   const [corners,setCorners]=useState([])
@@ -31,14 +32,17 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
   const [barcodeBusy,setBarcodeBusy]=useState(false)
   const [barcodeMessage,setBarcodeMessage]=useState('')
   const [matchedStudent,setMatchedStudent]=useState(null)
+  const [saveBusy,setSaveBusy]=useState(false)
+  const [saveMessage,setSaveMessage]=useState('')
+  const [reviewConfirmed,setReviewConfirmed]=useState(false)
   const [autoCandidate,setAutoCandidate]=useState(false)
-  useEffect(()=>{setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('');setConfirmedFormIdentity('');setMatchedStudent(null)},[questionCount,examCode,answerKey?.join('|'),expectedStudentNumber,expectedFormIdentity])
+  useEffect(()=>{setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('');setConfirmedFormIdentity('');setMatchedStudent(null);setReviewConfirmed(false);setSaveMessage('')},[questionCount,examCode,answerKey?.join('|'),expectedStudentNumber,expectedFormIdentity])
   const imageRef=useRef(null)
   const urlRef=useRef('')
   useEffect(()=>()=>{if(urlRef.current)URL.revokeObjectURL(urlRef.current)},[])
   function chooseFile(event) {
     const file=event.target.files?.[0]
-    setError('');setCorners([]);setAutoCandidate(false);setDimensions(null);setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('');setConfirmedFormIdentity('');setBarcodeMessage('');setMatchedStudent(null)
+    setError('');setCorners([]);setAutoCandidate(false);setDimensions(null);setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('');setConfirmedFormIdentity('');setBarcodeMessage('');setMatchedStudent(null);setReviewConfirmed(false);setSaveMessage('')
     if(urlRef.current){URL.revokeObjectURL(urlRef.current);urlRef.current=''}
     setUrl('')
     if(!file)return
@@ -126,6 +130,42 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
       provisionalScore=gradeExam({answerKey,answers})
     } catch { provisionalScore=null }
   }
+  const finalAnswers=reading?.rows.map(r=>r.status==='review'
+    ? (manualAnswers[r.number]==='BLANK'?'':manualAnswers[r.number]==='INVALID'?'MULTI':manualAnswers[r.number]||'REVIEW')
+    : (r.answer||''))||[]
+  const pendingReviews=finalAnswers.filter(x=>x==='REVIEW').length
+  const identifiedStudent=matchedStudent
+  const saveReady=Boolean(savedExamId&&supabase&&identifiedStudent?.id&&reading&&provisionalScore&&
+    pendingReviews===0&&provisionalScore.review===0&&reviewConfirmed&&
+    verifiedFormIdentity&&confirmedFormIdentity.trim().toUpperCase()===verifiedFormIdentity&&
+    confirmedCode.trim().toUpperCase()===examCode&&confirmedPage&&
+    !autoCandidate&&validCornersForSave(corners))
+  async function saveReviewedResult(){
+    if(!saveReady||saveBusy)return
+    setSaveBusy(true);setSaveMessage('')
+    try{
+      const {data:exam,error:examError}=await supabase.from('optical_exams')
+        .select('id,exam_code,questions').eq('id',savedExamId).single()
+      if(examError||!exam||exam.exam_code!==examCode||
+         exam.questions.length!==questionCount||
+         exam.questions.some((q,i)=>q.correctAnswer!==answerKey?.[i]))
+        throw new Error('Kayıtlı sınav veya cevap anahtarı değişmiş. Sonuç kaydedilmedi.')
+      const {data:existing,error:existingError}=await supabase.from('optical_exam_results')
+        .select('id').eq('exam_id',savedExamId).eq('student_id',identifiedStudent.id).limit(1)
+      if(existingError)throw existingError
+      if(existing?.length)throw new Error('Bu öğrenci için sınav sonucu zaten var. Üzerine yazılmadı.')
+      const payload={exam_id:savedExamId,student_id:identifiedStudent.id,page_count:1,
+        answers:finalAnswers,correct_count:provisionalScore.correct,
+        wrong_count:provisionalScore.wrong,blank_count:provisionalScore.blank,
+        review_count:provisionalScore.review,score:provisionalScore.score,
+        status:'pending_review'}
+      const {error:insertError}=await supabase.from('optical_exam_results').insert(payload)
+      if(insertError)throw insertError
+      setSaveMessage('Sonuç yönetici incelemesi bekleyen taslak olarak kaydedildi. Kesin not veya veli sonucu değildir.')
+      setReviewConfirmed(false)
+    }catch(e){setSaveMessage('Sonuç kaydedilemedi: '+(e?.message||'Bilinmeyen hata'))}
+    finally{setSaveBusy(false)}
+  }
   let valid=false
   let preview=[]
   if(corners.length===4){
@@ -199,7 +239,16 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
         {!provisionalScore&&<p role="status">Puan hesaplamak için Sorular sekmesinde sınav taslağını ve cevap anahtarını tamamlayınız.</p>}
         <p><strong>Bekleyen şüpheli cevap: {reading.rows.filter(r=>r.status==='review'&&!manualAnswers[r.number]).length}</strong> · Manuel incelenen: {reading.rows.filter(r=>r.status==='review'&&manualAnswers[r.number]).length}</p>
         {reading.rows.some(r=>r.status==='review')&&<p style={{color:'#92400e',fontWeight:600}}>Belirsiz işaretler öğretici tarafından kâğıt üzerinden kontrol edilmelidir. Bu ekrandaki sonuçlar kesinleştirilemez.</p>}
-        <p style={{fontSize:12}}>Geçici puan öğrenci notlarına kaydedilmez veya veliye gösterilmez. Gerçek baskı ve kamera kalibrasyonu yapılmamıştır.</p>
+        <p style={{fontSize:12}}>Gerçek baskı ve kamera kalibrasyonu yapılmamıştır. Kaydedilen sonuç yalnızca yönetici inceleme taslağıdır; kesin not veya veliye açık sonuç değildir.</p>
+        {savedExamId&&<div style={{borderTop:'1px solid #d1d5db',paddingTop:12}}>
+          <label style={{display:'flex',alignItems:'flex-start',gap:8}}>
+            <input type="checkbox" checked={reviewConfirmed} onChange={e=>setReviewConfirmed(e.target.checked)}/>
+            Optik kâğıdını ve bütün cevapları gözle kontrol ettim; yalnızca inceleme bekleyen taslak kaydı oluşturulmasını istiyorum.
+          </label>
+          <button type="button" onClick={saveReviewedResult} disabled={!saveReady||saveBusy} style={{marginTop:10}}>{saveBusy?'Kaydediliyor…':'Kontrol Edilen Sonucu Taslak Kaydet'}</button>
+          {!identifiedStudent&&<p>Kaydetmek için barkodla öğrenci eşleştirmesi gereklidir.</p>}
+          {saveMessage&&<p role="status">{saveMessage}</p>}
+        </div>}
       </div>}
       {corners.length===4&&<p role="status">{valid?'Dört köşe matematiksel olarak eşleştirildi. Bu, optik okuma doğrulaması değildir.':'Köşeler geçersiz. Yeniden seçin.'}</p>}
     </div>}
