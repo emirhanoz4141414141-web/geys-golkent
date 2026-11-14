@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { computeHomography, mapHomography } from '../lib/opticalPerspective.js'
 import { validatePaperCorners } from '../lib/opticalGeometry.js'
+import { measurePhotoPage } from '../lib/opticalPhotoMeasure.js'
 
 const PAPER=[{x:0,y:0},{x:1,y:0},{x:1,y:1},{x:0,y:1}]
 const LABELS=['Sol üst','Sağ üst','Sağ alt','Sol alt']
@@ -11,17 +12,19 @@ const MAX_BYTES=12*1024*1024
  * Kamera/fotoğraf inceleme prototipi. Yalnızca cihazda çalışır.
  * Köşeler öğretici tarafından seçilir; otomatik algılama ve puanlama yapmaz.
  */
-export default function OpticalPhotoReview() {
+export default function OpticalPhotoReview({ questionCount = 20 }) {
   const [url,setUrl]=useState('')
   const [dimensions,setDimensions]=useState(null)
   const [corners,setCorners]=useState([])
   const [error,setError]=useState('')
+  const [reading,setReading]=useState(null)
+  const [busy,setBusy]=useState(false)
   const imageRef=useRef(null)
   const urlRef=useRef('')
   useEffect(()=>()=>{if(urlRef.current)URL.revokeObjectURL(urlRef.current)},[])
   function chooseFile(event) {
     const file=event.target.files?.[0]
-    setError('');setCorners([]);setDimensions(null)
+    setError('');setCorners([]);setDimensions(null);setReading(null)
     if(urlRef.current){URL.revokeObjectURL(urlRef.current);urlRef.current=''}
     setUrl('')
     if(!file)return
@@ -39,7 +42,23 @@ export default function OpticalPhotoReview() {
     if(!rect.width||!rect.height)return
     const x=(event.clientX-rect.left)/rect.width*dimensions.width
     const y=(event.clientY-rect.top)/rect.height*dimensions.height
+    setReading(null)
     setCorners(old=>[...old,{x,y}])
+  }
+  async function analyzePhoto() {
+    if (!valid || !imageRef.current || busy) return
+    setBusy(true);setReading(null);setError('')
+    try {
+      const image=imageRef.current
+      if(image.naturalWidth*image.naturalHeight>12000000) throw new Error('Fotoğraf çözünürlüğü 12 megapikseli aşmamalıdır.')
+      const canvas=document.createElement('canvas')
+      canvas.width=image.naturalWidth;canvas.height=image.naturalHeight
+      const ctx=canvas.getContext('2d',{willReadFrequently:true})
+      if(!ctx)throw new Error('Fotoğraf pikselleri okunamadı.')
+      ctx.drawImage(image,0,0)
+      const pixels=ctx.getImageData(0,0,canvas.width,canvas.height)
+      setReading(measurePhotoPage(pixels,corners,{questionCount,pageNumber:1}))
+    } catch(e){setError(e?.message||'Fotoğraf analiz edilemedi.')} finally {setBusy(false)}
   }
   let valid=false
   let preview=[]
@@ -69,9 +88,17 @@ export default function OpticalPhotoReview() {
         </svg>}
       </div>
       <div style={{display:'flex',gap:8,flexWrap:'wrap',marginTop:12}}>
-        <button type="button" onClick={()=>setCorners(old=>old.slice(0,-1))} disabled={!corners.length}>Son köşeyi geri al</button>
-        <button type="button" onClick={()=>setCorners([])}>Köşeleri yeniden seç</button>
+        <button type="button" onClick={analyzePhoto} disabled={!valid||busy||questionCount>40}>{busy?'İnceleniyor…':'Fotoğraftaki cevapları incele'}</button>
+        <button type="button" onClick={()=>{setReading(null);setCorners(old=>old.slice(0,-1))}} disabled={!corners.length}>Son köşeyi geri al</button>
+        <button type="button" onClick={()=>{setReading(null);setCorners([])}}>Köşeleri yeniden seç</button>
       </div>
+      {questionCount>40&&<p role="alert">Çok sayfalı sınavların fotoğraf okuması henüz desteklenmiyor. Bu ekranda en fazla 40 soru incelenebilir.</p>}
+      {reading&&<div role="status" style={{marginTop:16,padding:12,border:'1px solid #d1d5db',borderRadius:8}}>
+        <strong>Geçici optik inceleme — kayıt yapılmadı</strong>
+        <p>İşaretli: {reading.rows.filter(r=>r.status==='marked').length} · Boş: {reading.rows.filter(r=>r.status==='blank').length} · Kontrol gerekli: {reading.rows.filter(r=>r.status==='review').length}</p>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(95px,1fr))',gap:6}}>{reading.rows.map(r=><div key={r.number} style={{padding:7,border:'1px solid #e5e7eb',borderRadius:6}}>{r.number}. {r.status==='marked'?r.answer:r.status==='blank'?'Boş':'İncele'}</div>)}</div>
+        <p style={{fontSize:12}}>Bu sonuçlar otomatik notlandırılmaz, kaydedilmez veya veliye gösterilmez. Gerçek baskı ve kamera kalibrasyonu yapılmamıştır.</p>
+      </div>}
       {corners.length===4&&<p role="status">{valid?'Dört köşe matematiksel olarak eşleştirildi. Bu, optik okuma doğrulaması değildir.':'Köşeler geçersiz. Yeniden seçin.'}</p>}
     </div>}
   </section>
