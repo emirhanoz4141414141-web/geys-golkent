@@ -20,6 +20,8 @@ const REVIEW_REASONS={multiple_marks:'Birden fazla işaret',weak_mark:'Silik / k
  */
 export default function OpticalPhotoReview({ questionCount = 20, examCode = '', answerKey = null, expectedStudentNumber = '', expectedFormIdentity = '', studentCandidates = [], supabase = null, savedExamId = '' }) {
   const [pageNumber,setPageNumber]=useState(1)
+  const [collectedPages,setCollectedPages]=useState({})
+  const [collectionMessage,setCollectionMessage]=useState('')
   const pages=buildPrintPages(questionCount)
   const pageRows=pages[pageNumber-1]?.rows||[]
   const pageAnswerKey=Array.isArray(answerKey)?pageRows.map(r=>answerKey[r.number-1]):null
@@ -41,7 +43,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
   const [saveMessage,setSaveMessage]=useState('')
   const [reviewConfirmed,setReviewConfirmed]=useState(false)
   const [autoCandidate,setAutoCandidate]=useState(false)
-  useEffect(()=>{setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('');setConfirmedFormIdentity('');setMatchedStudent(null);setReviewConfirmed(false);setSaveMessage('')},[questionCount,examCode,answerKey?.join('|'),expectedStudentNumber,expectedFormIdentity])
+  useEffect(()=>{setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('');setConfirmedFormIdentity('');setMatchedStudent(null);setCollectedPages({});setCollectionMessage('');setReviewConfirmed(false);setSaveMessage('')},[questionCount,examCode,answerKey?.join('|'),expectedStudentNumber,expectedFormIdentity])
   const imageRef=useRef(null)
   const urlRef=useRef('')
   useEffect(()=>()=>{if(urlRef.current)URL.revokeObjectURL(urlRef.current)},[])
@@ -140,6 +142,43 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
     : (r.answer||''))||[]
   const pendingReviews=finalAnswers.filter(x=>x==='REVIEW').length
   const identifiedStudent=matchedStudent
+
+  const collectedList=Object.values(collectedPages)
+  const collectionStudentId=collectedList[0]?.studentId||''
+  const collectionComplete=pages.length>1&&pages.every(p=>Boolean(collectedPages[p.pageNumber]))
+  const combinedAnswers=collectionComplete?pages.flatMap(p=>collectedPages[p.pageNumber].answers):[]
+  let combinedScore=null
+  if(collectionComplete&&Array.isArray(answerKey)&&answerKey.length===combinedAnswers.length){
+    try{combinedScore=gradeExam({answerKey,answers:combinedAnswers})}catch{}
+  }
+  function collectCurrentPage(){
+    setCollectionMessage('')
+    if(!reading||!provisionalScore||!identifiedStudent?.id||!confirmedPage||
+      !verifiedFormIdentity||confirmedFormIdentity.trim().toUpperCase()!==verifiedFormIdentity||
+      confirmedCode.trim().toUpperCase()!==examCode||autoCandidate||!validCornersForSave(corners)||
+      pendingReviews!==0||provisionalScore.review!==0||
+      reading.pageNumber!==pageNumber||reading.rows.length!==pageRows.length){
+      setCollectionMessage('Sayfa eklenemedi. Barkod, kâğıt köşeleri ve tüm işaretlerin kontrolünü tamamlayınız.');return
+    }
+    if(collectionStudentId&&collectionStudentId!==String(identifiedStudent.id)){
+      setCollectionMessage('Bu sayfa başka bir öğrenciye ait. Önce mevcut sayfa grubunu temizleyiniz.');return
+    }
+    if(collectedPages[pageNumber]){
+      setCollectionMessage('Bu sayfa zaten eklendi. Önce sayfayı gruptan kaldırınız.');return
+    }
+    setCollectedPages(old=>({...old,[pageNumber]:{
+      pageNumber,studentId:String(identifiedStudent.id),
+      studentName:[identifiedStudent.first_name,identifiedStudent.last_name].filter(Boolean).join(' '),
+      answers:[...finalAnswers],formIdentity:verifiedFormIdentity
+    }}))
+    setCollectionMessage(pageNumber+'. sayfa inceleme grubuna eklendi.')
+  }
+  function changePage(next){
+    setPageNumber(next);setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);
+    setConfirmedFormIdentity('');setMatchedStudent(null);setCorners([]);setAutoCandidate(false);
+    setReviewConfirmed(false);setSaveMessage('');setCollectionMessage('')
+  }
+
   const saveReady=Boolean(pageNumber===1&&pages.length===1&&savedExamId&&supabase&&identifiedStudent?.id&&reading&&provisionalScore&&
     pendingReviews===0&&provisionalScore.review===0&&reviewConfirmed&&
     verifiedFormIdentity&&confirmedFormIdentity.trim().toUpperCase()===verifiedFormIdentity&&
@@ -185,7 +224,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
     <h3>Optik Fotoğraf İnceleme · Deneme</h3>
     <p>Fotoğraf cihazınızdan dışarı gönderilmez. Bu ekran yalnızca geçici puan önizlemesi sunar ve öğrenci kaydı değiştirmez.</p>
     <p><strong>Toplam soru: {questionCount}</strong> · {pages.length} sayfa · Seçili sayfa: {pageNumber} ({pageRows[0]?.number}–{pageRows[pageRows.length-1]?.number}. sorular)</p>
-    <label>Okunacak sayfa <select aria-label="Optik sayfa numarası" value={pageNumber} onChange={e=>{setPageNumber(Number(e.target.value));setReading(null);setManualAnswers({});setConfirmedPage(false);setConfirmedFormIdentity('');setMatchedStudent(null);setCorners([]);setAutoCandidate(false);setReviewConfirmed(false);setSaveMessage('')}}>{pages.map(p=><option key={p.pageNumber} value={p.pageNumber}>{p.pageNumber}. sayfa</option>)}</select></label>
+    <label>Okunacak sayfa <select aria-label="Optik sayfa numarası" value={pageNumber} onChange={e=>changePage(Number(e.target.value))}>{pages.map(p=><option key={p.pageNumber} value={p.pageNumber}>{p.pageNumber}. sayfa</option>)}</select></label>
     <p><strong>Beklenen sınav kodu: {examCode || 'Tanımlanmadı'}</strong></p>
     {pageNumber===1&&expectedFormIdentity&&<p><strong>Beklenen form kimliği: {expectedFormIdentity}</strong></p>}
     {matchedStudent&&<p role="status"><strong>Barkodla eşleşen öğrenci: {[matchedStudent.first_name,matchedStudent.last_name].filter(Boolean).join(' ')}</strong> · Sınav: {examCode}</p>}
@@ -227,7 +266,18 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
         <button type="button" onClick={()=>{setReading(null);setManualAnswers({});setAutoCandidate(false);setCorners([])}}>Köşeleri yeniden seç</button>
       </div>
       {autoCandidate&&<p role="status" style={{color:'#92400e'}}>Otomatik köşeler yalnızca tahmindir. Fotoğraftaki gerçek dört kâğıt köşesiyle karşılaştırın; doğruysa doğrulayın, değilse köşeleri yeniden seçin.</p>}
-   {pages.length>1&&<p role="status">Her sayfa ayrı ayrı incelenir. Çok sayfalı sınavlarda sayfalar birleştirilip kesin sonuç olarak kaydedilemez; bu aşamada yalnızca sayfa bazlı geçici puan gösterilir.</p>}
+   {pages.length>1&&<div style={{padding:12,border:'1px solid #d1d5db',borderRadius:8,marginTop:10}}>
+      <strong>Çok sayfalı optik birleştirme · Geçici inceleme</strong>
+      <p>Toplanan sayfalar: {collectedList.length}/{pages.length} · Öğrenci: {collectedList[0]?.studentName||'Henüz belirlenmedi'}</p>
+      <p>Eksik sayfalar: {pages.filter(p=>!collectedPages[p.pageNumber]).map(p=>p.pageNumber).join(', ')||'Yok'}</p>
+      <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+        {collectedList.map(item=><button type="button" key={item.pageNumber} onClick={()=>{setCollectedPages(old=>{const next={...old};delete next[item.pageNumber];return next});setCollectionMessage(item.pageNumber+'. sayfa gruptan çıkarıldı.')}}>{item.pageNumber}. sayfayı çıkar</button>)}
+        <button type="button" disabled={!collectedList.length} onClick={()=>{setCollectedPages({});setCollectionMessage('Sayfa grubu temizlendi.')}}>Grubu temizle</button>
+      </div>
+      {collectionComplete&&combinedScore&&<p role="status"><strong>Tüm sayfalar toplandı · Geçici toplam puan: {combinedScore.score}/100</strong> · Doğru: {combinedScore.correct} · Yanlış: {combinedScore.wrong} · Boş: {combinedScore.blank}</p>}
+      <p style={{fontSize:12}}>Sayfa grubu yalnızca bu ekranda geçici tutulur. Çok sayfalı sonuç henüz veritabanına kaydedilmez.</p>
+      {collectionMessage&&<p role="status">{collectionMessage}</p>}
+    </div>}
       {reading&&<div role="status" style={{marginTop:16,padding:12,border:'1px solid #d1d5db',borderRadius:8}}>
         <strong>Geçici optik inceleme — kayıt yapılmadı</strong>
         <p>İşaretli: {reading.rows.filter(r=>r.status==='marked').length} · Boş: {reading.rows.filter(r=>r.status==='blank').length} · Kontrol gerekli: {reading.rows.filter(r=>r.status==='review').length}</p>
@@ -245,6 +295,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
         {!provisionalScore&&<p role="status">Puan hesaplamak için Sorular sekmesinde sınav taslağını ve cevap anahtarını tamamlayınız.</p>}
         <p><strong>Bekleyen şüpheli cevap: {reading.rows.filter(r=>r.status==='review'&&!manualAnswers[r.number]).length}</strong> · Manuel incelenen: {reading.rows.filter(r=>r.status==='review'&&manualAnswers[r.number]).length}</p>
         {reading.rows.some(r=>r.status==='review')&&<p style={{color:'#92400e',fontWeight:600}}>Belirsiz işaretler öğretici tarafından kâğıt üzerinden kontrol edilmelidir. Bu ekrandaki sonuçlar kesinleştirilemez.</p>}
+        {pages.length>1&&<button type="button" disabled={!identifiedStudent||pendingReviews!==0||provisionalScore?.review!==0||Boolean(collectedPages[pageNumber])} onClick={collectCurrentPage}>Kontrol Edilen {pageNumber}. Sayfayı Gruba Ekle</button>}
         <p style={{fontSize:12}}>Gerçek baskı ve kamera kalibrasyonu yapılmamıştır. Kaydedilen sonuç yalnızca yönetici inceleme taslağıdır; kesin not veya veliye açık sonuç değildir.</p>
         {savedExamId&&<div style={{borderTop:'1px solid #d1d5db',paddingTop:12}}>
           <label style={{display:'flex',alignItems:'flex-start',gap:8}}>
