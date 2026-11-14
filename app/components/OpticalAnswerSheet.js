@@ -13,12 +13,14 @@ export default function OpticalAnswerSheet({ questionCount = 20, examCode = '', 
     <style>{`
       .geys-optical-document{overflow-x:auto}
       .geys-optical-page{position:relative;width:210mm;height:297mm;box-sizing:border-box;background:#fff;color:#142436;font-family:Arial,sans-serif;margin:12px auto;border:1px solid #cbd5e1;overflow:hidden}
-      .geys-optical-page .geys-optical-header{position:absolute;left:19mm;right:19mm;top:20mm;text-align:center;font-size:11pt}
-      .geys-optical-header h2{font-size:13pt;margin:4mm 0}
-      .geys-optical-barcode{position:absolute;top:76mm;left:19mm;right:19mm;text-align:center;font-size:8pt}
-      .geys-optical-barcode svg{display:block;width:150mm;height:11mm;margin:0 auto}
-      .geys-optical-fields{position:absolute;left:19mm;right:19mm;top:58mm;display:grid;grid-template-columns:1fr 1fr;gap:5mm;font-size:10pt}
-      .geys-optical-field{border-bottom:1px solid #344054;height:9mm}
+      .geys-optical-page .geys-optical-header{position:absolute!important;display:block!important;left:19mm;right:19mm;top:19mm;text-align:center;font-size:10pt;line-height:1.25;white-space:normal}
+      .geys-optical-header>strong,.geys-optical-header>div,.geys-optical-header>small{display:block!important;width:100%;margin:0 auto;line-height:1.3}
+      .geys-optical-header>strong{font-size:10pt;letter-spacing:.2px}
+      .geys-optical-header h2{display:block!important;font-size:12pt;line-height:1.25;margin:2mm 0 1mm;font-weight:700}
+      .geys-optical-barcode{position:absolute;top:78mm;left:19mm;right:19mm;text-align:center;font-size:8pt}
+      .geys-optical-barcode svg{display:block;width:150mm;height:10mm;margin:0 auto}
+      .geys-optical-fields{position:absolute;left:19mm;right:19mm;top:52mm;display:grid;grid-template-columns:1fr 1fr;column-gap:5mm;row-gap:3mm;font-size:10pt}
+      .geys-optical-field{border-bottom:1px solid #344054;height:9mm;box-sizing:border-box;white-space:nowrap;overflow:hidden}
       .geys-optical-mark{position:absolute;width:5mm;height:5mm;background:#111;transform:translate(-50%,-50%)}
       .geys-optical-row-number{position:absolute;transform:translateY(-50%);font-size:10pt;font-weight:bold}
       .geys-optical-bubble{position:absolute;border:0.45mm solid #111;border-radius:50%;width:5.8mm;height:5.8mm;box-sizing:border-box;transform:translate(-50%,-50%);background:#fff}
