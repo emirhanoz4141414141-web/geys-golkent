@@ -13,7 +13,7 @@ const letters = ['A', 'B', 'C', 'D']
  * Bilinçli olarak Supabase erişimi / otomatik kayıt / veliye yayın içermez.
  * Canlıya bağlanmadan önce yetki ve veri modeli ayrıca doğrulanmalıdır.
  */
-export default function ExamWorkspace({students = [], classes = []}) {
+export default function ExamWorkspace({students = [], classes = [], institution = null}) {
   const [examCode, setExamCode] = useState('DENEME')
   const [title, setTitle] = useState('Tecvid 1. Dönem 2. Yazılı')
   const [questions, setQuestions] = useState(() => Array.from({ length: 20 }, EMPTY))
@@ -68,7 +68,7 @@ export default function ExamWorkspace({students = [], classes = []}) {
       <label>Sınıf <select aria-label="Optik sınıf seçimi" value={selectedClassId} onChange={e=>{setSelectedClassId(e.target.value);setSelectedStudentId('')}}><option value="">Tüm sınıflar</option>{classes.map(c=><option key={c.id} value={String(c.id)}>{c.code} {c.name||''}</option>)}</select></label>
       <label>Öğrenci <select aria-label="Optik öğrenci seçimi" value={selectedStudentId} onChange={e=>setSelectedStudentId(e.target.value)}><option value="">Öğrenci seçiniz</option>{visibleStudents.map(s=><option key={s.id} value={String(s.id)}>{s.first_name} {s.last_name} · {s.registry_no||'Numara yok'}</option>)}</select></label>
       <p style={{width:'100%',margin:0}}>Sınav kodu: <strong>{derivedExamCode}</strong> · Öğrenci: <strong>{studentName||'Seçilmedi'}</strong> · No: <strong>{studentNumber||'Kayıtlı değil'}</strong> · Sınıf: <strong>{studentClass||'—'}</strong>. T.C. kimlik numarası bu önizlemede alınmaz veya barkoda yazılmaz.</p>
-    </div><OpticalAnswerSheet questionCount={questions.length} examCode={derivedExamCode} examTitle={title} examDate={examDate} studentName={studentName} studentNumber={studentNumber} studentClass={studentClass}/></> : mode==='photo' ? <OpticalPhotoReview questionCount={questions.length} examCode={derivedExamCode} answerKey={validation.valid ? questions.map(q=>q.correctAnswer) : null} expectedStudentNumber={studentNumber.trim()}/> : mode==='questions' ? questions.map((q,i)=><fieldset key={i} style={{border:'1px solid #d6e1e9',borderRadius:12,padding:14,marginBottom:12}}>
+    </div><div style={{display:'flex',gap:10,margin:'10px 0'}}><button type="button" className="primary" onClick={()=>window.print()} disabled={!selectedStudent}>Yazdır / PDF olarak kaydet</button><small>PDF için açılan yazdırma penceresinde «PDF olarak kaydet» seçeneğini kullanınız. A4 ve %100 ölçek seçiniz.</small></div><OpticalAnswerSheet logoUrl={institution?.logo_url||'/golkent-logo.png'} questionCount={questions.length} examCode={derivedExamCode} examTitle={title} examDate={examDate} studentName={studentName} studentNumber={studentNumber} studentClass={studentClass}/></> : mode==='photo' ? <OpticalPhotoReview questionCount={questions.length} examCode={derivedExamCode} answerKey={validation.valid ? questions.map(q=>q.correctAnswer) : null} expectedStudentNumber={studentNumber.trim()}/> : mode==='questions' ? questions.map((q,i)=><fieldset key={i} style={{border:'1px solid #d6e1e9',borderRadius:12,padding:14,marginBottom:12}}>
       <legend style={{fontWeight:700}}>{i+1}. Soru</legend>
       <textarea aria-label={`${i+1}. soru metni`} dir="auto" rows={2} value={q.text} placeholder="Türkçe veya harekeli Arapça soru metni" onChange={e=>editQuestion(i,{text:e.target.value})} style={{width:'100%',padding:10}}/>
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:10,marginTop:10}}>
