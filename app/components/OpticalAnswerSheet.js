@@ -5,7 +5,7 @@ import { buildPrintPages, PAPER, REGISTRATION_MARKS } from '../lib/opticalTempla
 /** Önizleme ve baskı aynı milimetre koordinatlarını kullanır.
  * Fiziksel baskı/telefon kalibrasyonu henüz doğrulanmamıştır.
  */
-export default function OpticalAnswerSheet({ questionCount = 20, examCode = '', examTitle = 'Sınav' }) {
+export default function OpticalAnswerSheet({ questionCount = 20, examCode = '', examTitle = 'Sınav', studentName = '', studentNumber = '', studentClass = '' }) {
   const layout = buildOpticalLayout({ questionCount, examCode })
   const pages = buildPrintPages(layout.questionCount)
   return <section className="geys-optical-document" aria-label="Optik cevap formları">
@@ -40,9 +40,9 @@ export default function OpticalAnswerSheet({ questionCount = 20, examCode = '', 
         <small>Sınav kodu: {layout.examCode || '…………'} · Sayfa {page.pageNumber}/{page.pageCount}</small>
       </header>
       <div className="geys-optical-fields">
-        <div className="geys-optical-field">Adı Soyadı:</div>
-        <div className="geys-optical-field">Sınıfı:</div>
-        <div className="geys-optical-field">Öğrenci No:</div>
+        <div className="geys-optical-field">Adı Soyadı: {studentName}</div>
+        <div className="geys-optical-field">Sınıfı: {studentClass}</div>
+        <div className="geys-optical-field">Öğrenci No: {studentNumber}</div>
         <div className="geys-optical-field">Tarih:</div>
       </div>
       {page.rows.map(row => <div key={row.number}>

@@ -20,6 +20,9 @@ export default function ExamWorkspace() {
   const [answers, setAnswers] = useState(() => Array(20).fill(''))
   const [mode, setMode] = useState('questions')
   const [showKey, setShowKey] = useState(false)
+  const [studentName,setStudentName] = useState('')
+  const [studentNumber,setStudentNumber] = useState('')
+  const [studentClass,setStudentClass] = useState('')
   const draft = useMemo(() => ({ title, questions }), [title, questions])
   const validation = useMemo(() => validateExamDraft(draft), [draft])
   const score = useMemo(() => {
@@ -53,7 +56,7 @@ export default function ExamWorkspace() {
       <button type="button" className={mode==='sheet'?'primary':'ghost'} onClick={()=>setMode('sheet')}>Optik Form</button>
       <button type="button" className={mode==='photo'?'primary':'ghost'} onClick={()=>setMode('photo')}>Fotoğraf İnceleme</button>
     </div>
-    {mode==='sheet' ? <><p>Optik form önizlemesi: Yazdırma ölçüleri henüz fiziksel olarak doğrulanmadı.</p><OpticalAnswerSheet questionCount={questions.length} examCode={examCode} examTitle={title}/></> : mode==='photo' ? <OpticalPhotoReview questionCount={questions.length} examCode={examCode} answerKey={validation.valid ? questions.map(q=>q.correctAnswer) : null}/> : mode==='questions' ? questions.map((q,i)=><fieldset key={i} style={{border:'1px solid #d6e1e9',borderRadius:12,padding:14,marginBottom:12}}>
+    {mode==='sheet' ? <><p>Optik form önizlemesi: Yazdırma ölçüleri henüz fiziksel olarak doğrulanmadı. Öğrenci bilgileri yalnızca bu formun baskısına yazılır; sisteme kaydedilmez.</p><div style={{display:'flex',gap:10,flexWrap:'wrap',marginBottom:12}}><label>Öğrenci adı soyadı <input aria-label="Optik form öğrenci adı" maxLength={100} value={studentName} onChange={e=>setStudentName(e.target.value)}/></label><label>Öğrenci numarası <input aria-label="Optik form öğrenci numarası" maxLength={24} value={studentNumber} onChange={e=>setStudentNumber(e.target.value.replace(/[^0-9A-Za-z-]/g,''))}/></label><label>Sınıfı <input aria-label="Optik form sınıfı" maxLength={20} value={studentClass} onChange={e=>setStudentClass(e.target.value)}/></label></div><OpticalAnswerSheet questionCount={questions.length} examCode={examCode} examTitle={title} studentName={studentName} studentNumber={studentNumber} studentClass={studentClass}/></> : mode==='photo' ? <OpticalPhotoReview questionCount={questions.length} examCode={examCode} answerKey={validation.valid ? questions.map(q=>q.correctAnswer) : null}/> : mode==='questions' ? questions.map((q,i)=><fieldset key={i} style={{border:'1px solid #d6e1e9',borderRadius:12,padding:14,marginBottom:12}}>
       <legend style={{fontWeight:700}}>{i+1}. Soru</legend>
       <textarea aria-label={`${i+1}. soru metni`} dir="auto" rows={2} value={q.text} placeholder="Türkçe veya harekeli Arapça soru metni" onChange={e=>editQuestion(i,{text:e.target.value})} style={{width:'100%',padding:10}}/>
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:10,marginTop:10}}>
