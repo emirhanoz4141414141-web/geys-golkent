@@ -33,6 +33,7 @@ export default function ExamWorkspace({students = [], classes = [], institution 
   const [examSaving,setExamSaving] = useState(false)
   const [examMessage,setExamMessage] = useState('')
   const [examLoading,setExamLoading] = useState(false)
+  const [bulkPrint,setBulkPrint] = useState(false)
   async function refreshSavedExams(){
     if(!supabase)return
     setExamLoading(true)
@@ -88,6 +89,7 @@ export default function ExamWorkspace({students = [], classes = [], institution 
   const selectedStudent=students.find(s=>String(s.id)===selectedStudentId)
   const selectedClass=classes.find(c=>String(c.id)===selectedClassId)
   const visibleStudents=students.filter(s=>!selectedClassId||String(s.class_id)===selectedClassId)
+  const bulkStudents=visibleStudents.filter(s=>s.id&&s.first_name&&s.last_name).slice(0,250)
   const studentName=selectedStudent? [selectedStudent.first_name,selectedStudent.last_name].filter(Boolean).join(' '):''
   const studentNumber=selectedStudent?.registry_no||''
   const studentClass=selectedStudent?.classes?.code||selectedClass?.code||''
@@ -128,7 +130,7 @@ export default function ExamWorkspace({students = [], classes = [], institution 
     <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:14}}>
       <button type="button" className={mode==='questions'?'primary':'ghost'} onClick={()=>setMode('questions')}>Sorular</button>
       <button type="button" className={mode==='check'?'primary':'ghost'} onClick={()=>setMode('check')}>Kontrol ve Deneme</button>
-      <button type="button" className={mode==='sheet'?'primary':'ghost'} onClick={()=>setMode('sheet')}>Optik Form</button>
+      <button type="button" className={mode==='sheet'?'primary':'ghost'} onClick={()=>{setBulkPrint(false);setMode('sheet')}}>Optik Form</button>
       <button type="button" className={mode==='photo'?'primary':'ghost'} onClick={()=>setMode('photo')}>Fotoğraf İnceleme</button>
     </div>
     {mode==='sheet' ? <><p>Optik form önizlemesi: Yazdırma ölçüleri henüz fiziksel olarak doğrulanmadı. Öğrenci bilgileri yalnızca bu formun baskısına yazılır; sisteme kaydedilmez.</p><div style={{display:'flex',gap:10,flexWrap:'wrap',marginBottom:12}}>
@@ -141,7 +143,12 @@ export default function ExamWorkspace({students = [], classes = [], institution 
         <small>{studentTc?'T.C. kimlik numarası yalnızca bu baskı önizlemesine aktarıldı.':'T.C. kimlik numarası henüz yüklenmedi.'}</small>
         {tcError&&<small role="alert">{tcError}</small>}
       </div>
-    </div><div style={{display:'flex',gap:10,margin:'10px 0'}}> <button type="button" className="primary" onClick={()=>window.print()} disabled={!selectedStudent}>Yazdır / PDF olarak kaydet</button><small>PDF için açılan yazdırma penceresinde «PDF olarak kaydet» seçeneğini kullanınız. A4 ve %100 ölçek seçiniz.</small></div><OpticalAnswerSheet logoUrl={institution?.logo_url||'/golkent-logo.png'} questionCount={questions.length} examCode={derivedExamCode} examTitle={title} examDate={examDate} studentName={studentName} studentId={selectedStudent?.id ? String(selectedStudent.id) : ''} studentNumber={studentNumber} studentClass={studentClass} studentTc={studentTc} studentPhotoUrl={selectedStudent?.photo_url||''}/></> : mode==='photo' ? <OpticalPhotoReview questionCount={questions.length} examCode={derivedExamCode} answerKey={validation.valid ? questions.map(q=>q.correctAnswer) : null} expectedStudentNumber={selectedStudent?.id ? '' : studentNumber.trim()} expectedFormIdentity={selectedStudent?.id ? (buildCompactFormIdentity({examCode:derivedExamCode,studentId:String(selectedStudent.id),pageNumber:1})||'') : ''}/> : mode==='questions' ? questions.map((q,i)=><fieldset key={i} style={{border:'1px solid #d6e1e9',borderRadius:12,padding:14,marginBottom:12}}>
+    </div><div style={{display:'flex',gap:10,margin:'10px 0',alignItems:'center',flexWrap:'wrap'}}>
+      <button type="button" className="primary" onClick={()=>{setBulkPrint(false);window.setTimeout(()=>window.print(),80)}} disabled={!selectedStudent}>Tek Öğrenci Yazdır / PDF</button>
+      <button type="button" onClick={()=>setBulkPrint(v=>!v)} disabled={!bulkStudents.length}>{bulkPrint?'Toplu Önizlemeyi Kapat':`Toplu Optik Önizleme (${bulkStudents.length} öğrenci)`}</button>
+      {bulkPrint&&<button type="button" className="primary" onClick={()=>window.print()}>Tümünü Yazdır / PDF</button>}
+      {bulkPrint&&<small role="status" style={{width:'100%'}}>Toplu baskıda yalnızca seçilen sınıfın öğrencileri; sınıf seçilmediyse ilk 250 öğrenci yer alır. T.C. kimlik numaraları topluca getirilmez. Öğrenci fotoğrafları kayıtlıysa eklenir. Baskı öncesi sayfa sayısını kontrol ediniz.</small>}
+      <small>PDF için açılan yazdırma penceresinde «PDF olarak kaydet» seçeneğini kullanınız. A4 ve %100 ölçek seçiniz.</small></div>{bulkPrint ? <div aria-label="Toplu optik formlar">{bulkStudents.map(s=><OpticalAnswerSheet key={s.id} logoUrl={institution?.logo_url||'/golkent-logo.png'} questionCount={questions.length} examCode={derivedExamCode} examTitle={title} examDate={examDate} studentName={[s.first_name,s.last_name].filter(Boolean).join(' ')} studentId={String(s.id)} studentClass={s.classes?.code||classes.find(c=>String(c.id)===String(s.class_id))?.code||''} studentPhotoUrl={s.photo_url||''}/>)}</div> : <OpticalAnswerSheet logoUrl={institution?.logo_url||'/golkent-logo.png'} questionCount={questions.length} examCode={derivedExamCode} examTitle={title} examDate={examDate} studentName={studentName} studentId={selectedStudent?.id ? String(selectedStudent.id) : ''} studentNumber={studentNumber} studentClass={studentClass} studentTc={studentTc} studentPhotoUrl={selectedStudent?.photo_url||''}/>}</> : mode==='photo' ? <OpticalPhotoReview questionCount={questions.length} examCode={derivedExamCode} answerKey={validation.valid ? questions.map(q=>q.correctAnswer) : null} expectedStudentNumber={selectedStudent?.id ? '' : studentNumber.trim()} expectedFormIdentity={selectedStudent?.id ? (buildCompactFormIdentity({examCode:derivedExamCode,studentId:String(selectedStudent.id),pageNumber:1})||'') : ''}/> : mode==='questions' ? questions.map((q,i)=><fieldset key={i} style={{border:'1px solid #d6e1e9',borderRadius:12,padding:14,marginBottom:12}}>
       <legend style={{fontWeight:700}}>{i+1}. Soru</legend>
       <textarea aria-label={`${i+1}. soru metni`} dir="auto" rows={2} value={q.text} placeholder="Türkçe veya harekeli Arapça soru metni" onChange={e=>editQuestion(i,{text:e.target.value})} style={{width:'100%',padding:10}}/>
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:10,marginTop:10}}>
