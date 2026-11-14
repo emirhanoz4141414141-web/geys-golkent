@@ -1,4 +1,5 @@
 'use client'
+import { buildFormIdentity, code39Bars } from '../lib/opticalFormIdentity.js'
 import { buildOpticalLayout } from '../lib/opticalLayout.js'
 import { buildPrintPages, PAPER, REGISTRATION_MARKS } from '../lib/opticalTemplate.js'
 
@@ -14,6 +15,8 @@ export default function OpticalAnswerSheet({ questionCount = 20, examCode = '', 
       .geys-optical-page{position:relative;width:210mm;height:297mm;box-sizing:border-box;background:#fff;color:#142436;font-family:Arial,sans-serif;margin:12px auto;border:1px solid #cbd5e1;overflow:hidden}
       .geys-optical-page .geys-optical-header{position:absolute;left:19mm;right:19mm;top:20mm;text-align:center;font-size:11pt}
       .geys-optical-header h2{font-size:13pt;margin:4mm 0}
+      .geys-optical-barcode{position:absolute;top:76mm;left:19mm;right:19mm;text-align:center;font-size:8pt}
+      .geys-optical-barcode svg{display:block;width:150mm;height:11mm;margin:0 auto}
       .geys-optical-fields{position:absolute;left:19mm;right:19mm;top:58mm;display:grid;grid-template-columns:1fr 1fr;gap:5mm;font-size:10pt}
       .geys-optical-field{border-bottom:1px solid #344054;height:9mm}
       .geys-optical-mark{position:absolute;width:5mm;height:5mm;background:#111;transform:translate(-50%,-50%)}
@@ -45,6 +48,7 @@ export default function OpticalAnswerSheet({ questionCount = 20, examCode = '', 
         <div className="geys-optical-field">Öğrenci No: {studentNumber}</div>
         <div className="geys-optical-field">Tarih:</div>
       </div>
+      {(()=>{const identity=buildFormIdentity({examCode:layout.examCode,studentNumber,pageNumber:page.pageNumber});const encoded=identity&&code39Bars(identity);return encoded?<div className="geys-optical-barcode"><svg viewBox={`0 0 ${encoded.width} 36`} preserveAspectRatio="none" role="img" aria-label="Forma özel Code 39 barkod"><rect width={encoded.width} height="36" fill="white"/>{encoded.bars.map((bar,i)=><rect key={i} x={bar.x} y="0" width={bar.width} height="36" fill="black"/>)}</svg><span>Form kimliği: {identity}</span></div>:null})()}
       {page.rows.map(row => <div key={row.number}>
         <span className="geys-optical-row-number" style={{left:`${row.numberX}mm`,top:`${row.y}mm`}}>{row.number}.</span>
         {row.bubbles.map(b=><span key={b.option}>
@@ -52,7 +56,7 @@ export default function OpticalAnswerSheet({ questionCount = 20, examCode = '', 
           <span className="geys-optical-bubble" style={{left:`${b.x}mm`,top:`${b.y}mm`}} aria-label={`${row.number}-${b.option}`}/>
         </span>)}
       </div>)}
-      <footer className="geys-optical-footer">Her soruda tek seçeneği tamamen doldurunuz. Bu şablonun otomatik fotoğraf okuması henüz kalibre edilmemiştir.</footer>
+      <footer className="geys-optical-footer">Her soruda tek seçeneği tamamen doldurunuz. Barkod kimliği henüz fotoğraftan otomatik okunmaz. Optik okuma kalibre edilmemiştir.</footer>
     </article>)}
   </section>
 }
