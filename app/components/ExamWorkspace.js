@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { gradeExam } from '../lib/examGrading.js'
 import { validateExamDraft } from '../lib/examDraft.js'
 import OpticalAnswerSheet from './OpticalAnswerSheet.js'
@@ -24,21 +24,27 @@ export default function ExamWorkspace({students = [], classes = [], institution 
   const [studentTc,setStudentTc] = useState('')
   const [tcError,setTcError] = useState('')
   const [tcLoading,setTcLoading] = useState(false)
+  const tcRequestRef = useRef(0)
   const [examDate,setExamDate] = useState(() => new Date().toLocaleDateString('en-CA'))
   const [selectedClassId,setSelectedClassId] = useState('')
-  useEffect(()=>{setStudentTc('');setTcError('')},[selectedStudentId,mode])
+  useEffect(()=>{
+    tcRequestRef.current += 1
+    setStudentTc('');setTcError('');setTcLoading(false)
+  },[selectedStudentId,mode])
   async function fetchStudentTc(){
     if(!selectedStudentId||!supabase)return
     setStudentTc('');setTcError('');setTcLoading(true)
     const id=selectedStudentId
+    const requestId=++tcRequestRef.current
     try{
       const {data,error}=await supabase.rpc('get_student_national_id_for_optical',{p_student:id})
       if(error)throw error
-      if(String(data||'').match(/^[0-9]{11}$/)&&id===selectedStudentId)setStudentTc(String(data))
+      if(requestId!==tcRequestRef.current)return
+      if(String(data||'').match(/^[0-9]{11}$/))setStudentTc(String(data))
       else if(!data)setTcError('Bu öğrencinin T.C. kimlik numarası kayıtlı değil.')
       else setTcError('T.C. kimlik numarası alınamadı.')
-    }catch(e){setTcError('T.C. kimlik numarasına erişilemedi. Yetkinizi ve bağlantınızı kontrol ediniz.')}
-    finally{setTcLoading(false)}
+    }catch(e){if(requestId===tcRequestRef.current)setTcError('T.C. kimlik numarasına erişilemedi. Yetkinizi ve bağlantınızı kontrol ediniz.')}
+    finally{if(requestId===tcRequestRef.current)setTcLoading(false)}
   }
   const selectedStudent=students.find(s=>String(s.id)===selectedStudentId)
   const selectedClass=classes.find(c=>String(c.id)===selectedClassId)
