@@ -6,7 +6,7 @@ import { buildPrintPages, PAPER, REGISTRATION_MARKS } from '../lib/opticalTempla
 /** Önizleme ve baskı aynı milimetre koordinatlarını kullanır.
  * Fiziksel baskı/telefon kalibrasyonu henüz doğrulanmamıştır.
  */
-export default function OpticalAnswerSheet({ questionCount = 20, examCode = '', examTitle = 'Sınav', studentName = '', studentNumber = '', studentClass = '' }) {
+export default function OpticalAnswerSheet({ questionCount = 20, examCode = '', examTitle = 'Sınav', examDate = '', studentName = '', studentNumber = '', studentClass = '' }) {
   const layout = buildOpticalLayout({ questionCount, examCode })
   const pages = buildPrintPages(layout.questionCount)
   return <section className="geys-optical-document" aria-label="Optik cevap formları">
@@ -46,7 +46,7 @@ export default function OpticalAnswerSheet({ questionCount = 20, examCode = '', 
         <div className="geys-optical-field">Adı Soyadı: {studentName}</div>
         <div className="geys-optical-field">Sınıfı: {studentClass}</div>
         <div className="geys-optical-field">Öğrenci No: {studentNumber}</div>
-        <div className="geys-optical-field">Tarih:</div>
+        <div className="geys-optical-field">Tarih: {examDate}</div>
       </div>
       {(()=>{const identity=buildFormIdentity({examCode:layout.examCode,studentNumber,pageNumber:page.pageNumber});const encoded=identity&&code39Bars(identity);return encoded?<div className="geys-optical-barcode"><svg viewBox={`0 0 ${encoded.width} 36`} preserveAspectRatio="none" role="img" aria-label="Forma özel Code 39 barkod"><rect width={encoded.width} height="36" fill="white"/>{encoded.bars.map((bar,i)=><rect key={i} x={bar.x} y="0" width={bar.width} height="36" fill="black"/>)}</svg><span>Form kimliği: {identity}</span></div>:<div className="geys-optical-barcode" role="status" style={{color:'#9a3412',fontWeight:700}}>BARKOD OLUŞTURULAMADI — {studentNumber?'Kod uzunluğu veya kimlik bilgileri uygun değil.':'Öğrenci numarası girilmedi.'} Kimlik kontrolünü elle yapınız.</div>})()}
       {page.rows.map(row => <div key={row.number}>
