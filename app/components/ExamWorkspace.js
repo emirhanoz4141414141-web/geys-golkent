@@ -28,6 +28,44 @@ export default function ExamWorkspace({students = [], classes = [], institution 
   const tcRequestRef = useRef(0)
   const [examDate,setExamDate] = useState(() => new Date().toLocaleDateString('en-CA'))
   const [selectedClassId,setSelectedClassId] = useState('')
+  const [savedExams,setSavedExams] = useState([])
+  const [activeExamId,setActiveExamId] = useState('')
+  const [examSaving,setExamSaving] = useState(false)
+  const [examMessage,setExamMessage] = useState('')
+  const [examLoading,setExamLoading] = useState(false)
+  async function refreshSavedExams(){
+    if(!supabase)return
+    setExamLoading(true)
+    const {data,error}=await supabase.from('optical_exams').select('id,exam_code,title,exam_date,status,questions').order('created_at',{ascending:false}).limit(100)
+    if(error)setExamMessage('Kayıtlı sınavlar yüklenemedi: '+error.message)
+    else setSavedExams(data||[])
+    setExamLoading(false)
+  }
+  useEffect(()=>{refreshSavedExams()},[supabase])
+  function openSavedExam(id){
+    const exam=savedExams.find(x=>x.id===id)
+    if(!exam)return
+    setActiveExamId(exam.id)
+    setExamCode(exam.exam_code)
+    setTitle(exam.title)
+    setExamDate(exam.exam_date)
+    setQuestions(exam.questions)
+    setAnswers(Array(exam.questions.length).fill(''))
+    setExamMessage('Kayıtlı sınav açıldı. Değişikliklerinizi kaydetmeyi unutmayınız.')
+  }
+  async function saveExam(){
+    if(!supabase||examSaving)return
+    if(!validation.valid){setExamMessage('Önce soruları ve seçenekleri tamamlayınız.');return}
+    if(!examDate){setExamMessage('Sınav tarihi gerekli.');return}
+    setExamSaving(true);setExamMessage('')
+    const payload={exam_code:derivedExamCode,title,exam_date:examDate,questions,updated_at:new Date().toISOString()}
+    const response=activeExamId
+      ? await supabase.from('optical_exams').update(payload).eq('id',activeExamId).select('id').single()
+      : await supabase.from('optical_exams').insert(payload).select('id').single()
+    if(response.error)setExamMessage('Sınav kaydedilemedi: '+response.error.message)
+    else{setActiveExamId(response.data.id);setExamMessage('Sınav ve cevap anahtarı kalıcı olarak kaydedildi.');await refreshSavedExams()}
+    setExamSaving(false)
+  }
   useEffect(()=>{
     tcRequestRef.current += 1
     setStudentTc('');setTcError('');setTcLoading(false)
@@ -74,12 +112,18 @@ export default function ExamWorkspace({students = [], classes = [], institution 
     <div className="panelHead"><div>
       <small>E-GÖLKENT · SINAV YÖNETİMİ · GELİŞTİRME ÖNİZLEMESİ</small>
       <h3>Sınav Hazırlama ve Kontrol</h3>
-      <p>Bu ekran yalnızca tarayıcı belleğinde çalışır. Öğrenci verisi değiştirmez ve sonuç yayımlamaz.</p>
+      <p>Sınavları ve cevap anahtarlarını kaydedebilirsiniz. Optik okuma sonuçları henüz öğrenci kayıtlarına işlenmez.</p>
     </div></div>
     <div className="filters" style={{display:'flex',gap:12,flexWrap:'wrap',marginBottom:16}}>
       <label>Sınav adı <input aria-label="Sınav adı" value={title} maxLength={180} onChange={e=>setTitle(e.target.value)}/></label>
       <label>Sınav kodu <input aria-label="Sınav kodu" value={examCode} maxLength={32} onChange={e=>setExamCode(e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g,''))}/></label>
       <label>Soru sayısı <input aria-label="Soru sayısı" type="number" min="1" max="200" value={questions.length} onChange={e=>changeCount(e.target.value)}/></label>
+    </div>
+    <div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap',marginBottom:16,padding:12,border:'1px solid #d6e1e9',borderRadius:10}}>
+      <label>Kayıtlı sınavlar <select aria-label="Kayıtlı sınav seçimi" value={activeExamId} onChange={e=>{if(e.target.value)openSavedExam(e.target.value);else{setActiveExamId('');setExamMessage('Yeni sınav oluşturabilirsiniz.')}}}><option value="">Yeni sınav</option>{savedExams.map(x=><option key={x.id} value={x.id}>{x.title} · {x.exam_date} · {x.exam_code}</option>)}</select></label>
+      <button type="button" onClick={saveExam} disabled={examSaving||!validation.valid}>{examSaving?'Kaydediliyor…':activeExamId?'Sınavı Güncelle':'Sınavı Kaydet'}</button>
+      <button type="button" onClick={refreshSavedExams} disabled={examLoading}>{examLoading?'Yükleniyor…':'Listeyi Yenile'}</button>
+      {examMessage&&<small role="status" style={{width:'100%'}}>{examMessage}</small>}
     </div>
     <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:14}}>
       <button type="button" className={mode==='questions'?'primary':'ghost'} onClick={()=>setMode('questions')}>Sorular</button>
