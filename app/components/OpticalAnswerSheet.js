@@ -13,11 +13,11 @@ export default function OpticalAnswerSheet({ questionCount = 20, examCode = '', 
     <style>{`
       .geys-optical-document{overflow-x:auto}
       .geys-optical-page{position:relative;width:210mm;height:297mm;box-sizing:border-box;background:#fff;color:#142436;font-family:Arial,sans-serif;margin:12px auto;border:1px solid #cbd5e1;overflow:hidden}
-      .geys-optical-page .geys-optical-header{position:absolute!important;display:block!important;left:19mm;right:19mm;top:15mm;text-align:center;font-size:10pt;line-height:1.25}
+      .geys-optical-page .geys-optical-header{position:absolute!important;display:block!important;left:19mm;right:19mm;top:12mm;text-align:center;font-size:9pt;line-height:1.18}
       .geys-optical-header>strong,.geys-optical-header>div,.geys-optical-header>small{display:block!important;width:100%;margin:0 auto;line-height:1.25}
-      .geys-optical-header .geys-logo{display:block;width:29mm;height:29mm;object-fit:contain;margin:0 auto 1mm}
+      .geys-optical-header .geys-logo{display:block;width:29mm;height:29mm;object-fit:contain;margin:0 auto 0}
       .geys-optical-header>strong{color:#123c55;font-size:9pt}
-      .geys-optical-header h2{display:block!important;font-size:11pt;line-height:1.2;margin:2mm 0 1mm;color:#123c55}
+      .geys-optical-header h2{display:block!important;font-size:11pt;line-height:1.2;margin:1mm 0 0;color:#123c55}
       .geys-optical-barcode{position:absolute;top:158mm;left:111mm;width:75mm;text-align:center;font-size:8pt;z-index:1}
       .geys-optical-barcode.is-full{top:266mm;left:19mm;width:172mm;font-size:7.5pt}
       .geys-optical-barcode.is-full svg{height:7mm}
