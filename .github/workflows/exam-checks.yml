@@ -6,7 +6,11 @@ on:
   pull_request:
     paths:
       - 'app/lib/exam*.js'
-      - 'app/lib/opticalLayout.js'
+      - 'app/lib/optical*.js'
+      - 'app/lib/scanReview.js'
+      - 'app/components/ExamWorkspace.js'
+      - 'app/components/Optical*.js'
+      - 'app/page.js'
       - 'tests/*.test.mjs'
       - '.github/workflows/exam-checks.yml'
 permissions:
