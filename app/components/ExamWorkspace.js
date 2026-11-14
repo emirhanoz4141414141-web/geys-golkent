@@ -34,6 +34,9 @@ export default function ExamWorkspace({students = [], classes = [], institution 
   const [examMessage,setExamMessage] = useState('')
   const [examLoading,setExamLoading] = useState(false)
   const [bulkPrint,setBulkPrint] = useState(false)
+  const [examResults,setExamResults] = useState([])
+  const [resultsMessage,setResultsMessage] = useState('')
+  const [resultsLoading,setResultsLoading] = useState(false)
   async function refreshSavedExams(){
     if(!supabase)return
     setExamLoading(true)
@@ -43,10 +46,21 @@ export default function ExamWorkspace({students = [], classes = [], institution 
     setExamLoading(false)
   }
   useEffect(()=>{refreshSavedExams()},[supabase])
+  async function loadExamResults(){
+    if(!supabase||!activeExamId){setResultsMessage('Önce kayıtlı bir sınav seçiniz.');return}
+    setResultsLoading(true);setResultsMessage('')
+    const {data,error}=await supabase.from('optical_exam_results')
+      .select('id,student_id,score,correct_count,wrong_count,blank_count,review_count,status,updated_at')
+      .eq('exam_id',activeExamId).order('updated_at',{ascending:false}).limit(250)
+    if(error){setResultsMessage('Sonuçlar yüklenemedi: '+error.message);setExamResults([])}
+    else{setExamResults(data||[]);setResultsMessage(data?.length?'Kayıtlı sonuçlar listelendi.':'Bu sınav için henüz kaydedilmiş sonuç yok.')}
+    setResultsLoading(false)
+  }
   function openSavedExam(id){
     const exam=savedExams.find(x=>x.id===id)
     if(!exam)return
     setActiveExamId(exam.id)
+    setExamResults([]);setResultsMessage('')
     setExamCode(exam.exam_code)
     setTitle(exam.title)
     setExamDate(exam.exam_date)
@@ -132,8 +146,15 @@ export default function ExamWorkspace({students = [], classes = [], institution 
       <button type="button" className={mode==='check'?'primary':'ghost'} onClick={()=>setMode('check')}>Kontrol ve Deneme</button>
       <button type="button" className={mode==='sheet'?'primary':'ghost'} onClick={()=>{setBulkPrint(false);setMode('sheet')}}>Optik Form</button>
       <button type="button" className={mode==='photo'?'primary':'ghost'} onClick={()=>setMode('photo')}>Fotoğraf İnceleme</button>
+      <button type="button" className={mode==='results'?'primary':'ghost'} onClick={()=>setMode('results')}>Sınav Sonuçları</button>
     </div>
-    {mode==='sheet' ? <><p>Optik form önizlemesi: Yazdırma ölçüleri henüz fiziksel olarak doğrulanmadı. Öğrenci bilgileri yalnızca bu formun baskısına yazılır; sisteme kaydedilmez.</p><div style={{display:'flex',gap:10,flexWrap:'wrap',marginBottom:12}}>
+    {mode==='results' ? <div style={{padding:14,border:'1px solid #d6e1e9',borderRadius:12}}>
+      <h4>Kayıtlı sınav sonuçları</h4>
+      <p>Sonuçlar yalnızca yetkili yönetici tarafından görüntülenir. Fotoğraf incelemesi henüz otomatik kayıt yapmaz.</p>
+      <button type="button" disabled={!activeExamId||resultsLoading} onClick={loadExamResults}>{resultsLoading?'Yükleniyor…':'Seçili Sınavın Sonuçlarını Getir'}</button>
+      {resultsMessage&&<p role="status">{resultsMessage}</p>}
+      {examResults.length>0&&<div style={{overflowX:'auto',marginTop:12}}><table style={{width:'100%',borderCollapse:'collapse'}}><thead><tr><th>Öğrenci</th><th>Puan</th><th>Doğru</th><th>Yanlış</th><th>Boş</th><th>Kontrol</th><th>Durum</th></tr></thead><tbody>{examResults.map(r=>{const student=students.find(s=>String(s.id)===String(r.student_id));return <tr key={r.id}><td>{student?[student.first_name,student.last_name].filter(Boolean).join(' '):'Kayıtlı öğrenci'}</td><td>{r.score}</td><td>{r.correct_count}</td><td>{r.wrong_count}</td><td>{r.blank_count}</td><td>{r.review_count}</td><td>{r.status==='approved'?'Onaylandı':'İnceleme bekliyor'}</td></tr>})}</tbody></table></div>}
+    </div> : mode==='sheet' ? <><p>Optik form önizlemesi: Yazdırma ölçüleri henüz fiziksel olarak doğrulanmadı. Öğrenci bilgileri yalnızca bu formun baskısına yazılır; sisteme kaydedilmez.</p><div style={{display:'flex',gap:10,flexWrap:'wrap',marginBottom:12}}>
       <label>Sınav tarihi <input type="date" aria-label="Sınav tarihi" value={examDate} onChange={e=>setExamDate(e.target.value)}/></label>
       <label>Sınıf <select aria-label="Optik sınıf seçimi" value={selectedClassId} onChange={e=>{setSelectedClassId(e.target.value);setSelectedStudentId('')}}><option value="">Tüm sınıflar</option>{classes.map(c=><option key={c.id} value={String(c.id)}>{c.code} {c.name||''}</option>)}</select></label>
       <label>Öğrenci <select aria-label="Optik öğrenci seçimi" value={selectedStudentId} onChange={e=>setSelectedStudentId(e.target.value)}><option value="">Öğrenci seçiniz</option>{visibleStudents.map(s=><option key={s.id} value={String(s.id)}>{s.first_name} {s.last_name}</option>)}</select></label>
