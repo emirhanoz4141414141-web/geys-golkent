@@ -32,3 +32,10 @@ test('yanlış sayfa numarası reddedilir',()=>{
  const {image,corners}=sheet()
  assert.throws(()=>measurePhotoPage(image,corners,{questionCount:1,pageNumber:2}))
 })
+
+test('düşük çözünürlüklü fotoğraf güvenli biçimde reddedilir',()=>{
+ const width=210,height=297
+ const data=new Uint8ClampedArray(width*height*4).fill(255)
+ const corners=[{x:0,y:0},{x:width-1,y:0},{x:width-1,y:height-1},{x:0,y:height-1}]
+ assert.throws(()=>measurePhotoPage({width,height,data},corners,{questionCount:1}),/çözünürlüğü/)
+})
