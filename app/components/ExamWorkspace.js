@@ -14,6 +14,7 @@ const letters = ['A', 'B', 'C', 'D']
  * Canlıya bağlanmadan önce yetki ve veri modeli ayrıca doğrulanmalıdır.
  */
 export default function ExamWorkspace() {
+  const [examCode, setExamCode] = useState('DENEME')
   const [title, setTitle] = useState('Tecvid 1. Dönem 2. Yazılı')
   const [questions, setQuestions] = useState(() => Array.from({ length: 20 }, EMPTY))
   const [answers, setAnswers] = useState(() => Array(20).fill(''))
@@ -43,6 +44,7 @@ export default function ExamWorkspace() {
     </div></div>
     <div className="filters" style={{display:'flex',gap:12,flexWrap:'wrap',marginBottom:16}}>
       <label>Sınav adı <input aria-label="Sınav adı" value={title} maxLength={180} onChange={e=>setTitle(e.target.value)}/></label>
+      <label>Sınav kodu <input aria-label="Sınav kodu" value={examCode} maxLength={32} onChange={e=>setExamCode(e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g,''))}/></label>
       <label>Soru sayısı <input aria-label="Soru sayısı" type="number" min="1" max="200" value={questions.length} onChange={e=>changeCount(e.target.value)}/></label>
     </div>
     <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:14}}>
@@ -51,7 +53,7 @@ export default function ExamWorkspace() {
       <button type="button" className={mode==='sheet'?'primary':'ghost'} onClick={()=>setMode('sheet')}>Optik Form</button>
       <button type="button" className={mode==='photo'?'primary':'ghost'} onClick={()=>setMode('photo')}>Fotoğraf İnceleme</button>
     </div>
-    {mode==='sheet' ? <><p>Optik form önizlemesi: Yazdırma ölçüleri henüz fiziksel olarak doğrulanmadı.</p><OpticalAnswerSheet questionCount={questions.length} examCode="DENEME" examTitle={title}/></> : mode==='photo' ? <OpticalPhotoReview questionCount={questions.length}/> : mode==='questions' ? questions.map((q,i)=><fieldset key={i} style={{border:'1px solid #d6e1e9',borderRadius:12,padding:14,marginBottom:12}}>
+    {mode==='sheet' ? <><p>Optik form önizlemesi: Yazdırma ölçüleri henüz fiziksel olarak doğrulanmadı.</p><OpticalAnswerSheet questionCount={questions.length} examCode={examCode} examTitle={title}/></> : mode==='photo' ? <OpticalPhotoReview questionCount={questions.length} examCode={examCode}/> : mode==='questions' ? questions.map((q,i)=><fieldset key={i} style={{border:'1px solid #d6e1e9',borderRadius:12,padding:14,marginBottom:12}}>
       <legend style={{fontWeight:700}}>{i+1}. Soru</legend>
       <textarea aria-label={`${i+1}. soru metni`} dir="auto" rows={2} value={q.text} placeholder="Türkçe veya harekeli Arapça soru metni" onChange={e=>editQuestion(i,{text:e.target.value})} style={{width:'100%',padding:10}}/>
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:10,marginTop:10}}>
