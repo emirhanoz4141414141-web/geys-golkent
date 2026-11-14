@@ -19,7 +19,7 @@ export default function OpticalAnswerSheet({ questionCount = 20, examCode = '', 
       .geys-optical-rows{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:20px;row-gap:4px}
       .geys-optical-row{display:flex;align-items:center;gap:12px;min-height:23px;border-bottom:1px solid #e2e8f0;font-size:12px;break-inside:avoid}
       .geys-optical-num{font-weight:700;min-width:22px}
-      .geys-optical-bubble{display:inline-flex;align-items:center;justify-content:center;width:21px;height:21px;border:1.5px solid #111827;border-radius:50%;font-size:9px}
+      .geys-optical-bubble{display:inline-flex;align-items:center;justify-content:center;width:21px;height:21px;border:1.5px solid #111827;border-radius:50%;font-size:9px;position:relative;margin-left:12px}
       .geys-optical-note{margin-top:16px;font-size:11px}
       @page{size:A4 portrait;margin:0}
       @media print{body *{visibility:hidden!important}.geys-optical-page,.geys-optical-page *{visibility:visible!important}.geys-optical-page{position:absolute;top:0;left:0;width:210mm;max-width:none;min-height:297mm;border:0;margin:0;box-shadow:none}.geys-optical-row{print-color-adjust:exact}}
@@ -40,7 +40,7 @@ export default function OpticalAnswerSheet({ questionCount = 20, examCode = '', 
     <div className="geys-optical-rows">
       {layout.rows.map(row=><div key={row.number} className="geys-optical-row">
         <span className="geys-optical-num">{row.number}.</span>
-        {row.bubbles.map(b=><span key={b.option} className="geys-optical-bubble" aria-label={b.label}>{b.option}</span>)}
+        {row.bubbles.map(b=><span key={b.option} className="geys-optical-bubble" aria-label={b.label}><span style={{position:"absolute",left:"-12px",fontSize:9}}>{b.option}</span></span>)}
       </div>)}
     </div>
     <p className="geys-optical-note">Her soruda yalnızca bir seçeneği tamamen doldurunuz. Çift işaretli veya okunamayan cevaplar öğretici kontrolüne alınır.</p>
