@@ -18,15 +18,15 @@ export default function OpticalAnswerSheet({ questionCount = 20, examCode = '', 
       .geys-optical-header .geys-logo{display:block;width:25mm;height:25mm;object-fit:contain;margin:0 auto 1mm}
       .geys-optical-header>strong{color:#123c55;font-size:9pt}
       .geys-optical-header h2{display:block!important;font-size:11pt;line-height:1.2;margin:2mm 0 1mm;color:#123c55}
-      .geys-optical-barcode{position:absolute;top:175mm;left:111mm;width:75mm;text-align:center;font-size:7pt;z-index:1}
-      .geys-optical-barcode.is-full{top:265mm;left:19mm;width:172mm;font-size:6.5pt}
+      .geys-optical-barcode{position:absolute;top:158mm;left:111mm;width:75mm;text-align:center;font-size:7pt;z-index:1}
+      .geys-optical-barcode.is-full{top:266mm;left:19mm;width:172mm;font-size:6.5pt}
       .geys-optical-barcode.is-full svg{height:7mm}
       .geys-optical-barcode svg{display:block;width:100%;height:10mm;margin:0 auto}
-      .geys-optical-fields{position:absolute;left:19mm;right:19mm;top:73mm;display:grid;grid-template-columns:1fr 1fr;column-gap:5mm;row-gap:3mm;font-size:9pt}
+      .geys-optical-fields{position:absolute;left:19mm;right:19mm;top:70mm;display:grid;grid-template-columns:1fr 1fr;column-gap:5mm;row-gap:3mm;font-size:9pt}
       .geys-optical-field{border-bottom:1px solid #344054;height:9mm;box-sizing:border-box;white-space:nowrap;overflow:hidden}
       .geys-optical-page:before{content:'';position:absolute;top:9mm;left:19mm;right:19mm;height:1.5mm;background:#0f6175}
       .geys-optical-page:after{content:'';position:absolute;top:12mm;left:19mm;right:19mm;height:.5mm;background:#c6a25c}
-      .geys-optical-page .geys-optical-example{position:absolute!important;inset:auto!important;left:111mm!important;top:111mm!important;right:auto!important;bottom:auto!important;display:block!important;float:none!important;transform:none!important;width:75mm!important;height:auto!important;min-height:0!important;max-height:60mm!important;box-sizing:border-box!important;overflow:hidden!important;padding:4mm!important;margin:0!important;border:1px solid #a9c5d0!important;border-radius:2mm!important;background:#f2f8fa!important;color:#123c55!important;font-size:9pt!important;line-height:1.5!important;z-index:1!important}
+      .geys-optical-page .geys-optical-example{position:absolute!important;inset:auto!important;left:111mm!important;top:110mm!important;right:auto!important;bottom:auto!important;display:block!important;float:none!important;transform:none!important;width:75mm!important;height:auto!important;min-height:0!important;max-height:60mm!important;box-sizing:border-box!important;overflow:hidden!important;padding:4mm!important;margin:0!important;border:1px solid #a9c5d0!important;border-radius:2mm!important;background:#f2f8fa!important;color:#123c55!important;font-size:9pt!important;line-height:1.5!important;z-index:1!important}
       .geys-optical-example-title{font-weight:700;color:#0f6175;border-bottom:1px solid #a9c5d0;padding-bottom:1mm;margin-bottom:2mm}
       .geys-optical-example-circle{display:inline-block;width:5.8mm;height:5.8mm;box-sizing:border-box;border:0.45mm solid #111;border-radius:50%;vertical-align:middle;margin-right:2mm;background:#111}
       .geys-optical-example-circle.invalid{background:#fff;position:relative}
