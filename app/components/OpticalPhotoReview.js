@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import { computeHomography, mapHomography } from '../lib/opticalPerspective.js'
+import { validatePaperCorners } from '../lib/opticalGeometry.js'
 
 const PAPER=[{x:0,y:0},{x:1,y:0},{x:1,y:1},{x:0,y:1}]
 const LABELS=['Sol üst','Sağ üst','Sağ alt','Sol alt']
@@ -44,6 +45,7 @@ export default function OpticalPhotoReview() {
   let preview=[]
   if(corners.length===4){
     try {
+      if (!validatePaperCorners(corners).valid) throw new Error('Köşeler geometrik olarak geçersiz.')
       const matrix=computeHomography(PAPER,corners)
       preview=[{x:.5,y:.5},{x:.25,y:.25},{x:.75,y:.75}].map(p=>mapHomography(matrix,p))
       valid=true
