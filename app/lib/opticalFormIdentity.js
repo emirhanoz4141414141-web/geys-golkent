@@ -11,7 +11,7 @@ export function buildFormIdentity({examCode,studentNumber,pageNumber=1}){
  return 'G'+String(examCode.length).padStart(2,'0')+examCode+'N'+String(studentNumber.length).padStart(2,'0')+studentNumber+'P'+pageNumber
 }
 export function code39Bars(value){
- if(typeof value!=='string'||!value||![...value].every(ch=>PATTERNS[ch]&&ch!=='*'))return null
+ if(typeof value!=='string'||!value||value.length>30||![...value].every(ch=>PATTERNS[ch]&&ch!=='*'))return null
  let x=0;const bars=[]
  const symbols='*'+value+'*'
  for(let k=0;k<symbols.length;k++){
