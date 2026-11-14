@@ -14,6 +14,19 @@ export function measurePhotoPage(image, corners, { questionCount = 20, pageNumbe
       !image.data || image.data.length !== image.width * image.height * 4) {
     throw new Error('Geçerli fotoğraf piksel verisi gerekli.')
   }
+  // Fotoğrafın genel ışık durumunu seyrek örneklemeyle kontrol et.
+  // Bu eşikler ilk güvenlik kontrolüdür; gerçek kamera testleriyle kalibre edilmelidir.
+  let sum = 0, samples = 0
+  const stride = Math.max(1,Math.floor(Math.sqrt(image.width*image.height/4000)))
+  for(let y=0;y<image.height;y+=stride) for(let x=0;x<image.width;x+=stride){
+    const k=(y*image.width+x)*4
+    const alpha=image.data[k+3]
+    if(alpha<250)throw new Error('Saydam fotoğraf optik okumaya uygun değil.')
+    const luminance=(0.2126*image.data[k]+0.7152*image.data[k+1]+0.0722*image.data[k+2])/255
+    sum+=luminance;samples++
+  }
+  const average=sum/samples
+  if(average<0.22)throw new Error('Fotoğraf çok karanlık. Daha aydınlık ortamda yeniden çekiniz.')
   const pages = buildPrintPages(questionCount)
   if (!Number.isInteger(pageNumber) || pageNumber < 1 || pageNumber > pages.length) throw new Error('Sayfa numarası geçersiz.')
   const paperCorners = [{x:0,y:0},{x:PAPER.width,y:0},{x:PAPER.width,y:PAPER.height},{x:0,y:PAPER.height}]
