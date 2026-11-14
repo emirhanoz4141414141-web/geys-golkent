@@ -6,7 +6,7 @@ import { buildPrintPages, PAPER, REGISTRATION_MARKS } from '../lib/opticalTempla
 /** Önizleme ve baskı aynı milimetre koordinatlarını kullanır.
  * Fiziksel baskı/telefon kalibrasyonu henüz doğrulanmamıştır.
  */
-export default function OpticalAnswerSheet({ questionCount = 20, examCode = '', examTitle = 'Sınav', examDate = '', logoUrl = '/golkent-logo.png', studentName = '', studentNumber = '', studentId = '', studentClass = '' }) {
+export default function OpticalAnswerSheet({ questionCount = 20, examCode = '', examTitle = 'Sınav', examDate = '', logoUrl = '/golkent-logo.png', studentName = '', studentNumber = '', studentId = '', studentClass = '', studentTc = '' }) {
   const layout = buildOpticalLayout({ questionCount, examCode })
   const pages = buildPrintPages(layout.questionCount)
   return <section className="geys-optical-document" aria-label="Optik cevap formları">
@@ -18,8 +18,10 @@ export default function OpticalAnswerSheet({ questionCount = 20, examCode = '', 
       .geys-optical-header .geys-logo{display:block;width:25mm;height:25mm;object-fit:contain;margin:0 auto 1mm}
       .geys-optical-header>strong{color:#123c55;font-size:9pt}
       .geys-optical-header h2{display:block!important;font-size:11pt;line-height:1.2;margin:2mm 0 1mm;color:#123c55}
-      .geys-optical-barcode{position:absolute;top:91mm;left:19mm;right:19mm;text-align:center;font-size:8pt}
-      .geys-optical-barcode svg{display:block;width:150mm;height:11mm;margin:0 auto}
+      .geys-optical-barcode{position:absolute;top:175mm;left:111mm;width:75mm;text-align:center;font-size:7pt;z-index:1}
+      .geys-optical-barcode.is-full{top:265mm;left:19mm;width:172mm;font-size:6.5pt}
+      .geys-optical-barcode.is-full svg{height:7mm}
+      .geys-optical-barcode svg{display:block;width:100%;height:10mm;margin:0 auto}
       .geys-optical-fields{position:absolute;left:19mm;right:19mm;top:73mm;display:grid;grid-template-columns:1fr 1fr;column-gap:5mm;row-gap:3mm;font-size:9pt}
       .geys-optical-field{border-bottom:1px solid #344054;height:9mm;box-sizing:border-box;white-space:nowrap;overflow:hidden}
       .geys-optical-page:before{content:'';position:absolute;top:9mm;left:19mm;right:19mm;height:1.5mm;background:#0f6175}
@@ -59,10 +61,10 @@ export default function OpticalAnswerSheet({ questionCount = 20, examCode = '', 
       <div className="geys-optical-fields">
         <div className="geys-optical-field">Adı Soyadı: {studentName}</div>
         <div className="geys-optical-field">Sınıfı: {studentClass}</div>
-        <div className="geys-optical-field">T.C. Kimlik No: ____________________</div>
+        <div className="geys-optical-field">T.C. Kimlik No: {studentTc || '____________________'}</div>
         <div className="geys-optical-field">Tarih: {examDate}</div>
       </div>
-      {(()=>{const identity=studentId?buildCompactFormIdentity({examCode:layout.examCode,studentId,pageNumber:page.pageNumber}):buildFormIdentity({examCode:layout.examCode,studentNumber,pageNumber:page.pageNumber});const encoded=identity&&code39Bars(identity);return encoded?<div className="geys-optical-barcode"><svg viewBox={`0 0 ${encoded.width} 36`} preserveAspectRatio="none" role="img" aria-label="Forma özel Code 39 barkod"><rect width={encoded.width} height="36" fill="white"/>{encoded.bars.map((bar,i)=><rect key={i} x={bar.x} y="0" width={bar.width} height="36" fill="black"/>)}</svg><span>Form kimliği: {identity}</span></div>:null})()}
+      {(()=>{const identity=studentId?buildCompactFormIdentity({examCode:layout.examCode,studentId,pageNumber:page.pageNumber}):buildFormIdentity({examCode:layout.examCode,studentNumber,pageNumber:page.pageNumber});const encoded=identity&&code39Bars(identity);return encoded?<div className={page.rows.length>20 ? 'geys-optical-barcode is-full' : 'geys-optical-barcode'}><svg viewBox={`0 0 ${encoded.width} 36`} preserveAspectRatio="none" role="img" aria-label="Forma özel Code 39 barkod"><rect width={encoded.width} height="36" fill="white"/>{encoded.bars.map((bar,i)=><rect key={i} x={bar.x} y="0" width={bar.width} height="36" fill="black"/>)}</svg><span>Form kimliği: {identity}</span></div>:null})()}
       {page.rows.length<=20&&<div className="geys-optical-example" aria-label="Örnek cevap işaretleme"><div className="geys-optical-example-title">CEVAP İŞARETLEME ÖRNEĞİ</div><div><span className="geys-optical-example-circle"/> Doğru: Daireyi tamamen doldurunuz.</div><div><span className="geys-optical-example-circle invalid"/> Yanlış: Çarpı veya çizgi kullanmayınız.</div><div style={{marginTop:'2mm'}}>Her soruda yalnızca <strong>bir</strong> cevap işaretleyiniz. Taşırmadan, koyu kalemle doldurunuz.</div></div>}
       {page.rows.length>0&&page.rows[0].bubbles.map(b=><span key={`heading-${b.option}`} className="geys-optical-option" style={{left:`${b.x}mm`,top:`${page.rows[0].y-5}mm`,fontWeight:700}}>{b.option}</span>)}
       {page.rows.map(row => <div key={row.number}>
