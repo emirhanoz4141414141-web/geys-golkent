@@ -14,4 +14,5 @@ test('invalid or missing identity cannot produce barcode',()=>{
  assert.equal(buildFormIdentity({examCode:'T',studentNumber:'12',pageNumber:0}),null)
  assert.equal(code39Bars('HELLO*'),null)
  assert.equal(code39Bars(''),null)
+ assert.equal(code39Bars('A'.repeat(31)),null)
 })
