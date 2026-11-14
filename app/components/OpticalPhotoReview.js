@@ -76,12 +76,12 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
         student,identity:buildCompactFormIdentity({examCode,studentId:String(student.id),pageNumber})
       })).filter(x=>x.identity===values[0])
       if(candidates.length!==1)throw new Error(candidates.length?'Form kimliği birden fazla öğrenciyle eşleşti. Otomatik eşleştirme güvenli değil.':'Barkod bu sınavın kayıtlı öğrencileriyle eşleşmedi.')
-      if(expectedFormIdentity && values[0]!==expectedFormIdentity)throw new Error('Barkod seçili öğrenciyle eşleşmiyor. Seçimi kontrol ediniz.')
+      if(pageNumber===1 && expectedFormIdentity && values[0]!==expectedFormIdentity)throw new Error('Barkod seçili öğrenciyle eşleşmiyor. Seçimi kontrol ediniz.')
       setMatchedStudent(candidates[0].student)
       setConfirmedFormIdentity(values[0])
       setConfirmedCode(examCode)
       setConfirmedPage(true)
-      setBarcodeMessage('Barkod seçili öğrenci ve sınav formuyla eşleşti. Kâğıdın sayfa ve köşe konumlarını ayrıca kontrol ediniz.')
+      setBarcodeMessage('Barkod öğrenci ve sınav formuyla eşleşti. Kâğıdın sayfa ve köşe konumlarını ayrıca kontrol ediniz.')
     }catch(e){setBarcodeMessage(e?.message||'Barkod okunamadı. Elle doğrulayınız.')}
     finally{setBarcodeBusy(false)}
   }
