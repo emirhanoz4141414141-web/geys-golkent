@@ -4,6 +4,7 @@ import { computeHomography, mapHomography } from '../lib/opticalPerspective.js'
 import { validatePaperCorners } from '../lib/opticalGeometry.js'
 import { measurePhotoPage } from '../lib/opticalPhotoMeasure.js'
 import { gradeExam } from '../lib/examGrading.js'
+import { detectPaperCorners } from '../lib/opticalAutoCorners.js'
 
 const PAPER=[{x:0,y:0},{x:1,y:0},{x:1,y:1},{x:0,y:1}]
 const LABELS=['Sol üst','Sağ üst','Sağ alt','Sol alt']
@@ -24,13 +25,14 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
   const [confirmedCode,setConfirmedCode]=useState('')
   const [confirmedPage,setConfirmedPage]=useState(false)
   const [busy,setBusy]=useState(false)
+  const [autoCandidate,setAutoCandidate]=useState(false)
   useEffect(()=>{setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false)},[questionCount,examCode,answerKey?.join('|')])
   const imageRef=useRef(null)
   const urlRef=useRef('')
   useEffect(()=>()=>{if(urlRef.current)URL.revokeObjectURL(urlRef.current)},[])
   function chooseFile(event) {
     const file=event.target.files?.[0]
-    setError('');setCorners([]);setDimensions(null);setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false)
+    setError('');setCorners([]);setAutoCandidate(false);setDimensions(null);setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false)
     if(urlRef.current){URL.revokeObjectURL(urlRef.current);urlRef.current=''}
     setUrl('')
     if(!file)return
@@ -48,11 +50,27 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
     if(!rect.width||!rect.height)return
     const x=(event.clientX-rect.left)/rect.width*dimensions.width
     const y=(event.clientY-rect.top)/rect.height*dimensions.height
-    setReading(null);setManualAnswers({})
+    setReading(null);setManualAnswers({});setAutoCandidate(false)
     setCorners(old=>[...old,{x,y}])
   }
+  function findCorners() {
+    const image=imageRef.current
+    setReading(null);setManualAnswers({});setAutoCandidate(false);setError('')
+    if(!image?.naturalWidth)return
+    if(image.naturalWidth*image.naturalHeight>12000000){setError('Fotoğraf 12 megapikseli aşmamalıdır.');return}
+    const canvas=document.createElement('canvas')
+    canvas.width=image.naturalWidth;canvas.height=image.naturalHeight
+    const ctx=canvas.getContext('2d',{willReadFrequently:true})
+    if(!ctx){setError('Fotoğraf açılamadı.');return}
+    try {
+      ctx.drawImage(image,0,0)
+      const result=detectPaperCorners(ctx.getImageData(0,0,canvas.width,canvas.height))
+      if(!result){setCorners([]);setError('Kâğıt sınırı yeterli güvenle bulunamadı. Dört köşeyi elle seçiniz.');return}
+      setCorners(result.corners);setAutoCandidate(true)
+    }catch{setCorners([]);setError('Otomatik algılama başarısız. Köşeleri elle seçiniz.')}
+  }
   async function analyzePhoto() {
-    if (!valid || !imageRef.current || busy || !examCode || confirmedCode.trim().toUpperCase()!==examCode || !confirmedPage) return
+    if (!valid || autoCandidate || !imageRef.current || busy || !examCode || confirmedCode.trim().toUpperCase()!==examCode || !confirmedPage) return
     setBusy(true);setReading(null);setManualAnswers({});setError('')
     try {
       const image=imageRef.current
@@ -108,11 +126,14 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
         </svg>}
       </div>
       <div style={{display:'flex',gap:8,flexWrap:'wrap',marginTop:12}}>
-        <button type="button" onClick={analyzePhoto} disabled={!valid||busy||questionCount>40||!examCode||confirmedCode.trim().toUpperCase()!==examCode||!confirmedPage}>{busy?'İnceleniyor…':'Fotoğraftaki cevapları incele'}</button>
+    <button type="button" onClick={findCorners} disabled={!dimensions||busy}>Köşeleri otomatik bul (deneme)</button>
+    {autoCandidate&&<button type="button" onClick={()=>setAutoCandidate(false)}>Gösterilen köşeleri gözle doğruladım</button>}
+        <button type="button" onClick={analyzePhoto} disabled={!valid||autoCandidate||busy||questionCount>40||!examCode||confirmedCode.trim().toUpperCase()!==examCode||!confirmedPage}>{busy?'İnceleniyor…':'Fotoğraftaki cevapları incele'}</button>
         <button type="button" onClick={()=>{setReading(null);setManualAnswers({});setCorners(old=>old.slice(0,-1))}} disabled={!corners.length}>Son köşeyi geri al</button>
         <button type="button" onClick={()=>{setReading(null);setManualAnswers({});setCorners([])}}>Köşeleri yeniden seç</button>
       </div>
-      {questionCount>40&&<p role="alert">Çok sayfalı sınavların fotoğraf okuması henüz desteklenmiyor. Bu ekranda en fazla 40 soru incelenebilir.</p>}
+      {autoCandidate&&<p role="status" style={{color:'#92400e'}}>Otomatik köşeler yalnızca tahmindir. Fotoğraftaki gerçek dört kâğıt köşesiyle karşılaştırın; doğruysa doğrulayın, değilse köşeleri yeniden seçin.</p>}
+   {questionCount>40&&<p role="alert">Çok sayfalı sınavların fotoğraf okuması henüz desteklenmiyor. Bu ekranda en fazla 40 soru incelenebilir.</p>}
       {reading&&<div role="status" style={{marginTop:16,padding:12,border:'1px solid #d1d5db',borderRadius:8}}>
         <strong>Geçici optik inceleme — kayıt yapılmadı</strong>
         <p>İşaretli: {reading.rows.filter(r=>r.status==='marked').length} · Boş: {reading.rows.filter(r=>r.status==='blank').length} · Kontrol gerekli: {reading.rows.filter(r=>r.status==='review').length}</p>
