@@ -15,7 +15,7 @@ const REVIEW_REASONS={multiple_marks:'Birden fazla işaret',weak_mark:'Silik / k
  * Kamera/fotoğraf inceleme prototipi. Yalnızca cihazda çalışır.
  * Köşeler öğretici tarafından seçilir; otomatik algılama ve puanlama yapmaz.
  */
-export default function OpticalPhotoReview({ questionCount = 20, examCode = '', answerKey = null, expectedStudentNumber = '' }) {
+export default function OpticalPhotoReview({ questionCount = 20, examCode = '', answerKey = null, expectedStudentNumber = '', expectedFormIdentity = '' }) {
   const [url,setUrl]=useState('')
   const [dimensions,setDimensions]=useState(null)
   const [corners,setCorners]=useState([])
@@ -25,15 +25,16 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
   const [confirmedCode,setConfirmedCode]=useState('')
   const [confirmedPage,setConfirmedPage]=useState(false)
   const [confirmedStudentNumber,setConfirmedStudentNumber]=useState('')
+  const [confirmedFormIdentity,setConfirmedFormIdentity]=useState('')
   const [busy,setBusy]=useState(false)
   const [autoCandidate,setAutoCandidate]=useState(false)
-  useEffect(()=>{setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('')},[questionCount,examCode,answerKey?.join('|'),expectedStudentNumber])
+  useEffect(()=>{setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('');setConfirmedFormIdentity('')},[questionCount,examCode,answerKey?.join('|'),expectedStudentNumber,expectedFormIdentity])
   const imageRef=useRef(null)
   const urlRef=useRef('')
   useEffect(()=>()=>{if(urlRef.current)URL.revokeObjectURL(urlRef.current)},[])
   function chooseFile(event) {
     const file=event.target.files?.[0]
-    setError('');setCorners([]);setAutoCandidate(false);setDimensions(null);setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('')
+    setError('');setCorners([]);setAutoCandidate(false);setDimensions(null);setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('');setConfirmedFormIdentity('')
     if(urlRef.current){URL.revokeObjectURL(urlRef.current);urlRef.current=''}
     setUrl('')
     if(!file)return
@@ -71,7 +72,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
     }catch{setCorners([]);setError('Otomatik algılama başarısız. Köşeleri elle seçiniz.')}
   }
   async function analyzePhoto() {
-    if (!valid || autoCandidate || !imageRef.current || busy || !examCode || confirmedCode.trim().toUpperCase()!==examCode || !confirmedPage || (expectedStudentNumber && confirmedStudentNumber.trim()!==expectedStudentNumber)) return
+    if (!valid || autoCandidate || !imageRef.current || busy || !examCode || confirmedCode.trim().toUpperCase()!==examCode || !confirmedPage || (expectedStudentNumber && confirmedStudentNumber.trim()!==expectedStudentNumber) || (expectedFormIdentity && confirmedFormIdentity.trim().toUpperCase()!==expectedFormIdentity)) return
     setBusy(true);setReading(null);setManualAnswers({});setError('')
     try {
       const image=imageRef.current
@@ -109,9 +110,11 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
     <p>Fotoğraf cihazınızdan dışarı gönderilmez. Bu ekran yalnızca geçici puan önizlemesi sunar ve öğrenci kaydı değiştirmez.</p>
     <p><strong>İncelenecek soru sayısı: {questionCount}</strong> · Yalnızca ilk optik sayfa (en fazla 40 soru)</p>
     <p><strong>Beklenen sınav kodu: {examCode || 'Tanımlanmadı'}</strong></p>
+    {expectedFormIdentity&&<p><strong>Beklenen form kimliği: {expectedFormIdentity}</strong> · Barkod otomatik okunmaz; formun altındaki kimliği gözle karşılaştırınız.</p>}
     <p><strong>Beklenen öğrenci numarası: {expectedStudentNumber || 'Tanımlanmadı — öğrenci eşleştirmesi yapılmayacak'}</strong></p>
     <label>Fotoğraftaki formun sınav kodunu okuyup yazınız <input aria-label="Formdaki sınav kodu" value={confirmedCode} onChange={e=>{setConfirmedCode(e.target.value);setReading(null);setManualAnswers({})}} autoComplete="off"/></label>
     <label style={{display:'block',marginTop:8}}><input type="checkbox" checked={confirmedPage} onChange={e=>{setConfirmedPage(e.target.checked);setReading(null);setManualAnswers({})}}/> Fotoğraftaki formun 1. sayfa olduğunu gözle doğruladım.</label>
+    {expectedFormIdentity&&<label style={{display:'block',marginTop:8}}>Fotoğraftaki form kimliğini yazınız <input aria-label="Formdaki form kimliği" value={confirmedFormIdentity} onChange={e=>{setConfirmedFormIdentity(e.target.value);setReading(null);setManualAnswers({})}} autoComplete="off"/></label>}
     {expectedStudentNumber&&<label style={{display:'block',marginTop:8}}>Formdaki öğrenci numarasını okuyup yazınız <input aria-label="Formdaki öğrenci numarası" value={confirmedStudentNumber} onChange={e=>{setConfirmedStudentNumber(e.target.value);setReading(null);setManualAnswers({})}} autoComplete="off"/></label>}
     <p style={{fontSize:12}}>Kod, sayfa ve öğrenci numarası fotoğraftan otomatik okunmaz; bu kontrolü öğretici yapar. Kod eşleşmezse analiz kapalıdır.</p>
     <label>Fotoğraf seç veya telefon kamerasıyla çek
