@@ -64,14 +64,14 @@ export default function OpticalAnswerSheet({ questionCount = 20, examCode = '', 
       </div>
       {(()=>{const identity=buildFormIdentity({examCode:layout.examCode,studentNumber,pageNumber:page.pageNumber});const encoded=identity&&code39Bars(identity);return encoded?<div className="geys-optical-barcode"><svg viewBox={`0 0 ${encoded.width} 36`} preserveAspectRatio="none" role="img" aria-label="Forma özel Code 39 barkod"><rect width={encoded.width} height="36" fill="white"/>{encoded.bars.map((bar,i)=><rect key={i} x={bar.x} y="0" width={bar.width} height="36" fill="black"/>)}</svg><span>Form kimliği: {identity}</span></div>:null})()}
       {page.rows.length<=20&&<div className="geys-optical-example" aria-label="Örnek cevap işaretleme"><div className="geys-optical-example-title">CEVAP İŞARETLEME ÖRNEĞİ</div><div><span className="geys-optical-example-circle"/> Doğru: Daireyi tamamen doldurunuz.</div><div><span className="geys-optical-example-circle invalid"/> Yanlış: Çarpı veya çizgi kullanmayınız.</div><div style={{marginTop:'2mm'}}>Her soruda yalnızca <strong>bir</strong> cevap işaretleyiniz. Taşırmadan, koyu kalemle doldurunuz.</div></div>}
+      {page.rows.length>0&&page.rows[0].bubbles.map(b=><span key={`heading-${b.option}`} className="geys-optical-option" style={{left:`${b.x}mm`,top:`${page.rows[0].y-5}mm`,fontWeight:700}}>{b.option}</span>)}
       {page.rows.map(row => <div key={row.number}>
         <span className="geys-optical-row-number" style={{left:`${row.numberX}mm`,top:`${row.y}mm`}}>{row.number}.</span>
         {row.bubbles.map(b=><span key={b.option}>
-          <span className="geys-optical-option" style={{left:`${b.x}mm`,top:`${b.y-5}mm`}}>{b.option}</span>
           <span className="geys-optical-bubble" style={{left:`${b.x}mm`,top:`${b.y}mm`}} aria-label={`${row.number}-${b.option}`}/>
         </span>)}
       </div>)}
-      <footer className="geys-optical-footer">Her soruda tek seçeneği tamamen doldurunuz. Barkod kimliği henüz fotoğraftan otomatik okunmaz. Optik okuma kalibre edilmemiştir.</footer>
+      <footer className="geys-optical-footer">Her soruda yalnızca bir seçeneği, dairenin içini tamamen doldurarak işaretleyiniz.</footer>
     </article>)}
   </section>
 }
