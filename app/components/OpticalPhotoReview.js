@@ -12,20 +12,22 @@ const MAX_BYTES=12*1024*1024
  * Kamera/fotoğraf inceleme prototipi. Yalnızca cihazda çalışır.
  * Köşeler öğretici tarafından seçilir; otomatik algılama ve puanlama yapmaz.
  */
-export default function OpticalPhotoReview({ questionCount = 20 }) {
+export default function OpticalPhotoReview({ questionCount = 20, examCode = '' }) {
   const [url,setUrl]=useState('')
   const [dimensions,setDimensions]=useState(null)
   const [corners,setCorners]=useState([])
   const [error,setError]=useState('')
   const [reading,setReading]=useState(null)
+  const [confirmedCode,setConfirmedCode]=useState('')
+  const [confirmedPage,setConfirmedPage]=useState(false)
   const [busy,setBusy]=useState(false)
-  useEffect(()=>{setReading(null)},[questionCount])
+  useEffect(()=>{setReading(null);setConfirmedCode('');setConfirmedPage(false)},[questionCount,examCode])
   const imageRef=useRef(null)
   const urlRef=useRef('')
   useEffect(()=>()=>{if(urlRef.current)URL.revokeObjectURL(urlRef.current)},[])
   function chooseFile(event) {
     const file=event.target.files?.[0]
-    setError('');setCorners([]);setDimensions(null);setReading(null)
+    setError('');setCorners([]);setDimensions(null);setReading(null);setConfirmedCode('');setConfirmedPage(false)
     if(urlRef.current){URL.revokeObjectURL(urlRef.current);urlRef.current=''}
     setUrl('')
     if(!file)return
@@ -47,7 +49,7 @@ export default function OpticalPhotoReview({ questionCount = 20 }) {
     setCorners(old=>[...old,{x,y}])
   }
   async function analyzePhoto() {
-    if (!valid || !imageRef.current || busy) return
+    if (!valid || !imageRef.current || busy || !examCode || confirmedCode.trim().toUpperCase()!==examCode || !confirmedPage) return
     setBusy(true);setReading(null);setError('')
     try {
       const image=imageRef.current
@@ -75,6 +77,10 @@ export default function OpticalPhotoReview({ questionCount = 20 }) {
     <h3>Optik Fotoğraf İnceleme · Deneme</h3>
     <p>Fotoğraf cihazınızdan dışarı gönderilmez. Bu ekran not vermez ve öğrenci kaydı değiştirmez.</p>
     <p><strong>İncelenecek soru sayısı: {questionCount}</strong> · Yalnızca ilk optik sayfa (en fazla 40 soru)</p>
+    <p><strong>Beklenen sınav kodu: {examCode || 'Tanımlanmadı'}</strong></p>
+    <label>Fotoğraftaki formun sınav kodunu okuyup yazınız <input aria-label="Formdaki sınav kodu" value={confirmedCode} onChange={e=>{setConfirmedCode(e.target.value);setReading(null)}} autoComplete="off"/></label>
+    <label style={{display:'block',marginTop:8}}><input type="checkbox" checked={confirmedPage} onChange={e=>{setConfirmedPage(e.target.checked);setReading(null)}}/> Fotoğraftaki formun 1. sayfa olduğunu gözle doğruladım.</label>
+    <p style={{fontSize:12}}>Kod ve sayfa fotoğraftan otomatik okunmaz; bu kontrolü öğretici yapar. Kod eşleşmezse analiz kapalıdır.</p>
     <label>Fotoğraf seç veya telefon kamerasıyla çek
       <input type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={chooseFile} style={{display:'block',marginTop:8}}/>
     </label>
@@ -90,7 +96,7 @@ export default function OpticalPhotoReview({ questionCount = 20 }) {
         </svg>}
       </div>
       <div style={{display:'flex',gap:8,flexWrap:'wrap',marginTop:12}}>
-        <button type="button" onClick={analyzePhoto} disabled={!valid||busy||questionCount>40}>{busy?'İnceleniyor…':'Fotoğraftaki cevapları incele'}</button>
+        <button type="button" onClick={analyzePhoto} disabled={!valid||busy||questionCount>40||!examCode||confirmedCode.trim().toUpperCase()!==examCode||!confirmedPage}>{busy?'İnceleniyor…':'Fotoğraftaki cevapları incele'}</button>
         <button type="button" onClick={()=>{setReading(null);setCorners(old=>old.slice(0,-1))}} disabled={!corners.length}>Son köşeyi geri al</button>
         <button type="button" onClick={()=>{setReading(null);setCorners([])}}>Köşeleri yeniden seç</button>
       </div>
