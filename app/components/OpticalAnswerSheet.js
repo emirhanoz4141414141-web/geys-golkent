@@ -7,6 +7,11 @@ import { buildOpticalLayout } from '../lib/opticalLayout.js'
  * Kamera okuyucusu geliştirilmeden otomatik okuma iddiasında bulunulmaz.
  */
 export default function OpticalAnswerSheet({ questionCount = 20, examCode = '', examTitle = 'Sınav' }) {
+  // Bir A4 sayfaya sığmayan formları kesilmiş biçimde yazdırma.
+  // Çok sayfalı kalibre edilmiş şablon hazırlanmadığı için güvenli sınır.
+  if (questionCount > 40) return <section role="alert" style={{padding:16,border:'1px solid #d97706',borderRadius:8}}>
+    Bu önizleme tek sayfalık optik form için en fazla 40 soruyu destekler. {questionCount} soruluk sınav için çok sayfalı, kalibre edilmiş şablon henüz hazır değildir. Eksik cevap formu yazdırılmadı.
+  </section>
   const layout = buildOpticalLayout({ questionCount, examCode })
   return <section className="geys-optical-page" aria-label="Optik cevap formu">
     <style>{`
