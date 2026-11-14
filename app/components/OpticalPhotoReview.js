@@ -19,6 +19,7 @@ export default function OpticalPhotoReview({ questionCount = 20 }) {
   const [error,setError]=useState('')
   const [reading,setReading]=useState(null)
   const [busy,setBusy]=useState(false)
+  useEffect(()=>{setReading(null)},[questionCount])
   const imageRef=useRef(null)
   const urlRef=useRef('')
   useEffect(()=>()=>{if(urlRef.current)URL.revokeObjectURL(urlRef.current)},[])
@@ -73,6 +74,7 @@ export default function OpticalPhotoReview({ questionCount = 20 }) {
   return <section style={{padding:18,border:'1px solid #d5dee8',borderRadius:14,background:'#fff',color:'#1f2937'}}>
     <h3>Optik Fotoğraf İnceleme · Deneme</h3>
     <p>Fotoğraf cihazınızdan dışarı gönderilmez. Bu ekran not vermez ve öğrenci kaydı değiştirmez.</p>
+    <p><strong>İncelenecek soru sayısı: {questionCount}</strong> · Yalnızca ilk optik sayfa (en fazla 40 soru)</p>
     <label>Fotoğraf seç veya telefon kamerasıyla çek
       <input type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={chooseFile} style={{display:'block',marginTop:8}}/>
     </label>
