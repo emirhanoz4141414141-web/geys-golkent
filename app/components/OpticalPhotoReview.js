@@ -15,7 +15,7 @@ const REVIEW_REASONS={multiple_marks:'Birden fazla işaret',weak_mark:'Silik / k
  * Kamera/fotoğraf inceleme prototipi. Yalnızca cihazda çalışır.
  * Köşeler öğretici tarafından seçilir; otomatik algılama ve puanlama yapmaz.
  */
-export default function OpticalPhotoReview({ questionCount = 20, examCode = '', answerKey = null }) {
+export default function OpticalPhotoReview({ questionCount = 20, examCode = '', answerKey = null, expectedStudentNumber = '' }) {
   const [url,setUrl]=useState('')
   const [dimensions,setDimensions]=useState(null)
   const [corners,setCorners]=useState([])
@@ -24,15 +24,16 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
   const [manualAnswers,setManualAnswers]=useState({})
   const [confirmedCode,setConfirmedCode]=useState('')
   const [confirmedPage,setConfirmedPage]=useState(false)
+  const [confirmedStudentNumber,setConfirmedStudentNumber]=useState('')
   const [busy,setBusy]=useState(false)
   const [autoCandidate,setAutoCandidate]=useState(false)
-  useEffect(()=>{setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false)},[questionCount,examCode,answerKey?.join('|')])
+  useEffect(()=>{setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('')},[questionCount,examCode,answerKey?.join('|'),expectedStudentNumber])
   const imageRef=useRef(null)
   const urlRef=useRef('')
   useEffect(()=>()=>{if(urlRef.current)URL.revokeObjectURL(urlRef.current)},[])
   function chooseFile(event) {
     const file=event.target.files?.[0]
-    setError('');setCorners([]);setAutoCandidate(false);setDimensions(null);setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false)
+    setError('');setCorners([]);setAutoCandidate(false);setDimensions(null);setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('')
     if(urlRef.current){URL.revokeObjectURL(urlRef.current);urlRef.current=''}
     setUrl('')
     if(!file)return
@@ -70,7 +71,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
     }catch{setCorners([]);setError('Otomatik algılama başarısız. Köşeleri elle seçiniz.')}
   }
   async function analyzePhoto() {
-    if (!valid || autoCandidate || !imageRef.current || busy || !examCode || confirmedCode.trim().toUpperCase()!==examCode || !confirmedPage) return
+    if (!valid || autoCandidate || !imageRef.current || busy || !examCode || confirmedCode.trim().toUpperCase()!==examCode || !confirmedPage || (expectedStudentNumber && confirmedStudentNumber.trim()!==expectedStudentNumber)) return
     setBusy(true);setReading(null);setManualAnswers({});setError('')
     try {
       const image=imageRef.current
@@ -108,9 +109,11 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
     <p>Fotoğraf cihazınızdan dışarı gönderilmez. Bu ekran yalnızca geçici puan önizlemesi sunar ve öğrenci kaydı değiştirmez.</p>
     <p><strong>İncelenecek soru sayısı: {questionCount}</strong> · Yalnızca ilk optik sayfa (en fazla 40 soru)</p>
     <p><strong>Beklenen sınav kodu: {examCode || 'Tanımlanmadı'}</strong></p>
+    <p><strong>Beklenen öğrenci numarası: {expectedStudentNumber || 'Tanımlanmadı — öğrenci eşleştirmesi yapılmayacak'}</strong></p>
     <label>Fotoğraftaki formun sınav kodunu okuyup yazınız <input aria-label="Formdaki sınav kodu" value={confirmedCode} onChange={e=>{setConfirmedCode(e.target.value);setReading(null);setManualAnswers({})}} autoComplete="off"/></label>
     <label style={{display:'block',marginTop:8}}><input type="checkbox" checked={confirmedPage} onChange={e=>{setConfirmedPage(e.target.checked);setReading(null);setManualAnswers({})}}/> Fotoğraftaki formun 1. sayfa olduğunu gözle doğruladım.</label>
-    <p style={{fontSize:12}}>Kod ve sayfa fotoğraftan otomatik okunmaz; bu kontrolü öğretici yapar. Kod eşleşmezse analiz kapalıdır.</p>
+    {expectedStudentNumber&&<label style={{display:'block',marginTop:8}}>Formdaki öğrenci numarasını okuyup yazınız <input aria-label="Formdaki öğrenci numarası" value={confirmedStudentNumber} onChange={e=>{setConfirmedStudentNumber(e.target.value);setReading(null);setManualAnswers({})}} autoComplete="off"/></label>}
+    <p style={{fontSize:12}}>Kod, sayfa ve öğrenci numarası fotoğraftan otomatik okunmaz; bu kontrolü öğretici yapar. Kod eşleşmezse analiz kapalıdır.</p>
     <label>Fotoğraf seç veya telefon kamerasıyla çek
       <input type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={chooseFile} style={{display:'block',marginTop:8}}/>
     </label>
@@ -128,9 +131,9 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
       <div style={{display:'flex',gap:8,flexWrap:'wrap',marginTop:12}}>
     <button type="button" onClick={findCorners} disabled={!dimensions||busy}>Köşeleri otomatik bul (deneme)</button>
     {autoCandidate&&<button type="button" onClick={()=>setAutoCandidate(false)}>Gösterilen köşeleri gözle doğruladım</button>}
-        <button type="button" onClick={analyzePhoto} disabled={!valid||autoCandidate||busy||questionCount>40||!examCode||confirmedCode.trim().toUpperCase()!==examCode||!confirmedPage}>{busy?'İnceleniyor…':'Fotoğraftaki cevapları incele'}</button>
-        <button type="button" onClick={()=>{setReading(null);setManualAnswers({});setCorners(old=>old.slice(0,-1))}} disabled={!corners.length}>Son köşeyi geri al</button>
-        <button type="button" onClick={()=>{setReading(null);setManualAnswers({});setCorners([])}}>Köşeleri yeniden seç</button>
+        <button type="button" onClick={analyzePhoto} disabled={!valid||autoCandidate||busy||questionCount>40||!examCode||confirmedCode.trim().toUpperCase()!==examCode||!confirmedPage||(expectedStudentNumber&&confirmedStudentNumber.trim()!==expectedStudentNumber)}>{busy?'İnceleniyor…':'Fotoğraftaki cevapları incele'}</button>
+        <button type="button" onClick={()=>{setReading(null);setManualAnswers({});setAutoCandidate(false);setCorners(old=>old.slice(0,-1))}} disabled={!corners.length}>Son köşeyi geri al</button>
+        <button type="button" onClick={()=>{setReading(null);setManualAnswers({});setAutoCandidate(false);setCorners([])}}>Köşeleri yeniden seç</button>
       </div>
       {autoCandidate&&<p role="status" style={{color:'#92400e'}}>Otomatik köşeler yalnızca tahmindir. Fotoğraftaki gerçek dört kâğıt köşesiyle karşılaştırın; doğruysa doğrulayın, değilse köşeleri yeniden seçin.</p>}
    {questionCount>40&&<p role="alert">Çok sayfalı sınavların fotoğraf okuması henüz desteklenmiyor. Bu ekranda en fazla 40 soru incelenebilir.</p>}
