@@ -19,16 +19,17 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '' }
   const [corners,setCorners]=useState([])
   const [error,setError]=useState('')
   const [reading,setReading]=useState(null)
+  const [manualAnswers,setManualAnswers]=useState({})
   const [confirmedCode,setConfirmedCode]=useState('')
   const [confirmedPage,setConfirmedPage]=useState(false)
   const [busy,setBusy]=useState(false)
-  useEffect(()=>{setReading(null);setConfirmedCode('');setConfirmedPage(false)},[questionCount,examCode])
+  useEffect(()=>{setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false)},[questionCount,examCode])
   const imageRef=useRef(null)
   const urlRef=useRef('')
   useEffect(()=>()=>{if(urlRef.current)URL.revokeObjectURL(urlRef.current)},[])
   function chooseFile(event) {
     const file=event.target.files?.[0]
-    setError('');setCorners([]);setDimensions(null);setReading(null);setConfirmedCode('');setConfirmedPage(false)
+    setError('');setCorners([]);setDimensions(null);setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false)
     if(urlRef.current){URL.revokeObjectURL(urlRef.current);urlRef.current=''}
     setUrl('')
     if(!file)return
@@ -46,12 +47,12 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '' }
     if(!rect.width||!rect.height)return
     const x=(event.clientX-rect.left)/rect.width*dimensions.width
     const y=(event.clientY-rect.top)/rect.height*dimensions.height
-    setReading(null)
+    setReading(null);setManualAnswers({})
     setCorners(old=>[...old,{x,y}])
   }
   async function analyzePhoto() {
     if (!valid || !imageRef.current || busy || !examCode || confirmedCode.trim().toUpperCase()!==examCode || !confirmedPage) return
-    setBusy(true);setReading(null);setError('')
+    setBusy(true);setReading(null);setManualAnswers({});setError('')
     try {
       const image=imageRef.current
       if(image.naturalWidth*image.naturalHeight>12000000) throw new Error('Fotoğraf çözünürlüğü 12 megapikseli aşmamalıdır.')
@@ -79,8 +80,8 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '' }
     <p>Fotoğraf cihazınızdan dışarı gönderilmez. Bu ekran not vermez ve öğrenci kaydı değiştirmez.</p>
     <p><strong>İncelenecek soru sayısı: {questionCount}</strong> · Yalnızca ilk optik sayfa (en fazla 40 soru)</p>
     <p><strong>Beklenen sınav kodu: {examCode || 'Tanımlanmadı'}</strong></p>
-    <label>Fotoğraftaki formun sınav kodunu okuyup yazınız <input aria-label="Formdaki sınav kodu" value={confirmedCode} onChange={e=>{setConfirmedCode(e.target.value);setReading(null)}} autoComplete="off"/></label>
-    <label style={{display:'block',marginTop:8}}><input type="checkbox" checked={confirmedPage} onChange={e=>{setConfirmedPage(e.target.checked);setReading(null)}}/> Fotoğraftaki formun 1. sayfa olduğunu gözle doğruladım.</label>
+    <label>Fotoğraftaki formun sınav kodunu okuyup yazınız <input aria-label="Formdaki sınav kodu" value={confirmedCode} onChange={e=>{setConfirmedCode(e.target.value);setReading(null);setManualAnswers({})}} autoComplete="off"/></label>
+    <label style={{display:'block',marginTop:8}}><input type="checkbox" checked={confirmedPage} onChange={e=>{setConfirmedPage(e.target.checked);setReading(null);setManualAnswers({})}}/> Fotoğraftaki formun 1. sayfa olduğunu gözle doğruladım.</label>
     <p style={{fontSize:12}}>Kod ve sayfa fotoğraftan otomatik okunmaz; bu kontrolü öğretici yapar. Kod eşleşmezse analiz kapalıdır.</p>
     <label>Fotoğraf seç veya telefon kamerasıyla çek
       <input type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={chooseFile} style={{display:'block',marginTop:8}}/>
@@ -98,14 +99,24 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '' }
       </div>
       <div style={{display:'flex',gap:8,flexWrap:'wrap',marginTop:12}}>
         <button type="button" onClick={analyzePhoto} disabled={!valid||busy||questionCount>40||!examCode||confirmedCode.trim().toUpperCase()!==examCode||!confirmedPage}>{busy?'İnceleniyor…':'Fotoğraftaki cevapları incele'}</button>
-        <button type="button" onClick={()=>{setReading(null);setCorners(old=>old.slice(0,-1))}} disabled={!corners.length}>Son köşeyi geri al</button>
-        <button type="button" onClick={()=>{setReading(null);setCorners([])}}>Köşeleri yeniden seç</button>
+        <button type="button" onClick={()=>{setReading(null);setManualAnswers({});setCorners(old=>old.slice(0,-1))}} disabled={!corners.length}>Son köşeyi geri al</button>
+        <button type="button" onClick={()=>{setReading(null);setManualAnswers({});setCorners([])}}>Köşeleri yeniden seç</button>
       </div>
       {questionCount>40&&<p role="alert">Çok sayfalı sınavların fotoğraf okuması henüz desteklenmiyor. Bu ekranda en fazla 40 soru incelenebilir.</p>}
       {reading&&<div role="status" style={{marginTop:16,padding:12,border:'1px solid #d1d5db',borderRadius:8}}>
         <strong>Geçici optik inceleme — kayıt yapılmadı</strong>
         <p>İşaretli: {reading.rows.filter(r=>r.status==='marked').length} · Boş: {reading.rows.filter(r=>r.status==='blank').length} · Kontrol gerekli: {reading.rows.filter(r=>r.status==='review').length}</p>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(95px,1fr))',gap:6}}>{reading.rows.map(r=><div key={r.number} style={{padding:7,border:'1px solid #e5e7eb',borderRadius:6}}>{r.number}. {r.status==='marked'?r.answer:r.status==='blank'?'Boş':'İncele'}{r.status==='review'&&<small style={{display:'block',color:'#b45309'}}>{REVIEW_REASONS[r.reason]||'Kontrol gerekli'}</small>}</div>)}</div>
+        <p>Öğretici incelemesi: Şüpheli cevapları basılı kâğıttan kontrol edip geçici olarak düzeltebilirsiniz.</p>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(145px,1fr))',gap:6}}>{reading.rows.map(r=><div key={r.number} style={{padding:7,border:'1px solid #e5e7eb',borderRadius:6}}>
+          <strong>{r.number}. {r.status==='marked'?r.answer:r.status==='blank'?'Boş':'İncele'}</strong>
+          {r.status==='review'&&<><small style={{display:'block',color:'#b45309'}}>{REVIEW_REASONS[r.reason]||'Kontrol gerekli'}</small>
+          <label style={{display:'block',marginTop:5,fontSize:12}}>Kâğıttan doğrulanan cevap
+            <select aria-label={`${r.number}. soru manuel kontrol`} value={manualAnswers[r.number]??''} onChange={e=>setManualAnswers(old=>({...old,[r.number]:e.target.value}))} style={{display:'block',width:'100%'}}>
+              <option value="">İncelenmedi</option><option value="A">A</option><option value="B">B</option><option value="C">C</option><option value="D">D</option><option value="BLANK">Boş</option><option value="INVALID">Geçersiz / çoklu</option>
+            </select>
+          </label></>}
+        </div>)}</div>
+        <p><strong>Bekleyen şüpheli cevap: {reading.rows.filter(r=>r.status==='review'&&!manualAnswers[r.number]).length}</strong> · Manuel incelenen: {reading.rows.filter(r=>r.status==='review'&&manualAnswers[r.number]).length}</p>
         {reading.rows.some(r=>r.status==='review')&&<p style={{color:'#92400e',fontWeight:600}}>Belirsiz işaretler öğretici tarafından kâğıt üzerinden kontrol edilmelidir. Bu ekrandaki sonuçlar kesinleştirilemez.</p>}
         <p style={{fontSize:12}}>Bu sonuçlar otomatik notlandırılmaz, kaydedilmez veya veliye gösterilmez. Gerçek baskı ve kamera kalibrasyonu yapılmamıştır.</p>
       </div>}
