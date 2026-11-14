@@ -6,7 +6,7 @@ import { buildPrintPages, PAPER, REGISTRATION_MARKS } from '../lib/opticalTempla
 /** Önizleme ve baskı aynı milimetre koordinatlarını kullanır.
  * Fiziksel baskı/telefon kalibrasyonu henüz doğrulanmamıştır.
  */
-export default function OpticalAnswerSheet({ questionCount = 20, examCode = '', examTitle = 'Sınav', examDate = '', logoUrl = '/golkent-logo.png', studentName = '', studentNumber = '', studentId = '', studentClass = '', studentTc = '' }) {
+export default function OpticalAnswerSheet({ questionCount = 20, examCode = '', examTitle = 'Sınav', examDate = '', logoUrl = '/golkent-logo.png', studentName = '', studentNumber = '', studentId = '', studentClass = '', studentTc = '', studentPhotoUrl = '' }) {
   const layout = buildOpticalLayout({ questionCount, examCode })
   const pages = buildPrintPages(layout.questionCount)
   return <section className="geys-optical-document" aria-label="Optik cevap formları">
@@ -22,6 +22,7 @@ export default function OpticalAnswerSheet({ questionCount = 20, examCode = '', 
       .geys-optical-barcode.is-full{top:266mm;left:19mm;width:172mm;font-size:6.5pt}
       .geys-optical-barcode.is-full svg{height:7mm}
       .geys-optical-barcode svg{display:block;width:100%;height:10mm;margin:0 auto}
+      .geys-optical-student-photo{position:absolute;top:30mm;right:19mm;width:25mm;height:30mm;box-sizing:border-box;border:1px solid #b6c8d3;border-radius:1mm;object-fit:cover;background:#fff}
       .geys-optical-fields{position:absolute;left:19mm;right:19mm;top:70mm;display:grid;grid-template-columns:1fr 1fr;column-gap:5mm;row-gap:3mm;font-size:9pt}
       .geys-optical-field{border-bottom:1px solid #344054;height:9mm;box-sizing:border-box;white-space:nowrap;overflow:hidden}
       .geys-optical-page:before{content:'';position:absolute;top:9mm;left:19mm;right:19mm;height:1.5mm;background:#0f6175}
@@ -58,6 +59,7 @@ export default function OpticalAnswerSheet({ questionCount = 20, examCode = '', 
         <h2>{examTitle} — OPTİK CEVAP FORMU</h2>
         <small>Sınav kodu: {layout.examCode || '…………'} · Sayfa {page.pageNumber}/{page.pageCount}</small>
       </header>
+      {studentPhotoUrl&&<img className="geys-optical-student-photo" src={studentPhotoUrl} alt="Öğrenci fotoğrafı" referrerPolicy="no-referrer"/>}
       <div className="geys-optical-fields">
         <div className="geys-optical-field">Adı Soyadı: {studentName}</div>
         <div className="geys-optical-field">Sınıfı: {studentClass}</div>
