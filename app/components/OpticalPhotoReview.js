@@ -5,6 +5,7 @@ import { validatePaperCorners } from '../lib/opticalGeometry.js'
 import { measurePhotoPage } from '../lib/opticalPhotoMeasure.js'
 import { gradeExam } from '../lib/examGrading.js'
 import { detectPaperCorners } from '../lib/opticalAutoCorners.js'
+import { buildCompactFormIdentity } from '../lib/opticalFormIdentity.js'
 
 const PAPER=[{x:0,y:0},{x:1,y:0},{x:1,y:1},{x:0,y:1}]
 const LABELS=['Sol üst','Sağ üst','Sağ alt','Sol alt']
@@ -15,7 +16,7 @@ const REVIEW_REASONS={multiple_marks:'Birden fazla işaret',weak_mark:'Silik / k
  * Kamera/fotoğraf inceleme prototipi. Yalnızca cihazda çalışır.
  * Köşeler öğretici tarafından seçilir; otomatik algılama ve puanlama yapmaz.
  */
-export default function OpticalPhotoReview({ questionCount = 20, examCode = '', answerKey = null, expectedStudentNumber = '', expectedFormIdentity = '' }) {
+export default function OpticalPhotoReview({ questionCount = 20, examCode = '', answerKey = null, expectedStudentNumber = '', expectedFormIdentity = '', studentCandidates = [] }) {
   const [url,setUrl]=useState('')
   const [dimensions,setDimensions]=useState(null)
   const [corners,setCorners]=useState([])
@@ -29,14 +30,15 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
   const [busy,setBusy]=useState(false)
   const [barcodeBusy,setBarcodeBusy]=useState(false)
   const [barcodeMessage,setBarcodeMessage]=useState('')
+  const [matchedStudent,setMatchedStudent]=useState(null)
   const [autoCandidate,setAutoCandidate]=useState(false)
-  useEffect(()=>{setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('');setConfirmedFormIdentity('')},[questionCount,examCode,answerKey?.join('|'),expectedStudentNumber,expectedFormIdentity])
+  useEffect(()=>{setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('');setConfirmedFormIdentity('');setMatchedStudent(null)},[questionCount,examCode,answerKey?.join('|'),expectedStudentNumber,expectedFormIdentity])
   const imageRef=useRef(null)
   const urlRef=useRef('')
   useEffect(()=>()=>{if(urlRef.current)URL.revokeObjectURL(urlRef.current)},[])
   function chooseFile(event) {
     const file=event.target.files?.[0]
-    setError('');setCorners([]);setAutoCandidate(false);setDimensions(null);setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('');setConfirmedFormIdentity('');setBarcodeMessage('')
+    setError('');setCorners([]);setAutoCandidate(false);setDimensions(null);setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('');setConfirmedFormIdentity('');setBarcodeMessage('');setMatchedStudent(null)
     if(urlRef.current){URL.revokeObjectURL(urlRef.current);urlRef.current=''}
     setUrl('')
     if(!file)return
@@ -61,8 +63,12 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
       const results=await detector.detect(image)
       const values=[...new Set(results.map(x=>String(x.rawValue||'').trim().toUpperCase()).filter(Boolean))]
       if(values.length!==1)throw new Error(values.length?'Birden fazla barkod algılandı; formu kontrol ediniz.':'Barkod algılanamadı. Daha net fotoğraf çekiniz veya elle giriniz.')
-      if(!expectedFormIdentity)throw new Error('Önce sistemde öğrenci seçiniz; barkod öğrenciyle eşleştirilemedi.')
-      if(values[0]!==expectedFormIdentity)throw new Error('Barkod seçili öğrencinin beklenen form kimliğiyle eşleşmiyor. Başka öğrenci veya sınav formu olabilir.')
+      const candidates=studentCandidates.map(student=>({
+        student,identity:buildCompactFormIdentity({examCode,studentId:String(student.id),pageNumber:1})
+      })).filter(x=>x.identity===values[0])
+      if(candidates.length!==1)throw new Error(candidates.length?'Form kimliği birden fazla öğrenciyle eşleşti. Otomatik eşleştirme güvenli değil.':'Barkod bu sınavın kayıtlı öğrencileriyle eşleşmedi.')
+      if(expectedFormIdentity && values[0]!==expectedFormIdentity)throw new Error('Barkod seçili öğrenciyle eşleşmiyor. Seçimi kontrol ediniz.')
+      setMatchedStudent(candidates[0].student)
       setConfirmedFormIdentity(values[0])
       setConfirmedCode(examCode)
       setConfirmedPage(true)
@@ -96,7 +102,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
     }catch{setCorners([]);setError('Otomatik algılama başarısız. Köşeleri elle seçiniz.')}
   }
   async function analyzePhoto() {
-    if (!valid || autoCandidate || !imageRef.current || busy || !examCode || confirmedCode.trim().toUpperCase()!==examCode || !confirmedPage || (expectedStudentNumber && confirmedStudentNumber.trim()!==expectedStudentNumber) || (expectedFormIdentity && confirmedFormIdentity.trim().toUpperCase()!==expectedFormIdentity)) return
+    if (!valid || autoCandidate || !imageRef.current || busy || !examCode || confirmedCode.trim().toUpperCase()!==examCode || !confirmedPage || (expectedStudentNumber && confirmedStudentNumber.trim()!==expectedStudentNumber) || (!verifiedFormIdentity || confirmedFormIdentity.trim().toUpperCase()!==verifiedFormIdentity)) return
     setBusy(true);setReading(null);setManualAnswers({});setError('')
     try {
       const image=imageRef.current
@@ -110,6 +116,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
       setReading(measurePhotoPage(pixels,corners,{questionCount,pageNumber:1}))
     } catch(e){setError(e?.message||'Fotoğraf analiz edilemedi.')} finally {setBusy(false)}
   }
+  const verifiedFormIdentity=expectedFormIdentity || (matchedStudent ? buildCompactFormIdentity({examCode,studentId:String(matchedStudent.id),pageNumber:1}) : '')
   let provisionalScore=null
   if(reading && Array.isArray(answerKey) && answerKey.length===reading.rows.length){
     try {
@@ -134,13 +141,14 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
     <p>Fotoğraf cihazınızdan dışarı gönderilmez. Bu ekran yalnızca geçici puan önizlemesi sunar ve öğrenci kaydı değiştirmez.</p>
     <p><strong>İncelenecek soru sayısı: {questionCount}</strong> · Yalnızca ilk optik sayfa (en fazla 40 soru)</p>
     <p><strong>Beklenen sınav kodu: {examCode || 'Tanımlanmadı'}</strong></p>
-    {expectedFormIdentity&&<p><strong>Beklenen form kimliği: {expectedFormIdentity}</strong> · Barkod otomatik okunmaz; formun altındaki kimliği gözle karşılaştırınız.</p>}
+    {expectedFormIdentity&&<p><strong>Beklenen form kimliği: {expectedFormIdentity}</strong></p>}
+    {matchedStudent&&<p role="status"><strong>Barkodla eşleşen öğrenci: {[matchedStudent.first_name,matchedStudent.last_name].filter(Boolean).join(' ')}</strong> · Sınav: {examCode}</p>}
     {expectedStudentNumber&&<p><strong>Beklenen öğrenci numarası: {expectedStudentNumber}</strong></p>}
     <label>Fotoğraftaki formun sınav kodunu okuyup yazınız <input aria-label="Formdaki sınav kodu" value={confirmedCode} onChange={e=>{setConfirmedCode(e.target.value);setReading(null);setManualAnswers({})}} autoComplete="off"/></label>
     <label style={{display:'block',marginTop:8}}><input type="checkbox" checked={confirmedPage} onChange={e=>{setConfirmedPage(e.target.checked);setReading(null);setManualAnswers({})}}/> Fotoğraftaki formun 1. sayfa olduğunu gözle doğruladım.</label>
-    {expectedFormIdentity&&<label style={{display:'block',marginTop:8}}>Fotoğraftaki form kimliğini yazınız <input aria-label="Formdaki form kimliği" value={confirmedFormIdentity} onChange={e=>{setConfirmedFormIdentity(e.target.value);setReading(null);setManualAnswers({})}} autoComplete="off"/></label>}
+    {verifiedFormIdentity&&<label style={{display:'block',marginTop:8}}>Fotoğraftaki form kimliğini yazınız <input aria-label="Formdaki form kimliği" value={confirmedFormIdentity} onChange={e=>{setConfirmedFormIdentity(e.target.value);setReading(null);setManualAnswers({})}} autoComplete="off"/></label>}
     {expectedStudentNumber&&<label style={{display:'block',marginTop:8}}>Formdaki öğrenci numarasını okuyup yazınız <input aria-label="Formdaki öğrenci numarası" value={confirmedStudentNumber} onChange={e=>{setConfirmedStudentNumber(e.target.value);setReading(null);setManualAnswers({})}} autoComplete="off"/></label>}
-    <p style={{fontSize:12}}>Kod, sayfa ve öğrenci numarası fotoğraftan otomatik okunmaz; bu kontrolü öğretici yapar. Kod eşleşmezse analiz kapalıdır.</p>
+    <p style={{fontSize:12}}>Barkod desteklenirse öğrenci ve sınav eşleştirilir. Barkod okunamazsa öğrenci seçip form kimliğini elle doğrulayınız. Sonuçlar otomatik kaydedilmez.</p>
     <div style={{display:'flex',gap:12,flexWrap:'wrap',marginTop:12}}>
       <label style={{flex:'1 1 210px'}}>Galeriden veya dosyalardan yükle
         <input type="file" accept="image/jpeg,image/png,image/webp" onChange={chooseFile} style={{display:'block',width:'100%',marginTop:8}}/>
@@ -151,7 +159,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
     </div>
     {url&&<div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap',marginTop:10}}>
       <button type="button" onClick={scanBarcode} disabled={barcodeBusy||!dimensions}>{barcodeBusy?'Barkod aranıyor…':'Barkodu Otomatik Oku (Deneme)'}</button>
-      <small>Barkod algılama cihaz ve tarayıcı desteğine bağlıdır. Eşleşmeyen barkod kabul edilmez.</small>
+      <small>Barkod algılama cihaz ve tarayıcı desteğine bağlıdır. Eşleşmeyen veya birden fazla öğrenciyle eşleşen barkod kabul edilmez.</small>
     </div>}
     {barcodeMessage&&<p role="status">{barcodeMessage}</p>}
     {error&&<p role="alert" style={{color:'#b91c1c'}}>{error}</p>}
@@ -168,7 +176,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
       <div style={{display:'flex',gap:8,flexWrap:'wrap',marginTop:12}}>
     <button type="button" onClick={findCorners} disabled={!dimensions||busy}>Köşeleri otomatik bul (deneme)</button>
     {autoCandidate&&<button type="button" onClick={()=>setAutoCandidate(false)}>Gösterilen köşeleri gözle doğruladım</button>}
-        <button type="button" onClick={analyzePhoto} disabled={!valid||autoCandidate||busy||questionCount>40||!examCode||confirmedCode.trim().toUpperCase()!==examCode||!confirmedPage||(expectedStudentNumber&&confirmedStudentNumber.trim()!==expectedStudentNumber)||(expectedFormIdentity&&confirmedFormIdentity.trim().toUpperCase()!==expectedFormIdentity)}>{busy?'İnceleniyor…':'Fotoğraftaki cevapları incele'}</button>
+        <button type="button" onClick={analyzePhoto} disabled={!valid||autoCandidate||busy||questionCount>40||!examCode||confirmedCode.trim().toUpperCase()!==examCode||!confirmedPage||(expectedStudentNumber&&confirmedStudentNumber.trim()!==expectedStudentNumber)||(!verifiedFormIdentity||confirmedFormIdentity.trim().toUpperCase()!==verifiedFormIdentity)}>{busy?'İnceleniyor…':'Fotoğraftaki cevapları incele'}</button>
         <button type="button" onClick={()=>{setReading(null);setManualAnswers({});setAutoCandidate(false);setCorners(old=>old.slice(0,-1))}} disabled={!corners.length}>Son köşeyi geri al</button>
         <button type="button" onClick={()=>{setReading(null);setManualAnswers({});setAutoCandidate(false);setCorners([])}}>Köşeleri yeniden seç</button>
       </div>
