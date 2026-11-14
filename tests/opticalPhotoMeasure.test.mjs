@@ -39,3 +39,9 @@ test('düşük çözünürlüklü fotoğraf güvenli biçimde reddedilir',()=>{
  const corners=[{x:0,y:0},{x:width-1,y:0},{x:width-1,y:height-1},{x:0,y:height-1}]
  assert.throws(()=>measurePhotoPage({width,height,data},corners,{questionCount:1}),/çözünürlüğü/)
 })
+
+test('aşırı karanlık fotoğraf optik okuma öncesinde reddedilir',()=>{
+ const {image,corners}=sheet()
+ for(let i=0;i<image.data.length;i+=4){image.data[i]=10;image.data[i+1]=10;image.data[i+2]=10}
+ assert.throws(()=>measurePhotoPage(image,corners,{questionCount:1}),/karanlık/)
+})
