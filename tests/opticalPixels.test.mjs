@@ -1,0 +1,39 @@
+import test from 'node:test'
+import assert from 'node:assert/strict'
+import { measureBubbleFill, measureOpticalRow } from '../app/lib/opticalPixels.js'
+import { classifyOpticalMarks } from '../app/lib/opticalClassification.js'
+
+function sampleImage() {
+  const width=120,height=40
+  const data=new Uint8ClampedArray(width*height*4).fill(255)
+  const circles=[15,45,75,105].map(x=>({x,y:20,radius:10}))
+  return {image:{data,width,height},circles}
+}
+function fillCircle(image,circle) {
+  for(let y=0;y<image.height;y++)for(let x=0;x<image.width;x++){
+    if((x-circle.x)**2+(y-circle.y)**2 <= (circle.radius*.55)**2){
+      const p=(y*image.width+x)*4
+      image.data[p]=image.data[p+1]=image.data[p+2]=0
+    }
+  }
+}
+test('beyaz optik kabarcık boş olarak sınıflanır',()=>{
+  const {image,circles}=sampleImage()
+  assert.equal(measureBubbleFill(image,circles[0]).fill,0)
+  assert.equal(classifyOpticalMarks(measureOpticalRow(image,circles)).status,'blank')
+})
+test('karartılmış ikinci kabarcık B seçeneği olarak ayrılır',()=>{
+  const {image,circles}=sampleImage();fillCircle(image,circles[1])
+  assert.equal(classifyOpticalMarks(measureOpticalRow(image,circles)).answer,'B')
+})
+test('iki karartılmış kabarcık kontrol gerektirir',()=>{
+  const {image,circles}=sampleImage();fillCircle(image,circles[0]);fillCircle(image,circles[1])
+  assert.equal(classifyOpticalMarks(measureOpticalRow(image,circles)).reason,'multiple_marks')
+})
+test('görüntü dışına taşan koordinatlar reddedilir',()=>{
+  const {image}=sampleImage()
+  assert.throws(()=>measureBubbleFill(image,{x:1,y:1,radius:10}))
+})
+test('yanlış RGBA veri boyutu reddedilir',()=>{
+  assert.throws(()=>measureBubbleFill({data:new Uint8Array(3),width:20,height:20},{x:10,y:10,radius:4}))
+})
