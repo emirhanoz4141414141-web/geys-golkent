@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { computeHomography, mapHomography } from '../lib/opticalPerspective.js'
 import { validatePaperCorners } from '../lib/opticalGeometry.js'
 import { measurePhotoPage } from '../lib/opticalPhotoMeasure.js'
+import { gradeExam } from '../lib/examGrading.js'
 
 const PAPER=[{x:0,y:0},{x:1,y:0},{x:1,y:1},{x:0,y:1}]
 const LABELS=['Sol üst','Sağ üst','Sağ alt','Sol alt']
@@ -13,7 +14,7 @@ const REVIEW_REASONS={multiple_marks:'Birden fazla işaret',weak_mark:'Silik / k
  * Kamera/fotoğraf inceleme prototipi. Yalnızca cihazda çalışır.
  * Köşeler öğretici tarafından seçilir; otomatik algılama ve puanlama yapmaz.
  */
-export default function OpticalPhotoReview({ questionCount = 20, examCode = '' }) {
+export default function OpticalPhotoReview({ questionCount = 20, examCode = '', answerKey = null }) {
   const [url,setUrl]=useState('')
   const [dimensions,setDimensions]=useState(null)
   const [corners,setCorners]=useState([])
@@ -23,7 +24,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '' }
   const [confirmedCode,setConfirmedCode]=useState('')
   const [confirmedPage,setConfirmedPage]=useState(false)
   const [busy,setBusy]=useState(false)
-  useEffect(()=>{setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false)},[questionCount,examCode])
+  useEffect(()=>{setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false)},[questionCount,examCode,answerKey?.join('|')])
   const imageRef=useRef(null)
   const urlRef=useRef('')
   useEffect(()=>()=>{if(urlRef.current)URL.revokeObjectURL(urlRef.current)},[])
@@ -65,6 +66,15 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '' }
       setReading(measurePhotoPage(pixels,corners,{questionCount,pageNumber:1}))
     } catch(e){setError(e?.message||'Fotoğraf analiz edilemedi.')} finally {setBusy(false)}
   }
+  let provisionalScore=null
+  if(reading && Array.isArray(answerKey) && answerKey.length===reading.rows.length){
+    try {
+      const answers=reading.rows.map(r=>r.status==='review'
+        ? (manualAnswers[r.number]==='BLANK'?'':manualAnswers[r.number]==='INVALID'?'MULTI':manualAnswers[r.number]||'REVIEW')
+        : r.answer)
+      provisionalScore=gradeExam({answerKey,answers})
+    } catch { provisionalScore=null }
+  }
   let valid=false
   let preview=[]
   if(corners.length===4){
@@ -77,7 +87,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '' }
   }
   return <section style={{padding:18,border:'1px solid #d5dee8',borderRadius:14,background:'#fff',color:'#1f2937'}}>
     <h3>Optik Fotoğraf İnceleme · Deneme</h3>
-    <p>Fotoğraf cihazınızdan dışarı gönderilmez. Bu ekran not vermez ve öğrenci kaydı değiştirmez.</p>
+    <p>Fotoğraf cihazınızdan dışarı gönderilmez. Bu ekran yalnızca geçici puan önizlemesi sunar ve öğrenci kaydı değiştirmez.</p>
     <p><strong>İncelenecek soru sayısı: {questionCount}</strong> · Yalnızca ilk optik sayfa (en fazla 40 soru)</p>
     <p><strong>Beklenen sınav kodu: {examCode || 'Tanımlanmadı'}</strong></p>
     <label>Fotoğraftaki formun sınav kodunu okuyup yazınız <input aria-label="Formdaki sınav kodu" value={confirmedCode} onChange={e=>{setConfirmedCode(e.target.value);setReading(null);setManualAnswers({})}} autoComplete="off"/></label>
@@ -116,9 +126,11 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '' }
             </select>
           </label></>}
         </div>)}</div>
+        {provisionalScore&&<div role="status" style={{marginTop:12,padding:10,border:'1px solid #d1d5db',borderRadius:8}}><strong>Geçici puan: {provisionalScore.score} / {provisionalScore.maximumScore}</strong><p>Doğru: {provisionalScore.correct} · Yanlış: {provisionalScore.wrong} · Boş: {provisionalScore.blank} · Kontrol gerekli: {provisionalScore.review}</p>{provisionalScore.requiresReview&&<p style={{color:'#92400e'}}>Bu puan kesin değildir; kontrol bekleyen veya geçersiz cevaplar vardır.</p>}</div>}
+        {!provisionalScore&&<p role="status">Puan hesaplamak için Sorular sekmesinde sınav taslağını ve cevap anahtarını tamamlayınız.</p>}
         <p><strong>Bekleyen şüpheli cevap: {reading.rows.filter(r=>r.status==='review'&&!manualAnswers[r.number]).length}</strong> · Manuel incelenen: {reading.rows.filter(r=>r.status==='review'&&manualAnswers[r.number]).length}</p>
         {reading.rows.some(r=>r.status==='review')&&<p style={{color:'#92400e',fontWeight:600}}>Belirsiz işaretler öğretici tarafından kâğıt üzerinden kontrol edilmelidir. Bu ekrandaki sonuçlar kesinleştirilemez.</p>}
-        <p style={{fontSize:12}}>Bu sonuçlar otomatik notlandırılmaz, kaydedilmez veya veliye gösterilmez. Gerçek baskı ve kamera kalibrasyonu yapılmamıştır.</p>
+        <p style={{fontSize:12}}>Geçici puan öğrenci notlarına kaydedilmez veya veliye gösterilmez. Gerçek baskı ve kamera kalibrasyonu yapılmamıştır.</p>
       </div>}
       {corners.length===4&&<p role="status">{valid?'Dört köşe matematiksel olarak eşleştirildi. Bu, optik okuma doğrulaması değildir.':'Köşeler geçersiz. Yeniden seçin.'}</p>}
     </div>}
