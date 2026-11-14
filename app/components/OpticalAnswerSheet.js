@@ -6,26 +6,33 @@ import { buildPrintPages, PAPER, REGISTRATION_MARKS } from '../lib/opticalTempla
 /** Önizleme ve baskı aynı milimetre koordinatlarını kullanır.
  * Fiziksel baskı/telefon kalibrasyonu henüz doğrulanmamıştır.
  */
-export default function OpticalAnswerSheet({ questionCount = 20, examCode = '', examTitle = 'Sınav', examDate = '', studentName = '', studentNumber = '', studentClass = '' }) {
+export default function OpticalAnswerSheet({ questionCount = 20, examCode = '', examTitle = 'Sınav', examDate = '', logoUrl = '/golkent-logo.png', studentName = '', studentNumber = '', studentClass = '' }) {
   const layout = buildOpticalLayout({ questionCount, examCode })
   const pages = buildPrintPages(layout.questionCount)
   return <section className="geys-optical-document" aria-label="Optik cevap formları">
     <style>{`
       .geys-optical-document{overflow-x:auto}
       .geys-optical-page{position:relative;width:210mm;height:297mm;box-sizing:border-box;background:#fff;color:#142436;font-family:Arial,sans-serif;margin:12px auto;border:1px solid #cbd5e1;overflow:hidden}
-      .geys-optical-page .geys-optical-header{position:absolute;left:19mm;right:19mm;top:20mm;text-align:center;font-size:11pt}
-      .geys-optical-header h2{font-size:13pt;margin:4mm 0}
-      .geys-optical-barcode{position:absolute;top:76mm;left:19mm;right:19mm;text-align:center;font-size:8pt}
+      .geys-optical-page .geys-optical-header{position:absolute!important;display:block!important;left:19mm;right:19mm;top:18mm;text-align:center;font-size:10pt;line-height:1.25}
+      .geys-optical-header>strong,.geys-optical-header>div,.geys-optical-header>small{display:block!important;width:100%;margin:0 auto;line-height:1.25}
+      .geys-optical-header .geys-logo{display:block;width:15mm;height:15mm;object-fit:contain;margin:0 auto 1mm}
+      .geys-optical-header>strong{color:#123c55;font-size:9pt}
+      .geys-optical-header h2{display:block!important;font-size:11pt;line-height:1.2;margin:2mm 0 1mm;color:#123c55}
+      .geys-optical-barcode{position:absolute;top:85mm;left:19mm;right:19mm;text-align:center;font-size:8pt}
       .geys-optical-barcode svg{display:block;width:150mm;height:11mm;margin:0 auto}
-      .geys-optical-fields{position:absolute;left:19mm;right:19mm;top:58mm;display:grid;grid-template-columns:1fr 1fr;gap:5mm;font-size:10pt}
-      .geys-optical-field{border-bottom:1px solid #344054;height:9mm}
+      .geys-optical-fields{position:absolute;left:19mm;right:19mm;top:61mm;display:grid;grid-template-columns:1fr 1fr;column-gap:5mm;row-gap:3mm;font-size:9pt}
+      .geys-optical-field{border-bottom:1px solid #344054;height:9mm;box-sizing:border-box;white-space:nowrap;overflow:hidden}
+      .geys-optical-page:before{content:'';position:absolute;top:9mm;left:19mm;right:19mm;height:1.5mm;background:#0f6175}
+      .geys-optical-page:after{content:'';position:absolute;top:12mm;left:19mm;right:19mm;height:.5mm;background:#c6a25c}
       .geys-optical-mark{position:absolute;width:5mm;height:5mm;background:#111;transform:translate(-50%,-50%)}
       .geys-optical-row-number{position:absolute;transform:translateY(-50%);font-size:10pt;font-weight:bold}
       .geys-optical-bubble{position:absolute;border:0.45mm solid #111;border-radius:50%;width:5.8mm;height:5.8mm;box-sizing:border-box;transform:translate(-50%,-50%);background:#fff}
       .geys-optical-option{position:absolute;transform:translate(-50%,-50%);font-size:7pt;color:#222}
+      .geys-optical-footer{color:#38546b;border-top:1px solid #b6c8d3;padding-top:3mm} 
       .geys-optical-footer{position:absolute;left:19mm;right:19mm;bottom:17mm;font-size:9pt;text-align:center}
       @page{size:A4 portrait;margin:0}
       @media print{
+        .geys-optical-document{print-color-adjust:exact;-webkit-print-color-adjust:exact}
         body *{visibility:hidden!important}
         .geys-optical-document,.geys-optical-document *{visibility:visible!important}
         .geys-optical-document{position:absolute;left:0;top:0;overflow:visible;width:210mm}
@@ -36,6 +43,7 @@ export default function OpticalAnswerSheet({ questionCount = 20, examCode = '', 
     {pages.map(page => <article key={page.pageNumber} className="geys-optical-page">
       {REGISTRATION_MARKS.map((m,i)=><span key={i} className="geys-optical-mark" style={{left:`${m.x}mm`,top:`${m.y}mm`}} aria-hidden="true"/>)}
       <header className="geys-optical-header">
+        <img className="geys-logo" src={logoUrl} alt="Kurs logosu"/>
         <strong>T.C. DİYANET İŞLERİ BAŞKANLIĞI</strong>
         <div>Kocaeli / İzmit Müftülüğü</div>
         <div>Gölkent Erkek Yatılı Hafızlık Kur’an Kursu</div>
