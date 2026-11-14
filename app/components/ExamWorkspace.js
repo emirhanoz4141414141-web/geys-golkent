@@ -13,16 +13,23 @@ const letters = ['A', 'B', 'C', 'D']
  * Bilinçli olarak Supabase erişimi / otomatik kayıt / veliye yayın içermez.
  * Canlıya bağlanmadan önce yetki ve veri modeli ayrıca doğrulanmalıdır.
  */
-export default function ExamWorkspace() {
+export default function ExamWorkspace({students = [], classes = []}) {
   const [examCode, setExamCode] = useState('DENEME')
   const [title, setTitle] = useState('Tecvid 1. Dönem 2. Yazılı')
   const [questions, setQuestions] = useState(() => Array.from({ length: 20 }, EMPTY))
   const [answers, setAnswers] = useState(() => Array(20).fill(''))
   const [mode, setMode] = useState('questions')
   const [showKey, setShowKey] = useState(false)
-  const [studentName,setStudentName] = useState('')
-  const [studentNumber,setStudentNumber] = useState('')
-  const [studentClass,setStudentClass] = useState('')
+  const [selectedStudentId,setSelectedStudentId] = useState('')
+  const [examDate,setExamDate] = useState(() => new Date().toLocaleDateString('en-CA'))
+  const [selectedClassId,setSelectedClassId] = useState('')
+  const selectedStudent=students.find(s=>String(s.id)===selectedStudentId)
+  const selectedClass=classes.find(c=>String(c.id)===selectedClassId)
+  const visibleStudents=students.filter(s=>!selectedClassId||String(s.class_id)===selectedClassId)
+  const studentName=selectedStudent? [selectedStudent.first_name,selectedStudent.last_name].filter(Boolean).join(' '):''
+  const studentNumber=selectedStudent?.registry_no||''
+  const studentClass=selectedStudent?.classes?.code||selectedClass?.code||''
+  const derivedExamCode=examCode==='DENEME' ? ('SINAV-'+examDate.replaceAll('-','') ) : examCode
   const draft = useMemo(() => ({ title, questions }), [title, questions])
   const validation = useMemo(() => validateExamDraft(draft), [draft])
   const score = useMemo(() => {
@@ -56,7 +63,12 @@ export default function ExamWorkspace() {
       <button type="button" className={mode==='sheet'?'primary':'ghost'} onClick={()=>setMode('sheet')}>Optik Form</button>
       <button type="button" className={mode==='photo'?'primary':'ghost'} onClick={()=>setMode('photo')}>Fotoğraf İnceleme</button>
     </div>
-    {mode==='sheet' ? <><p>Optik form önizlemesi: Yazdırma ölçüleri henüz fiziksel olarak doğrulanmadı. Öğrenci bilgileri yalnızca bu formun baskısına yazılır; sisteme kaydedilmez.</p><div style={{display:'flex',gap:10,flexWrap:'wrap',marginBottom:12}}><label>Öğrenci adı soyadı <input aria-label="Optik form öğrenci adı" maxLength={100} value={studentName} onChange={e=>setStudentName(e.target.value)}/></label><label>Öğrenci numarası <input aria-label="Optik form öğrenci numarası" maxLength={24} value={studentNumber} onChange={e=>setStudentNumber(e.target.value.replace(/[^0-9A-Za-z-]/g,''))}/></label><label>Sınıfı <input aria-label="Optik form sınıfı" maxLength={20} value={studentClass} onChange={e=>setStudentClass(e.target.value)}/></label></div><OpticalAnswerSheet questionCount={questions.length} examCode={examCode} examTitle={title} studentName={studentName} studentNumber={studentNumber} studentClass={studentClass}/></> : mode==='photo' ? <OpticalPhotoReview questionCount={questions.length} examCode={examCode} answerKey={validation.valid ? questions.map(q=>q.correctAnswer) : null} expectedStudentNumber={studentNumber.trim()}/> : mode==='questions' ? questions.map((q,i)=><fieldset key={i} style={{border:'1px solid #d6e1e9',borderRadius:12,padding:14,marginBottom:12}}>
+    {mode==='sheet' ? <><p>Optik form önizlemesi: Yazdırma ölçüleri henüz fiziksel olarak doğrulanmadı. Öğrenci bilgileri yalnızca bu formun baskısına yazılır; sisteme kaydedilmez.</p><div style={{display:'flex',gap:10,flexWrap:'wrap',marginBottom:12}}>
+      <label>Sınav tarihi <input type="date" aria-label="Sınav tarihi" value={examDate} onChange={e=>setExamDate(e.target.value)}/></label>
+      <label>Sınıf <select aria-label="Optik sınıf seçimi" value={selectedClassId} onChange={e=>{setSelectedClassId(e.target.value);setSelectedStudentId('')}}><option value="">Tüm sınıflar</option>{classes.map(c=><option key={c.id} value={String(c.id)}>{c.code} {c.name||''}</option>)}</select></label>
+      <label>Öğrenci <select aria-label="Optik öğrenci seçimi" value={selectedStudentId} onChange={e=>setSelectedStudentId(e.target.value)}><option value="">Öğrenci seçiniz</option>{visibleStudents.map(s=><option key={s.id} value={String(s.id)}>{s.first_name} {s.last_name} · {s.registry_no||'Numara yok'}</option>)}</select></label>
+      <p style={{width:'100%',margin:0}}>Sınav kodu: <strong>{derivedExamCode}</strong> · Öğrenci: <strong>{studentName||'Seçilmedi'}</strong> · No: <strong>{studentNumber||'Kayıtlı değil'}</strong> · Sınıf: <strong>{studentClass||'—'}</strong>. T.C. kimlik numarası bu önizlemede alınmaz veya barkoda yazılmaz.</p>
+    </div><OpticalAnswerSheet questionCount={questions.length} examCode={derivedExamCode} examTitle={title} examDate={examDate} studentName={studentName} studentNumber={studentNumber} studentClass={studentClass}/></> : mode==='photo' ? <OpticalPhotoReview questionCount={questions.length} examCode={derivedExamCode} answerKey={validation.valid ? questions.map(q=>q.correctAnswer) : null} expectedStudentNumber={studentNumber.trim()}/> : mode==='questions' ? questions.map((q,i)=><fieldset key={i} style={{border:'1px solid #d6e1e9',borderRadius:12,padding:14,marginBottom:12}}>
       <legend style={{fontWeight:700}}>{i+1}. Soru</legend>
       <textarea aria-label={`${i+1}. soru metni`} dir="auto" rows={2} value={q.text} placeholder="Türkçe veya harekeli Arapça soru metni" onChange={e=>editQuestion(i,{text:e.target.value})} style={{width:'100%',padding:10}}/>
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:10,marginTop:10}}>
