@@ -143,7 +143,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
       setConfirmedPage(true)
       setBarcodeMessage('Barkod öğrenci ve sınav formuyla eşleşti. Kâğıdın sayfa ve köşe konumlarını ayrıca kontrol ediniz.')
     }catch(e){if(photoGeneration===photoGenerationRef.current){setBarcodeMessage(e?.message||'Barkod okunamadı. Elle doğrulayınız.');markBatchStatus('needs_review')}}
-    finally{setBarcodeBusy(false)}
+    finally{if(photoGeneration===photoGenerationRef.current)setBarcodeBusy(false)}
   }
   function addCorner(event) {
     if(!dimensions||corners.length===4)return
