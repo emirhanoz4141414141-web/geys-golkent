@@ -1,4 +1,6 @@
 import { validatePaperCorners } from './opticalGeometry.js'
+import { computeHomography, mapHomography } from './opticalPerspective.js'
+import { PAPER, REGISTRATION_MARKS } from './opticalTemplate.js'
 
 /**
  * Temkinli otomatik A4 sınır tahmini: koyu zemin üzerindeki açık kâğıt.
