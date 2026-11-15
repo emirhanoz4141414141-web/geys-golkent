@@ -13,7 +13,6 @@ import { PAPER, REGISTRATION_MARKS } from './opticalTemplate.js'
 // Bu yöntem yalnızca yeterince büyük ve birbirinden ayrık işaretleri aday kabul eder.
 function detectRegistrationMarks(image){
   const {width:w,height:h,data}=image
-  const step=Math.max(1,Math.floor(Math.min(w,h)/400))
   const regions=[
     [0,w*.28,0,h*.28],[w*.72,w,0,h*.28],
     [w*.72,w,h*.72,h],[0,w*.28,h*.72,h]
@@ -31,21 +30,46 @@ function detectRegistrationMarks(image){
   if(darkSamples/allSamples>.16)return null
   const points=[]
   for(const [x0,x1,y0,y1] of regions){
-    const cells=new Map()
-    const cellSize=Math.max(8,Math.round(Math.min(w,h)*.018))
-    for(let y=Math.floor(y0);y<y1;y+=step)for(let x=Math.floor(x0);x<x1;x+=step){
-      const k=(y*w+x)*4
-      if(data[k+3]<250)return null
-      const luminance=(.2126*data[k]+.7152*data[k+1]+.0722*data[k+2])/255
-      if(luminance>.19)continue
-      const key=Math.floor(x/cellSize)+','+Math.floor(y/cellSize)
-      const v=cells.get(key)||{count:0,x:0,y:0}
-      v.count++;v.x+=x;v.y+=y;cells.set(key,v)
+    // Bağlı koyu bileşenlerden yalnızca yaklaşık kare ve dolu olanları
+    // kabul et. Izgara hücresindeki en koyu alanı seçmek; gölge, başlık
+    // ve cevap işaretlerini kayıt karesi sanabiliyordu.
+    const left=Math.floor(x0),top=Math.floor(y0)
+    const rw=Math.ceil(x1)-left,rh=Math.ceil(y1)-top
+    const mask=new Uint8Array(rw*rh),seen=new Uint8Array(rw*rh)
+    for(let yy=0;yy<rh;yy++)for(let xx=0;xx<rw;xx++){
+      const k=((top+yy)*w+left+xx)*4
+      const lum=(.2126*data[k]+.7152*data[k+1]+.0722*data[k+2])/255
+      if(lum<.28)mask[yy*rw+xx]=1
     }
-    const ranked=[...cells.values()].sort((a,b)=>b.count-a.count)
-    if(!ranked.length||ranked[0].count<Math.max(6,Math.floor((cellSize/step)**2*.12)))return null
-    const peak=ranked[0]
-    points.push({x:peak.x/peak.count,y:peak.y/peak.count})
+    const candidates=[]
+    const minSide=Math.max(5,Math.round(Math.min(w,h)*.009))
+    const maxSide=Math.max(18,Math.round(Math.min(w,h)*.052))
+    for(let yy=0;yy<rh;yy++)for(let xx=0;xx<rw;xx++){
+      const origin=yy*rw+xx
+      if(!mask[origin]||seen[origin])continue
+      const queue=[origin];seen[origin]=1
+      let count=0,minX=xx,maxX=xx,minY=yy,maxY=yy,sumX=0,sumY=0
+      for(let qi=0;qi<queue.length;qi++){
+        const at=queue[qi],cx=at%rw,cy=Math.floor(at/rw)
+        count++;sumX+=cx;sumY+=cy
+        minX=Math.min(minX,cx);maxX=Math.max(maxX,cx)
+        minY=Math.min(minY,cy);maxY=Math.max(maxY,cy)
+        for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){
+          const nx=cx+dx,ny=cy+dy
+          if(nx<0||ny<0||nx>=rw||ny>=rh)continue
+          const ni=ny*rw+nx
+          if(mask[ni]&&!seen[ni]){seen[ni]=1;queue.push(ni)}
+        }
+      }
+      const bw=maxX-minX+1,bh=maxY-minY+1
+      if(bw<minSide||bh<minSide||bw>maxSide||bh>maxSide)continue
+      if(Math.min(bw,bh)/Math.max(bw,bh)<.72||count/(bw*bh)<.70)continue
+      if(minX===0||minY===0||maxX===rw-1||maxY===rh-1)continue
+      candidates.push({count,x:left+sumX/count,y:top+sumY/count})
+    }
+    candidates.sort((a,b)=>b.count-a.count)
+    if(!candidates.length)return null
+    points.push({x:candidates[0].x,y:candidates[0].y})
   }
   if(!validatePaperCorners(points,{minArea:w*h*.24}).valid)return null
   // Kayıt işaretleri kâğıdın fiziksel köşesi değil, kenardan 12 mm içeridedir.
