@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { measurePhotoPage } from '../app/lib/opticalPhotoMeasure.js'
-import { buildPrintPages, PAPER } from '../app/lib/opticalTemplate.js'
+import { buildPrintPages, PAPER, REGISTRATION_MARKS } from '../app/lib/opticalTemplate.js'
+import { computeHomography, mapHomography } from '../app/lib/opticalPerspective.js'
 
 const SCALE=4
 const WIDTH=PAPER.width*SCALE
@@ -74,4 +75,19 @@ test('tiny paper quadrilateral is rejected before classification',()=>{
   const image=makeSyntheticPage(20,1)
   const tiny=[{x:10,y:10},{x:110,y:10},{x:110,y:150},{x:10,y:150}]
   assert.throws(()=>measurePhotoPage(image,tiny,{questionCount:20,pageNumber:1}),/çok küçük/)
+})
+
+test('registration mark geometry must not be used as physical A4 corners',()=>{
+  const image=makeSyntheticPage(20,1,{1:['B'],2:['D']})
+  const marks=REGISTRATION_MARKS.map(p=>({x:p.x*SCALE,y:p.y*SCALE}))
+  const transform=computeHomography(REGISTRATION_MARKS,marks)
+  const physicalCorners=[{x:0,y:0},{x:PAPER.width,y:0},{x:PAPER.width,y:PAPER.height},{x:0,y:PAPER.height}]
+    .map(p=>mapHomography(transform,p))
+  const measured=measurePhotoPage(image,physicalCorners,{questionCount:20,pageNumber:1})
+  assert.equal(measured.rows[0].answer,'B')
+  assert.equal(measured.rows[1].answer,'D')
+  assert.equal(measured.rows[2].status,'blank')
+  // Inner registration marks are not interchangeable with physical paper corners.
+  const incorrectlyAligned=measurePhotoPage(image,marks,{questionCount:20,pageNumber:1})
+  assert.notDeepEqual(incorrectlyAligned.rows.slice(0,2).map(r=>r.answer),['B','D'])
 })
