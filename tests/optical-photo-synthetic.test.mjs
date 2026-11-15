@@ -91,3 +91,12 @@ test('registration mark geometry must not be used as physical A4 corners',()=>{
   const incorrectlyAligned=measurePhotoPage(image,marks,{questionCount:20,pageNumber:1})
   assert.notDeepEqual(incorrectlyAligned.rows.slice(0,2).map(r=>r.answer),['B','D'])
 })
+
+test('tamamı boş okunan sayfa otomatik geçerli kabul edilmez',()=>{
+  const image=makeSyntheticPage(20,1)
+  const result=measurePhotoPage(image,CORNERS,{questionCount:20,pageNumber:1})
+  assert.equal(result.requiresReview,true)
+  assert.equal(result.rows.every(row=>row.status==='review'),true)
+  assert.equal(result.rows[0].reason,'all_blank_requires_confirmation')
+  assert.equal(result.publishable,false)
+})

@@ -56,7 +56,14 @@ export function measurePhotoPage(image, corners, { questionCount = 20, pageNumbe
     return {number:row.number,fills:measureOpticalRow(image,circles)}
   })
   const classified = classifyOpticalSheet(measured.map(r=>r.fills),measured.length)
-  return {pageNumber,pageCount:pages.length,rows:measured.map((r,i)=>({
-    ...r,...classified.results[i]
-  })),requiresReview:classified.requiresReview,provisional:true,publishable:false}
+  // Dolu kâğıdın tamamının 'boş' okunması bir hizalama/aydınlatma
+  // arızasının belirtisi olabilir. Gerçekten boş bırakılmış sayfayla
+  // güvenilir biçimde ayrıştırılamaz; otomatik geçerli sonuç üretme.
+  const allBlank=classified.results.every(result=>result.status==='blank')
+  const rows=measured.map((r,i)=>({
+    ...r,...(allBlank?{status:'review',answer:null,reason:'all_blank_requires_confirmation'}:classified.results[i])
+  }))
+  return {pageNumber,pageCount:pages.length,rows,
+    requiresReview:classified.requiresReview||allBlank,
+    provisional:true,publishable:false}
 }
