@@ -55,7 +55,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
   useEffect(()=>()=>{if(urlRef.current)URL.revokeObjectURL(urlRef.current)},[])
   function chooseFile(event) {
     photoGenerationRef.current++
-    setBarcodeBusy(false)
+    setBarcodeBusy(false);setBusy(false)
     setBatchFiles([]);setBatchIndex(-1);setBatchMessage('');setBatchStatuses({});setBatchIdentities({})
     const file=event.target.files?.[0]
     setError('');setCorners([]);setAutoCandidate(false);setDimensions(null);setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('');setConfirmedFormIdentity('');setBarcodeMessage('');setMatchedStudent(null);setReviewConfirmed(false);setSaveMessage('')
@@ -73,7 +73,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
   function loadQueuedFile(index,files=batchFiles){
     if(index<0||index>=files.length)return
     photoGenerationRef.current++
-    setBarcodeBusy(false)
+    setBarcodeBusy(false);setBusy(false)
     const file=files[index]
     setError('');setCorners([]);setAutoCandidate(false);setDimensions(null);setReading(null);
     setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('');
@@ -171,6 +171,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
     }catch{setCorners([]);setError('Otomatik algılama başarısız. Köşeleri elle seçiniz.')}
   }
   async function analyzePhoto() {
+    const photoGeneration=photoGenerationRef.current
     if (!valid || autoCandidate || !imageRef.current || busy || !examCode || confirmedCode.trim().toUpperCase()!==examCode || !confirmedPage || (expectedStudentNumber && confirmedStudentNumber.trim()!==expectedStudentNumber) || (!verifiedFormIdentity || confirmedFormIdentity.trim().toUpperCase()!==verifiedFormIdentity)) return
     setBusy(true);setReading(null);setManualAnswers({});setError('')
     try {
@@ -183,9 +184,10 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
       ctx.drawImage(image,0,0)
       const pixels=ctx.getImageData(0,0,canvas.width,canvas.height)
       const measured=measurePhotoPage(pixels,corners,{questionCount,pageNumber})
+      if(photoGeneration!==photoGenerationRef.current)return
       setReading(measured)
       if(batchIndex>=0)markBatchStatus(measured.requiresReview?'needs_review':'reviewed')
-    } catch(e){setError(e?.message||'Fotoğraf analiz edilemedi.');markBatchStatus('error')} finally {setBusy(false)}
+    } catch(e){if(photoGeneration===photoGenerationRef.current){setError(e?.message||'Fotoğraf analiz edilemedi.');markBatchStatus('error')}} finally {if(photoGeneration===photoGenerationRef.current)setBusy(false)}
   }
   const verifiedFormIdentity=(pageNumber===1?expectedFormIdentity:'') || (matchedStudent ? buildCompactFormIdentity({examCode,studentId:String(matchedStudent.id),pageNumber}) : '')
   let provisionalScore=null
@@ -236,7 +238,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
   }
   function changePage(next){
     photoGenerationRef.current++
-    setBarcodeBusy(false)
+    setBarcodeBusy(false);setBusy(false)
     setPageNumber(next);setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);
     setConfirmedFormIdentity('');setMatchedStudent(null);setCorners([]);setAutoCandidate(false);
     setReviewConfirmed(false);setSaveMessage('');setCollectionMessage('')
@@ -353,7 +355,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
         <button type="button" disabled={batchIndex<=0||busy||saveBusy} onClick={()=>loadQueuedFile(batchIndex-1)}>Önceki fotoğraf</button>
         <strong>{batchIndex+1} / {batchFiles.length}</strong>
         <button type="button" disabled={batchIndex>=batchFiles.length-1||busy||saveBusy} onClick={()=>loadQueuedFile(batchIndex+1)}>Sonraki fotoğraf</button>
-        <button type="button" disabled={busy||saveBusy} onClick={()=>{photoGenerationRef.current++;setBatchFiles([]);setBatchIndex(-1);setBatchStatuses({});setBatchIdentities({});setCollectedPages({});setCollectionMessage('');setBatchMessage('Kuyruk temizlendi.');setReading(null);setManualAnswers({});setUrl('');if(urlRef.current){URL.revokeObjectURL(urlRef.current);urlRef.current=''}}}>Kuyruğu temizle</button>
+        <button type="button" disabled={busy||saveBusy} onClick={()=>{photoGenerationRef.current++;setBusy(false);setBarcodeBusy(false);setBatchFiles([]);setBatchIndex(-1);setBatchStatuses({});setBatchIdentities({});setCollectedPages({});setCollectionMessage('');setBatchMessage('Kuyruk temizlendi.');setReading(null);setManualAnswers({});setUrl('');if(urlRef.current){URL.revokeObjectURL(urlRef.current);urlRef.current=''}}}>Kuyruğu temizle</button>
         <span style={{fontSize:12,maxWidth:260,overflowWrap:'anywhere'}}>{batchFiles[batchIndex]?.name}</span>
       </div>}
       {batchFiles.length>0&&<>
