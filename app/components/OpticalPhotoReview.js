@@ -429,7 +429,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
       {batchMessage&&<p role="status">{batchMessage}</p>}
     </div>
     {url&&<div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap',marginTop:10}}>
-      <button type="button" onClick={scanBarcode} disabled={barcodeBusy||!dimensions}>{barcodeBusy?'Barkod aranıyor…':'Barkodu Otomatik Oku (Deneme)'}</button>
+      <button type="button" onClick={scanBarcode} disabled={barcodeBusy||!dimensions}>{barcodeBusy?'Barkod aranıyor…':'Barkodu yeniden tara'}</button>
       <small>Barkod algılama cihaz ve tarayıcı desteğine bağlıdır. Eşleşmeyen veya birden fazla öğrenciyle eşleşen barkod kabul edilmez.</small>
     </div>}
     {barcodeMessage&&<p role="status">{barcodeMessage}</p>}
@@ -437,7 +437,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
     {url&&<div style={{marginTop:16}}>
       <p>{corners.length<4?`Sıradaki köşe: ${LABELS[corners.length]} — fotoğrafın üzerine dokunun.`:'Dört köşe seçildi. Konumları kontrol edin.'}</p>
       <div onClick={addCorner} role="button" tabIndex={0} aria-label="Fotoğrafta köşe seçme alanı" onKeyDown={e=>{if(e.key==='Enter')setError('Köşe seçmek için fotoğrafa dokunun veya fare kullanın.')}} style={{position:'relative',display:'inline-block',maxWidth:'100%',cursor:corners.length<4?'crosshair':'default'}}>
-        <img ref={imageRef} src={url} alt="Yalnızca cihazda açılan optik cevap kâğıdı" onLoad={e=>setDimensions({width:e.currentTarget.naturalWidth,height:e.currentTarget.naturalHeight})} onError={()=>setError('Fotoğraf açılamadı.')} style={{maxWidth:'100%',maxHeight:650,display:'block'}}/>
+        <img ref={imageRef} src={url} alt="Yalnızca cihazda açılan optik cevap kâğıdı" onLoad={e=>{setDimensions({width:e.currentTarget.naturalWidth,height:e.currentTarget.naturalHeight});findCorners();if(typeof window.BarcodeDetector==='function')void scanBarcode()}} onError={()=>setError('Fotoğraf açılamadı.')} style={{maxWidth:'100%',maxHeight:650,display:'block'}}/>
         {dimensions&&<svg viewBox={`0 0 ${dimensions.width} ${dimensions.height}`} style={{position:'absolute',inset:0,width:'100%',height:'100%',pointerEvents:'none'}}>
           {corners.length===4&&<polygon points={corners.map(p=>`${p.x},${p.y}`).join(' ')} fill="rgba(16,185,129,.12)" stroke="#059669" strokeWidth={Math.max(2,dimensions.width/300)}/>}
           {corners.map((p,i)=><g key={i}><circle cx={p.x} cy={p.y} r={Math.max(7,dimensions.width/90)} fill="#f59e0b" stroke="white" strokeWidth="2"/><text x={p.x} y={p.y+5} textAnchor="middle" fill="#111827" fontWeight="bold" fontSize={Math.max(12,dimensions.width/65)}>{i+1}</text></g>)}
@@ -445,7 +445,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
         </svg>}
       </div>
       <div style={{display:'flex',gap:8,flexWrap:'wrap',marginTop:12}}>
-    <button type="button" onClick={findCorners} disabled={!dimensions||busy}>Köşeleri otomatik bul (deneme)</button>
+    <button type="button" onClick={findCorners} disabled={!dimensions||busy}>Köşeleri yeniden otomatik tara</button>
     {autoCandidate&&<button type="button" onClick={()=>setAutoCandidate(false)}>Gösterilen köşeleri gözle doğruladım</button>}
         <button type="button" onClick={analyzePhoto} disabled={!valid||autoCandidate||busy||!examCode||confirmedCode.trim().toUpperCase()!==examCode||!confirmedPage||(expectedStudentNumber&&confirmedStudentNumber.trim()!==expectedStudentNumber)||(!verifiedFormIdentity||confirmedFormIdentity.trim().toUpperCase()!==verifiedFormIdentity)}>{busy?'İnceleniyor…':'Fotoğraftaki cevapları incele'}</button>
         <button type="button" onClick={()=>{setReading(null);setManualAnswers({});setAutoCandidate(false);setCorners(old=>old.slice(0,-1))}} disabled={!corners.length}>Son köşeyi geri al</button>
