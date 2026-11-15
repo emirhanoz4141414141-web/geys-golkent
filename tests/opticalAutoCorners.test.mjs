@@ -26,3 +26,23 @@ test('sheet touching image boundary is rejected',()=>{
 test('invalid pixel buffer rejected',()=>{
  assert.equal(detectPaperCorners({width:400,height:600,data:[]}),null)
 })
+
+test('registration mark candidates on bright sheet are provisional',()=>{
+ const w=400,h=600
+ const photo=image(w,h,[30,30,369,569],180,245)
+ for(const [cx,cy] of [[50,50],[350,50],[350,550],[50,550]]){
+  for(let y=cy-6;y<=cy+6;y++)for(let x=cx-6;x<=cx+6;x++){
+   const k=(y*w+x)*4
+   photo.data[k]=photo.data[k+1]=photo.data[k+2]=5
+  }
+ }
+ const result=detectPaperCorners(photo)
+ assert.ok(result)
+ assert.equal(result.requiresConfirmation,true)
+ assert.equal(result.method,'registration-mark-candidates')
+ for(let i=0;i<4;i++){
+  const [x,y]=[[50,50],[350,50],[350,550],[50,550]][i]
+  assert.ok(Math.abs(result.corners[i].x-x)<16)
+  assert.ok(Math.abs(result.corners[i].y-y)<16)
+ }
+})
