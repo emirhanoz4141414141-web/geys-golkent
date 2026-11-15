@@ -51,6 +51,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
   const [saveMessage,setSaveMessage]=useState('')
   const [reviewConfirmed,setReviewConfirmed]=useState(false)
   const [autoCandidate,setAutoCandidate]=useState(false)
+  const [showFillDiagnostics,setShowFillDiagnostics]=useState(false)
   useEffect(()=>{setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('');setConfirmedFormIdentity('');setMatchedStudent(null);setCollectedPages({});setCollectionMessage('');setReviewConfirmed(false);setSaveMessage('')},[questionCount,examCode,answerKey?.join('|'),expectedStudentNumber,expectedFormIdentity])
   const photoGenerationRef=useRef(0)
   const batchSelectionRef=useRef(0)
@@ -478,9 +479,11 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
       {reading&&<div role="status" style={{marginTop:16,padding:12,border:'1px solid #d1d5db',borderRadius:8}}>
         <strong>Geçici optik inceleme — kayıt yapılmadı</strong>
         <p>İşaretli: {reading.rows.filter(r=>r.status==='marked').length} · Boş: {reading.rows.filter(r=>r.status==='blank').length} · Kontrol gerekli: {reading.rows.filter(r=>r.status==='review').length}</p>
+        <label style={{display:'block',fontSize:12,marginBottom:8}}><input type="checkbox" checked={showFillDiagnostics} onChange={e=>setShowFillDiagnostics(e.target.checked)}/> Teknik inceleme: A/B/C/D doluluk oranlarını göster</label>
         <p>Öğretici incelemesi: Şüpheli cevapları basılı kâğıttan kontrol edip geçici olarak düzeltebilirsiniz.</p>
         <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(145px,1fr))',gap:6}}>{reading.rows.map(r=><div key={r.number} style={{padding:7,border:'1px solid #e5e7eb',borderRadius:6}}>
           <strong>{r.number}. {r.status==='marked'?r.answer:r.status==='blank'?'Boş':'İncele'}</strong>
+          {showFillDiagnostics&&<small style={{display:'block',marginTop:4,fontSize:11,color:'#475569',fontVariantNumeric:'tabular-nums'}}>A/B/C/D: {r.fills.map(v=>Math.round(v*100)+'%').join(' / ')}</small>}
           {r.status==='review'&&<><small style={{display:'block',color:'#b45309'}}>{REVIEW_REASONS[r.reason]||'Kontrol gerekli'}</small>
           <label style={{display:'block',marginTop:5,fontSize:12}}>Kâğıttan doğrulanan cevap
             <select aria-label={`${r.number}. soru manuel kontrol`} value={manualAnswers[r.number]??''} onChange={e=>setManualAnswers(old=>({...old,[r.number]:e.target.value}))} style={{display:'block',width:'100%'}}>
