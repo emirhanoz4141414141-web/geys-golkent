@@ -16,6 +16,17 @@ function detectRegistrationMarks(image){
     [0,w*.28,0,h*.28],[w*.72,w,0,h*.28],
     [w*.72,w,h*.72,h],[0,w*.28,h*.72,h]
   ]
+  // Koyu arka plan veya bütünüyle koyu fotoğraf, kayıt işareti sayılmamalıdır.
+  let darkSamples=0,allSamples=0
+  const sampleStep=Math.max(3,Math.floor(Math.min(w,h)/80))
+  for(let y=0;y<h;y+=sampleStep)for(let x=0;x<w;x+=sampleStep){
+    const k=(y*w+x)*4
+    if(data[k+3]<250)return null
+    const lum=(.2126*data[k]+.7152*data[k+1]+.0722*data[k+2])/255
+    if(lum<.19)darkSamples++
+    allSamples++
+  }
+  if(darkSamples/allSamples>.16)return null
   const points=[]
   for(const [x0,x1,y0,y1] of regions){
     const cells=new Map()
