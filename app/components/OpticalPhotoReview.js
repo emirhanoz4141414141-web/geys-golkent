@@ -49,10 +49,12 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
   const [reviewConfirmed,setReviewConfirmed]=useState(false)
   const [autoCandidate,setAutoCandidate]=useState(false)
   useEffect(()=>{setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('');setConfirmedFormIdentity('');setMatchedStudent(null);setCollectedPages({});setCollectionMessage('');setReviewConfirmed(false);setSaveMessage('')},[questionCount,examCode,answerKey?.join('|'),expectedStudentNumber,expectedFormIdentity])
+  const photoGenerationRef=useRef(0)
   const imageRef=useRef(null)
   const urlRef=useRef('')
   useEffect(()=>()=>{if(urlRef.current)URL.revokeObjectURL(urlRef.current)},[])
   function chooseFile(event) {
+    photoGenerationRef.current++
     setBatchFiles([]);setBatchIndex(-1);setBatchMessage('');setBatchStatuses({});setBatchIdentities({})
     const file=event.target.files?.[0]
     setError('');setCorners([]);setAutoCandidate(false);setDimensions(null);setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('');setConfirmedFormIdentity('');setBarcodeMessage('');setMatchedStudent(null);setReviewConfirmed(false);setSaveMessage('')
@@ -69,6 +71,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
   }
   function loadQueuedFile(index,files=batchFiles){
     if(index<0||index>=files.length)return
+    photoGenerationRef.current++
     const file=files[index]
     setError('');setCorners([]);setAutoCandidate(false);setDimensions(null);setReading(null);
     setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('');
@@ -86,6 +89,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
     if(files.length>250){setBatchMessage('Bir seferde en fazla 250 fotoğraf seçiniz.');return}
     const invalid=files.find(file=>!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>MAX_BYTES)
     if(invalid){setBatchMessage('Dosyaların tamamı 12 MB altında JPEG, PNG veya WebP olmalıdır.');return}
+    photoGenerationRef.current++
     setBatchFiles(files);setBatchIndex(-1);setBatchStatuses({});setBatchIdentities({})
     loadQueuedFile(0,files)
   }
@@ -101,6 +105,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
     error:batchFiles.filter((_,i)=>batchStatuses[i]==='error').length
   }
   async function scanBarcode(){
+    const photoGeneration=photoGenerationRef.current
     const image=imageRef.current
     setBarcodeMessage('')
     if(!image?.naturalWidth){setBarcodeMessage('Önce fotoğraf yükleyiniz.');return}
@@ -111,6 +116,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
       if(!supported.includes('code_39'))throw new Error('Bu cihazda Code 39 barkod okuyucu desteklenmiyor.')
       const detector=new window.BarcodeDetector({formats:['code_39']})
       const results=await detector.detect(image)
+      if(photoGeneration!==photoGenerationRef.current) return
       const values=[...new Set(results.map(x=>String(x.rawValue||'').trim().toUpperCase()).filter(Boolean))]
       if(values.length!==1)throw new Error(values.length?'Birden fazla barkod algılandı; formu kontrol ediniz.':'Barkod algılanamadı. Daha net fotoğraf çekiniz veya elle giriniz.')
       const candidates=studentCandidates.map(student=>({
@@ -126,13 +132,14 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
         if(lookupError)throw new Error('Mevcut öğrenci sonucu kontrol edilemedi: '+lookupError.message)
         if(existing?.length)throw new Error('Bu öğrenci için sınav sonucu zaten kayıtlı ('+(existing[0].status==='approved'?'onaylı':'inceleme bekliyor')+'). Yeni form işlenmedi.')
       }
+      if(photoGeneration!==photoGenerationRef.current)return
       if(batchIndex>=0)setBatchIdentities(old=>({...old,[batchIndex]:values[0]}))
       setMatchedStudent(candidates[0].student)
       setConfirmedFormIdentity(values[0])
       setConfirmedCode(examCode)
       setConfirmedPage(true)
       setBarcodeMessage('Barkod öğrenci ve sınav formuyla eşleşti. Kâğıdın sayfa ve köşe konumlarını ayrıca kontrol ediniz.')
-    }catch(e){setBarcodeMessage(e?.message||'Barkod okunamadı. Elle doğrulayınız.');markBatchStatus('needs_review')}
+    }catch(e){if(photoGeneration===photoGenerationRef.current){setBarcodeMessage(e?.message||'Barkod okunamadı. Elle doğrulayınız.');markBatchStatus('needs_review')}}
     finally{setBarcodeBusy(false)}
   }
   function addCorner(event) {
@@ -341,7 +348,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
         <button type="button" disabled={batchIndex<=0||busy||saveBusy} onClick={()=>loadQueuedFile(batchIndex-1)}>Önceki fotoğraf</button>
         <strong>{batchIndex+1} / {batchFiles.length}</strong>
         <button type="button" disabled={batchIndex>=batchFiles.length-1||busy||saveBusy} onClick={()=>loadQueuedFile(batchIndex+1)}>Sonraki fotoğraf</button>
-        <button type="button" disabled={busy||saveBusy} onClick={()=>{setBatchFiles([]);setBatchIndex(-1);setBatchStatuses({});setBatchIdentities({});setCollectedPages({});setCollectionMessage('');setBatchMessage('Kuyruk temizlendi.');setReading(null);setManualAnswers({});setUrl('');if(urlRef.current){URL.revokeObjectURL(urlRef.current);urlRef.current=''}}}>Kuyruğu temizle</button>
+        <button type="button" disabled={busy||saveBusy} onClick={()=>{photoGenerationRef.current++;setBatchFiles([]);setBatchIndex(-1);setBatchStatuses({});setBatchIdentities({});setCollectedPages({});setCollectionMessage('');setBatchMessage('Kuyruk temizlendi.');setReading(null);setManualAnswers({});setUrl('');if(urlRef.current){URL.revokeObjectURL(urlRef.current);urlRef.current=''}}}>Kuyruğu temizle</button>
         <span style={{fontSize:12,maxWidth:260,overflowWrap:'anywhere'}}>{batchFiles[batchIndex]?.name}</span>
       </div>}
       {batchFiles.length>0&&<>
