@@ -76,8 +76,8 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
     if(urlRef.current){URL.revokeObjectURL(urlRef.current);urlRef.current=''}
     setUrl('')
     if(!file)return
-    if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>MAX_BYTES){
-      setError('Yalnızca 12 MB altındaki JPEG, PNG veya WebP fotoğrafları kabul edilir.')
+    if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size===0||file.size>MAX_BYTES){
+      setError('Yalnızca boş olmayan ve 12 MB sınırını aşmayan JPEG, PNG veya WebP fotoğrafları kabul edilir.')
       return
     }
     if(!globalThis.crypto?.subtle){setError('Fotoğrafın güvenli tekrar kontrolü bu tarayıcıda desteklenmiyor.');return}
@@ -115,9 +115,9 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
     if(!files.length)return
     if(files.length>250){setBatchMessage('Bir seferde en fazla 250 fotoğraf seçiniz.');return}
     const totalBytes=files.reduce((sum,file)=>sum+file.size,0)
-    if(totalBytes>500*1024*1024){setBatchMessage('Seçilen fotoğrafların toplam boyutu 500 MB sınırını aşıyor. Daha küçük gruplar halinde yükleyiniz.');return}
-    const invalid=files.find(file=>!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>MAX_BYTES)
-    if(invalid){setBatchMessage('Dosyaların tamamı 12 MB altında JPEG, PNG veya WebP olmalıdır.');return}
+    if(totalBytes>500*1024*1024){setBatchMessage('Seçilen fotoğrafların toplam boyutu 500 MiB sınırını aşıyor. Daha küçük gruplar halinde yükleyiniz.');return}
+    const invalid=files.find(file=>!['image/jpeg','image/png','image/webp'].includes(file.type)||(file.size===0||file.size>MAX_BYTES))
+    if(invalid){setBatchMessage('Dosyaların tamamı boş olmayan, 12 MB sınırını aşmayan JPEG, PNG veya WebP olmalıdır.');return}
     const fileKeys=files.map(file=>[file.name,file.size,file.lastModified,file.type].join('|'))
     if(new Set(fileKeys).size!==fileKeys.length){setBatchMessage('Aynı dosya birden fazla seçilmiş görünüyor. Tekrarlanan dosyaları çıkarıp yeniden seçiniz.');return}
     if(!globalThis.crypto?.subtle){setBatchMessage('Bu tarayıcıda güvenli dosya karşılaştırması desteklenmiyor. Fotoğrafları tek tek kontrol ediniz.');return}
