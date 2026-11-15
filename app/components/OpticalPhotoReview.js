@@ -114,6 +114,8 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
     event.target.value=''
     if(!files.length)return
     if(files.length>250){setBatchMessage('Bir seferde en fazla 250 fotoğraf seçiniz.');return}
+    const totalBytes=files.reduce((sum,file)=>sum+file.size,0)
+    if(totalBytes>500*1024*1024){setBatchMessage('Seçilen fotoğrafların toplam boyutu 500 MB sınırını aşıyor. Daha küçük gruplar halinde yükleyiniz.');return}
     const invalid=files.find(file=>!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>MAX_BYTES)
     if(invalid){setBatchMessage('Dosyaların tamamı 12 MB altında JPEG, PNG veya WebP olmalıdır.');return}
     const fileKeys=files.map(file=>[file.name,file.size,file.lastModified,file.type].join('|'))
