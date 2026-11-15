@@ -14,6 +14,18 @@ export function measurePhotoPage(image, corners, { questionCount = 20, pageNumbe
       !image.data || image.data.length !== image.width * image.height * 4) {
     throw new Error('Geçerli fotoğraf piksel verisi gerekli.')
   }
+  // Geçerli dörtgen bile fotoğraf sınırları dışında olabilir. Bu durumda
+  // piksel örnekleyici sınır dışına taşmadan güvenli şekilde reddet.
+  if(corners.some(p=>p.x<0||p.y<0||p.x>=image.width||p.y>=image.height)){
+    throw new Error('Kâğıt köşeleri fotoğraf sınırları dışında. Köşeleri yeniden seçiniz.')
+  }
+  const top=Math.hypot(corners[1].x-corners[0].x,corners[1].y-corners[0].y)
+  const bottom=Math.hypot(corners[2].x-corners[3].x,corners[2].y-corners[3].y)
+  const left=Math.hypot(corners[3].x-corners[0].x,corners[3].y-corners[0].y)
+  const right=Math.hypot(corners[2].x-corners[1].x,corners[2].y-corners[1].y)
+  if(Math.min(top,bottom)<180||Math.min(left,right)<250){
+    throw new Error('Kâğıt fotoğrafta çok küçük veya aşırı eğik. Daha yakından ve düz açıyla çekiniz.')
+  }
   // Fotoğrafın genel ışık durumunu seyrek örneklemeyle kontrol et.
   // Bu eşikler ilk güvenlik kontrolüdür; gerçek kamera testleriyle kalibre edilmelidir.
   let sum = 0, samples = 0
