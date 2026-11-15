@@ -63,3 +63,15 @@ test('very dark photos are rejected instead of being graded',()=>{
   for(let i=0;i<image.data.length;i+=4)image.data[i]=image.data[i+1]=image.data[i+2]=0
   assert.throws(()=>measurePhotoPage(image,CORNERS,{questionCount:20,pageNumber:1}),/çok karanlık/)
 })
+
+test('corners outside image are rejected before pixel sampling',()=>{
+  const image=makeSyntheticPage(20,1)
+  const outside=CORNERS.map(p=>({x:p.x+2000,y:p.y+2000}))
+  assert.throws(()=>measurePhotoPage(image,outside,{questionCount:20,pageNumber:1}),/fotoğraf sınırları dışında/)
+})
+
+test('tiny paper quadrilateral is rejected before classification',()=>{
+  const image=makeSyntheticPage(20,1)
+  const tiny=[{x:10,y:10},{x:110,y:10},{x:110,y:150},{x:10,y:150}]
+  assert.throws(()=>measurePhotoPage(image,tiny,{questionCount:20,pageNumber:1}),/çok küçük/)
+})
