@@ -39,6 +39,19 @@ export default function ExamWorkspace({students = [], classes = [], institution 
   const [resultsLoading,setResultsLoading] = useState(false)
   const [approvingResultId,setApprovingResultId] = useState('')
   const [reviewedResultId,setReviewedResultId] = useState('')
+  const [resultClassId,setResultClassId] = useState('')
+  const [resultStatusFilter,setResultStatusFilter] = useState('all')
+  const resultStudents=students.filter(s=>!resultClassId||String(s.class_id)===resultClassId)
+  const resultStudentIds=new Set(resultStudents.map(s=>String(s.id)))
+  const scopedResults=examResults.filter(r=>resultStudentIds.has(String(r.student_id)))
+  const filteredResults=scopedResults.filter(r=>resultStatusFilter==='all'||r.status===resultStatusFilter)
+  const approvedResults=scopedResults.filter(r=>r.status==='approved')
+  const pendingResults=scopedResults.filter(r=>r.status==='pending_review')
+  const completedStudentIds=new Set(scopedResults.map(r=>String(r.student_id)))
+  const missingStudents=resultStudents.filter(s=>s.id&&!completedStudentIds.has(String(s.id)))
+  const averageApproved=approvedResults.length
+    ?(approvedResults.reduce((sum,r)=>sum+Number(r.score||0),0)/approvedResults.length).toFixed(2)
+    :null
   async function refreshSavedExams(){
     if(!supabase)return
     setExamLoading(true)
@@ -79,7 +92,7 @@ export default function ExamWorkspace({students = [], classes = [], institution 
     const exam=savedExams.find(x=>x.id===id)
     if(!exam)return
     setActiveExamId(exam.id)
-    setExamResults([]);setResultsMessage('');setReviewedResultId('')
+    setExamResults([]);setResultsMessage('');setReviewedResultId('');setResultClassId('');setResultStatusFilter('all')
     setExamCode(exam.exam_code)
     setTitle(exam.title)
     setExamDate(exam.exam_date)
@@ -169,10 +182,29 @@ export default function ExamWorkspace({students = [], classes = [], institution 
     </div>
     {mode==='results' ? <div style={{padding:14,border:'1px solid #d6e1e9',borderRadius:12}}>
       <h4>Kayıtlı sınav sonuçları</h4>
-      <p>Sonuçlar yalnızca yetkili yönetici tarafından görüntülenir. Fotoğraf incelemesi henüz otomatik kayıt yapmaz.</p>
+      <p>Sonuçlar yalnızca yetkili yönetici tarafından görüntülenir. Optik sonuçlar yalnızca açık yönetici kontrolüyle taslak olarak kaydedilir; onaylanmış sonuçlar ayrıca gösterilir.</p>
       <button type="button" disabled={!activeExamId||resultsLoading} onClick={loadExamResults}>{resultsLoading?'Yükleniyor…':'Seçili Sınavın Sonuçlarını Getir'}</button>
       {resultsMessage&&<p role="status">{resultsMessage}</p>}
-      {examResults.length>0&&<div style={{overflowX:'auto',marginTop:12}}><table style={{width:'100%',borderCollapse:'collapse'}}><thead><tr><th>Öğrenci</th><th>Puan</th><th>Doğru</th><th>Yanlış</th><th>Boş</th><th>Kontrol</th><th>Durum</th><th>Yönetici kontrolü</th></tr></thead><tbody>{examResults.map(r=>{const student=students.find(s=>String(s.id)===String(r.student_id));return <tr key={r.id}><td>{student?[student.first_name,student.last_name].filter(Boolean).join(' '):'Kayıtlı öğrenci'}</td><td>{r.score}</td><td>{r.correct_count}</td><td>{r.wrong_count}</td><td>{r.blank_count}</td><td>{r.review_count}</td><td>{r.status==='approved'?'Onaylandı':'İnceleme bekliyor'}</td><td>{r.status==='pending_review'&&r.review_count===0?<div><label style={{display:'flex',gap:5,alignItems:'center'}}><input type="checkbox" checked={reviewedResultId===r.id} onChange={e=>setReviewedResultId(e.target.checked?r.id:'')}/> Bu öğrencinin kâğıdını kontrol ettim</label><button type="button" disabled={reviewedResultId!==r.id||Boolean(approvingResultId)} onClick={()=>approveExamResult(r)}>{approvingResultId===r.id?'Onaylanıyor…':'Sonucu Onayla'}</button></div>:r.status==='approved'?'Kesinleştirildi':'Belirsiz cevaplar çözülmeli'}</td></tr>})}</tbody></table></div>}
+      {examResults.length>0&&<div style={{marginTop:14}}>
+        <div style={{display:'flex',gap:12,flexWrap:'wrap',alignItems:'end'}}>
+          <label>Sınıf <select aria-label="Sonuç sınıf filtresi" value={resultClassId} onChange={e=>setResultClassId(e.target.value)}><option value="">Tüm sınıflar</option>{classes.map(c=><option key={c.id} value={String(c.id)}>{c.code} {c.name||''}</option>)}</select></label>
+          <label>Durum <select aria-label="Sonuç durum filtresi" value={resultStatusFilter} onChange={e=>setResultStatusFilter(e.target.value)}><option value="all">Tümü</option><option value="pending_review">İnceleme bekleyen</option><option value="approved">Onaylanan</option></select></label>
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(145px,1fr))',gap:10,marginTop:12}}>
+          <div><strong>{resultStudents.length}</strong><div>Listedeki öğrenci</div></div>
+          <div><strong>{scopedResults.length}</strong><div>Sonucu kayıtlı</div></div>
+          <div><strong>{pendingResults.length}</strong><div>İnceleme bekleyen</div></div>
+          <div><strong>{approvedResults.length}</strong><div>Onaylanan</div></div>
+          <div><strong>{averageApproved??'—'}</strong><div>Onaylı puan ortalaması</div></div>
+          <div><strong>{missingStudents.length}</strong><div>Sonucu bulunmayan</div></div>
+        </div>
+        <details style={{marginTop:12}}><summary>Sonucu bulunmayan öğrenciler ({missingStudents.length})</summary>
+          <p style={{fontSize:12}}>Bu liste mevcut öğrenci kayıtlarıyla karşılaştırılır. Sınava katılmayan veya muaf öğrenciler de listede bulunabilir.</p>
+          <div style={{maxHeight:240,overflowY:'auto'}}>{missingStudents.map(st=><div key={st.id}>{[st.first_name,st.last_name].filter(Boolean).join(' ')} · {st.classes?.code||classes.find(c=>String(c.id)===String(st.class_id))?.code||'Sınıf bilgisi yok'}</div>)}</div>
+        </details>
+      </div>}
+      {filteredResults.length>0&&<div style={{overflowX:'auto',marginTop:12}}><table style={{width:'100%',borderCollapse:'collapse'}}><thead><tr><th>Öğrenci</th><th>Puan</th><th>Doğru</th><th>Yanlış</th><th>Boş</th><th>Kontrol</th><th>Durum</th><th>Yönetici kontrolü</th></tr></thead><tbody>{filteredResults.map(r=>{const student=students.find(s=>String(s.id)===String(r.student_id));return <tr key={r.id}><td>{student?[student.first_name,student.last_name].filter(Boolean).join(' '):'Kayıtlı öğrenci'}</td><td>{r.score}</td><td>{r.correct_count}</td><td>{r.wrong_count}</td><td>{r.blank_count}</td><td>{r.review_count}</td><td>{r.status==='approved'?'Onaylandı':'İnceleme bekliyor'}</td><td>{r.status==='pending_review'&&r.review_count===0?<div><label style={{display:'flex',gap:5,alignItems:'center'}}><input type="checkbox" checked={reviewedResultId===r.id} onChange={e=>setReviewedResultId(e.target.checked?r.id:'')}/> Bu öğrencinin kâğıdını kontrol ettim</label><button type="button" disabled={reviewedResultId!==r.id||Boolean(approvingResultId)} onClick={()=>approveExamResult(r)}>{approvingResultId===r.id?'Onaylanıyor…':'Sonucu Onayla'}</button></div>:r.status==='approved'?'Kesinleştirildi':'Belirsiz cevaplar çözülmeli'}</td></tr>})}</tbody></table></div>}
+      {examResults.length>0&&filteredResults.length===0&&<p>Seçilen filtreye uygun sonuç bulunamadı.</p>}
     </div> : mode==='sheet' ? <><p>Optik form önizlemesi: Yazdırma ölçüleri henüz fiziksel olarak doğrulanmadı. Öğrenci bilgileri yalnızca bu formun baskısına yazılır; sisteme kaydedilmez.</p><div style={{display:'flex',gap:10,flexWrap:'wrap',marginBottom:12}}>
       <label>Sınav tarihi <input type="date" aria-label="Sınav tarihi" value={examDate} onChange={e=>setExamDate(e.target.value)}/></label>
       <label>Sınıf <select aria-label="Optik sınıf seçimi" value={selectedClassId} onChange={e=>{setSelectedClassId(e.target.value);setSelectedStudentId('')}}><option value="">Tüm sınıflar</option>{classes.map(c=><option key={c.id} value={String(c.id)}>{c.code} {c.name||''}</option>)}</select></label>
