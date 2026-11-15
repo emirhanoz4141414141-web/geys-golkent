@@ -16,7 +16,7 @@ export function measurePhotoPage(image, corners, { questionCount = 20, pageNumbe
   }
   // Geçerli dörtgen bile fotoğraf sınırları dışında olabilir. Bu durumda
   // piksel örnekleyici sınır dışına taşmadan güvenli şekilde reddet.
-  if(corners.some(p=>p.x<0||p.y<0||p.x>=image.width||p.y>=image.height)){
+  if(corners.some(p=>p.x<0||p.y<0||p.x>image.width||p.y>image.height)){
     throw new Error('Kâğıt köşeleri fotoğraf sınırları dışında. Köşeleri yeniden seçiniz.')
   }
   const top=Math.hypot(corners[1].x-corners[0].x,corners[1].y-corners[0].y)
