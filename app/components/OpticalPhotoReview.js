@@ -28,6 +28,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
   const [batchFiles,setBatchFiles]=useState([])
   const [batchIndex,setBatchIndex]=useState(-1)
   const [batchMessage,setBatchMessage]=useState('')
+  const [batchStatuses,setBatchStatuses]=useState({})
   const [url,setUrl]=useState('')
   const [dimensions,setDimensions]=useState(null)
   const [corners,setCorners]=useState([])
@@ -51,7 +52,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
   const urlRef=useRef('')
   useEffect(()=>()=>{if(urlRef.current)URL.revokeObjectURL(urlRef.current)},[])
   function chooseFile(event) {
-    setBatchFiles([]);setBatchIndex(-1);setBatchMessage('')
+    setBatchFiles([]);setBatchIndex(-1);setBatchMessage('');setBatchStatuses({})
     const file=event.target.files?.[0]
     setError('');setCorners([]);setAutoCandidate(false);setDimensions(null);setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('');setConfirmedFormIdentity('');setBarcodeMessage('');setMatchedStudent(null);setReviewConfirmed(false);setSaveMessage('')
     if(urlRef.current){URL.revokeObjectURL(urlRef.current);urlRef.current=''}
@@ -84,8 +85,19 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
     if(files.length>250){setBatchMessage('Bir seferde en fazla 250 fotoğraf seçiniz.');return}
     const invalid=files.find(file=>!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>MAX_BYTES)
     if(invalid){setBatchMessage('Dosyaların tamamı 12 MB altında JPEG, PNG veya WebP olmalıdır.');return}
-    setBatchFiles(files);setBatchIndex(-1)
+    setBatchFiles(files);setBatchIndex(-1);setBatchStatuses({})
     loadQueuedFile(0,files)
+  }
+  function markBatchStatus(status){
+    if(batchIndex<0||!batchFiles[batchIndex])return
+    setBatchStatuses(old=>({...old,[batchIndex]:status}))
+  }
+  const batchCounts={
+    waiting:batchFiles.filter((_,i)=>!batchStatuses[i]).length,
+    reviewed:batchFiles.filter((_,i)=>batchStatuses[i]==='reviewed').length,
+    needs_review:batchFiles.filter((_,i)=>batchStatuses[i]==='needs_review').length,
+    saved:batchFiles.filter((_,i)=>batchStatuses[i]==='saved').length,
+    error:batchFiles.filter((_,i)=>batchStatuses[i]==='error').length
   }
   async function scanBarcode(){
     const image=imageRef.current
@@ -150,8 +162,10 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
       if(!ctx)throw new Error('Fotoğraf pikselleri okunamadı.')
       ctx.drawImage(image,0,0)
       const pixels=ctx.getImageData(0,0,canvas.width,canvas.height)
-      setReading(measurePhotoPage(pixels,corners,{questionCount,pageNumber}))
-    } catch(e){setError(e?.message||'Fotoğraf analiz edilemedi.')} finally {setBusy(false)}
+      const measured=measurePhotoPage(pixels,corners,{questionCount,pageNumber})
+      setReading(measured)
+      if(batchIndex>=0)markBatchStatus(measured.requiresReview?'needs_review':'reviewed')
+    } catch(e){setError(e?.message||'Fotoğraf analiz edilemedi.');markBatchStatus('error')} finally {setBusy(false)}
   }
   const verifiedFormIdentity=(pageNumber===1?expectedFormIdentity:'') || (matchedStudent ? buildCompactFormIdentity({examCode,studentId:String(matchedStudent.id),pageNumber}) : '')
   let provisionalScore=null
@@ -198,6 +212,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
       answers:[...finalAnswers],formIdentity:verifiedFormIdentity
     }}))
     setCollectionMessage(pageNumber+'. sayfa inceleme grubuna eklendi.')
+    markBatchStatus('reviewed')
   }
   function changePage(next){
     setPageNumber(next);setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);
@@ -237,6 +252,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
       })
       if(insertError)throw insertError
       setSaveMessage('Tüm sayfaların sonucu yönetici incelemesi bekleyen taslak olarak kaydedildi.')
+      markBatchStatus('saved')
       setReviewConfirmed(false);setCollectedPages({})
     }catch(e){setSaveMessage('Çok sayfalı sonuç kaydedilemedi: '+(e?.message||'Bilinmeyen hata'))}
     finally{setSaveBusy(false)}
@@ -263,6 +279,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
       const {error:insertError}=await supabase.from('optical_exam_results').insert(payload)
       if(insertError)throw insertError
       setSaveMessage('Sonuç yönetici incelemesi bekleyen taslak olarak kaydedildi. Kesin not veya veli sonucu değildir.')
+      markBatchStatus('saved')
       setReviewConfirmed(false)
     }catch(e){setSaveMessage('Sonuç kaydedilemedi: '+(e?.message||'Bilinmeyen hata'))}
     finally{setSaveBusy(false)}
@@ -309,9 +326,19 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
         <button type="button" disabled={batchIndex<=0||busy||saveBusy} onClick={()=>loadQueuedFile(batchIndex-1)}>Önceki fotoğraf</button>
         <strong>{batchIndex+1} / {batchFiles.length}</strong>
         <button type="button" disabled={batchIndex>=batchFiles.length-1||busy||saveBusy} onClick={()=>loadQueuedFile(batchIndex+1)}>Sonraki fotoğraf</button>
-        <button type="button" disabled={busy||saveBusy} onClick={()=>{setBatchFiles([]);setBatchIndex(-1);setBatchMessage('Kuyruk temizlendi.');setReading(null);setManualAnswers({});setUrl('');if(urlRef.current){URL.revokeObjectURL(urlRef.current);urlRef.current=''}}}>Kuyruğu temizle</button>
+        <button type="button" disabled={busy||saveBusy} onClick={()=>{setBatchFiles([]);setBatchIndex(-1);setBatchStatuses({});setBatchMessage('Kuyruk temizlendi.');setReading(null);setManualAnswers({});setUrl('');if(urlRef.current){URL.revokeObjectURL(urlRef.current);urlRef.current=''}}}>Kuyruğu temizle</button>
         <span style={{fontSize:12,maxWidth:260,overflowWrap:'anywhere'}}>{batchFiles[batchIndex]?.name}</span>
       </div>}
+      {batchFiles.length>0&&<>
+        <p style={{fontSize:12}}>Bekleyen: {batchCounts.waiting} · İncelenen: {batchCounts.reviewed} · Kontrol gerekli: {batchCounts.needs_review} · Taslak kaydedilen: {batchCounts.saved} · Hatalı: {batchCounts.error}</p>
+        <label>Seçili fotoğrafın durumu <select aria-label="Kuyruk işlem durumu" value={batchStatuses[batchIndex]||'waiting'} onChange={e=>setBatchStatuses(old=>{const next={...old};if(e.target.value==='waiting')delete next[batchIndex];else next[batchIndex]=e.target.value;return next})}>
+          <option value="waiting">Bekliyor</option>
+          <option value="reviewed">İncelendi (taslak kaydı değil)</option>
+          <option value="needs_review">Kontrol gerekli</option>
+          <option value="error">Hatalı / tekrar çekilecek</option>
+        </select></label>
+        <p style={{fontSize:12}}>“Taslak kaydedilen” durumu yalnızca başarılı veritabanı kaydından sonra atanır. Diğer durumlar bu oturuma ait yerel takip notlarıdır.</p>
+      </>}
       {batchMessage&&<p role="status">{batchMessage}</p>}
     </div>
     {url&&<div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap',marginTop:10}}>
