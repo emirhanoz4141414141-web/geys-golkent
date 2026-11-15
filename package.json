@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "test:optical": "node --experimental-default-type=module --test tests/optical-photo-synthetic.test.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "latest",
