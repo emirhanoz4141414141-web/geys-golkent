@@ -204,7 +204,27 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
             canvas.height=Math.max(1,Math.round(canvas.width*sh/sw))
             ctx.imageSmoothingEnabled=true
             ctx.drawImage(image,sx,sy,sw,sh,0,0,canvas.width,canvas.height)
-            const found=await detector.detect(canvas)
+            // Orijinal kırpma başarısızsa çizgi kontrastını yerel
+            // aydınlatmaya göre artırarak ikinci kez dene.
+            let found=await detector.detect(canvas)
+            if(!found.length){
+              const pixels=ctx.getImageData(0,0,canvas.width,canvas.height)
+              const source=pixels.data
+              let low=255,high=0
+              for(let i=0;i<source.length;i+=4){
+                const gray=.2126*source[i]+.7152*source[i+1]+.0722*source[i+2]
+                low=Math.min(low,gray);high=Math.max(high,gray)
+              }
+              if(high-low>=24){
+                for(let i=0;i<source.length;i+=4){
+                  const gray=.2126*source[i]+.7152*source[i+1]+.0722*source[i+2]
+                  const adjusted=Math.max(0,Math.min(255,(gray-low)*255/(high-low)))
+                  source[i]=source[i+1]=source[i+2]=adjusted
+                }
+                ctx.putImageData(pixels,0,0)
+                found=await detector.detect(canvas)
+              }
+            }
             if(found.length){results=found;break}
           }
         }
