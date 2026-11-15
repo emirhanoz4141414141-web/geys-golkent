@@ -184,6 +184,37 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
     verifiedFormIdentity&&confirmedFormIdentity.trim().toUpperCase()===verifiedFormIdentity&&
     confirmedCode.trim().toUpperCase()===examCode&&confirmedPage&&
     !autoCandidate&&validCornersForSave(corners))
+  const multiSaveReady=Boolean(savedExamId&&supabase&&collectionComplete&&combinedScore&&
+    combinedScore.review===0&&reviewConfirmed&&collectionStudentId&&
+    combinedAnswers.length===questionCount&&
+    pages.every(p=>collectedPages[p.pageNumber]?.formIdentity===
+      buildCompactFormIdentity({examCode,studentId:collectionStudentId,pageNumber:p.pageNumber})))
+  async function saveMultiPageResult(){
+    if(!multiSaveReady||saveBusy)return
+    setSaveBusy(true);setSaveMessage('')
+    try{
+      const {data:exam,error:examError}=await supabase.from('optical_exams')
+        .select('id,exam_code,questions').eq('id',savedExamId).single()
+      if(examError||!exam||exam.exam_code!==examCode||
+        exam.questions.length!==questionCount||
+        exam.questions.some((q,i)=>q.correctAnswer!==answerKey?.[i]))
+        throw new Error('Kayıtlı sınav veya cevap anahtarı değişmiş. Sonuç kaydedilmedi.')
+      const {data:existing,error:existingError}=await supabase.from('optical_exam_results')
+        .select('id').eq('exam_id',savedExamId).eq('student_id',collectionStudentId).limit(1)
+      if(existingError)throw existingError
+      if(existing?.length)throw new Error('Bu öğrencinin sınav sonucu zaten kayıtlı. Üzerine yazılmadı.')
+      const {error:insertError}=await supabase.from('optical_exam_results').insert({
+        exam_id:savedExamId,student_id:collectionStudentId,page_count:pages.length,
+        answers:combinedAnswers,correct_count:combinedScore.correct,
+        wrong_count:combinedScore.wrong,blank_count:combinedScore.blank,
+        review_count:combinedScore.review,score:combinedScore.score,status:'pending_review'
+      })
+      if(insertError)throw insertError
+      setSaveMessage('Tüm sayfaların sonucu yönetici incelemesi bekleyen taslak olarak kaydedildi.')
+      setReviewConfirmed(false);setCollectedPages({})
+    }catch(e){setSaveMessage('Çok sayfalı sonuç kaydedilemedi: '+(e?.message||'Bilinmeyen hata'))}
+    finally{setSaveBusy(false)}
+  }
   async function saveReviewedResult(){
     if(!saveReady||saveBusy)return
     setSaveBusy(true);setSaveMessage('')
@@ -275,7 +306,18 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
         <button type="button" disabled={!collectedList.length} onClick={()=>{setCollectedPages({});setCollectionMessage('Sayfa grubu temizlendi.')}}>Grubu temizle</button>
       </div>
       {collectionComplete&&combinedScore&&<p role="status"><strong>Tüm sayfalar toplandı · Geçici toplam puan: {combinedScore.score}/100</strong> · Doğru: {combinedScore.correct} · Yanlış: {combinedScore.wrong} · Boş: {combinedScore.blank}</p>}
-      <p style={{fontSize:12}}>Sayfa grubu yalnızca bu ekranda geçici tutulur. Çok sayfalı sonuç henüz veritabanına kaydedilmez.</p>
+      {collectionComplete&&combinedScore&&<div style={{marginTop:10,borderTop:'1px solid #d1d5db',paddingTop:10}}>
+        <label style={{display:'flex',alignItems:'flex-start',gap:8}}>
+          <input type="checkbox" checked={reviewConfirmed} onChange={e=>setReviewConfirmed(e.target.checked)}/>
+          Bütün sayfaları ve cevapları basılı kâğıtlarla karşılaştırdım; yalnızca inceleme bekleyen taslak olarak kaydedilmesini onaylıyorum.
+        </label>
+        <button type="button" disabled={!multiSaveReady||saveBusy} onClick={saveMultiPageResult} style={{marginTop:8}}>
+          {saveBusy?'Kaydediliyor…':'Tüm Sayfaları Taslak Kaydet'}
+        </button>
+        {saveMessage&&<p role="status">{saveMessage}</p>}
+        {!savedExamId&&<p>Önce sınavı kalıcı olarak kaydediniz.</p>}
+      </div>}
+      <p style={{fontSize:12}}>Sayfalar inceleme sırasında geçici tutulur. Tamamı kontrol edildikten sonra yalnızca inceleme bekleyen sonuç taslağı kaydedilebilir; kesin not değildir.</p>
       {collectionMessage&&<p role="status">{collectionMessage}</p>}
     </div>}
       {reading&&<div role="status" style={{marginTop:16,padding:12,border:'1px solid #d1d5db',borderRadius:8}}>
