@@ -32,6 +32,7 @@ export default function ExamWorkspace({students = [], classes = [], institution 
   const [savedExams,setSavedExams] = useState([])
   const [activeExamId,setActiveExamId] = useState('')
   const [examSaving,setExamSaving] = useState(false)
+  const [savedExamSnapshot,setSavedExamSnapshot]=useState('')
   const [examMessage,setExamMessage] = useState('')
   const [examLoading,setExamLoading] = useState(false)
   const [bulkPrint,setBulkPrint] = useState(false)
@@ -99,6 +100,7 @@ export default function ExamWorkspace({students = [], classes = [], institution 
     setExamDate(exam.exam_date)
     setKeyOnlyMode(Boolean(exam.questions?.length&&exam.questions.every(q=>q.opticalKeyOnly===true)))
     setQuestions(exam.questions)
+    setSavedExamSnapshot(JSON.stringify({exam_code:exam.exam_code,title:exam.title,exam_date:exam.exam_date,questions:exam.questions}))
     setAnswers(Array(exam.questions.length).fill(''))
     setExamMessage('Kayıtlı sınav açıldı. Değişikliklerinizi kaydetmeyi unutmayınız.')
   }
@@ -108,12 +110,23 @@ export default function ExamWorkspace({students = [], classes = [], institution 
     if(!examDate){setExamMessage('Sınav tarihi gerekli.');return}
     setExamSaving(true);setExamMessage('')
     const payload={exam_code:derivedExamCode,title,exam_date:examDate,questions,updated_at:new Date().toISOString()}
-    const response=activeExamId
-      ? await supabase.from('optical_exams').update(payload).eq('id',activeExamId).select('id').single()
-      : await supabase.from('optical_exams').insert(payload).select('id').single()
-    if(response.error)setExamMessage('Sınav kaydedilemedi: '+response.error.message)
-    else{setActiveExamId(response.data.id);setExamMessage('Sınav ve cevap anahtarı kalıcı olarak kaydedildi.');await refreshSavedExams()}
-    setExamSaving(false)
+    try{
+      if(activeExamId){
+        const {data:existing,error:lookupError}=await supabase.from('optical_exam_results')
+          .select('id').eq('exam_id',activeExamId).limit(1)
+        if(lookupError)throw new Error('Mevcut sonuçlar kontrol edilemedi: '+lookupError.message)
+        if(existing?.length)throw new Error('Bu sınav için öğrenci sonucu kaydedilmiş. Cevap anahtarı veya sınav bilgileri değiştirilemez; yeni sınav oluşturunuz.')
+      }
+      const response=activeExamId
+        ? await supabase.from('optical_exams').update(payload).eq('id',activeExamId).select('id').single()
+        : await supabase.from('optical_exams').insert(payload).select('id').single()
+      if(response.error)throw response.error
+      setActiveExamId(response.data.id)
+      setSavedExamSnapshot(JSON.stringify({exam_code:derivedExamCode,title,exam_date:examDate,questions}))
+      setExamMessage('Sınav ve cevap anahtarı kalıcı olarak kaydedildi.')
+      await refreshSavedExams()
+    }catch(e){setExamMessage('Sınav kaydedilemedi: '+(e?.message||'Bilinmeyen hata'))}
+    finally{setExamSaving(false)}
   }
   useEffect(()=>{
     tcRequestRef.current += 1
@@ -162,7 +175,7 @@ export default function ExamWorkspace({students = [], classes = [], institution 
   }
   function toggleKeyOnly(next){
     setKeyOnlyMode(next)
-    setActiveExamId('')
+    setActiveExamId('');setSavedExamSnapshot('')
     setExamResults([]);setResultsMessage('')
     setQuestions(old=>old.map(q=>next
       ? {...EMPTY(),correctAnswer:'',opticalKeyOnly:true}
@@ -170,6 +183,9 @@ export default function ExamWorkspace({students = [], classes = [], institution 
     setAnswers(old=>old.map(()=>''))
     setExamMessage('Yeni '+(next?'yalnızca cevap anahtarlı':'tam soru metinli')+' sınav hazırlanıyor. Mevcut kayıt değiştirilmedi.')
   }
+  const currentExamSnapshot=JSON.stringify({exam_code:derivedExamCode,title,exam_date:examDate,questions})
+  const examHasUnsavedChanges=Boolean(activeExamId&&savedExamSnapshot&&currentExamSnapshot!==savedExamSnapshot)
+  const savedExamReady=Boolean(activeExamId&&!examHasUnsavedChanges&&validation.valid)
   return <section className="panel" style={{padding:20}}>
     <div className="panelHead"><div>
       <small>E-GÖLKENT · SINAV YÖNETİMİ · GELİŞTİRME ÖNİZLEMESİ</small>
@@ -188,9 +204,10 @@ export default function ExamWorkspace({students = [], classes = [], institution 
       {keyOnlyMode&&<small style={{width:'100%'}}>Soru metni girmeden sınav adı, tarih, kod, soru sayısı ve her soru için doğru şık yeterlidir. Hiçbir şık varsayılan doğru cevap olarak seçilmez.</small>}
     </div>
     <div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap',marginBottom:16,padding:12,border:'1px solid #d6e1e9',borderRadius:10}}>
-      <label>Kayıtlı sınavlar <select aria-label="Kayıtlı sınav seçimi" value={activeExamId} onChange={e=>{if(e.target.value)openSavedExam(e.target.value);else{setActiveExamId('');setExamMessage('Yeni sınav oluşturabilirsiniz.')}}}><option value="">Yeni sınav</option>{savedExams.map(x=><option key={x.id} value={x.id}>{x.title} · {x.exam_date} · {x.exam_code}</option>)}</select></label>
+      <label>Kayıtlı sınavlar <select aria-label="Kayıtlı sınav seçimi" value={activeExamId} onChange={e=>{if(e.target.value)openSavedExam(e.target.value);else{setActiveExamId('');setSavedExamSnapshot('');setExamMessage('Yeni sınav oluşturabilirsiniz.')}}}><option value="">Yeni sınav</option>{savedExams.map(x=><option key={x.id} value={x.id}>{x.title} · {x.exam_date} · {x.exam_code}</option>)}</select></label>
       <button type="button" onClick={saveExam} disabled={examSaving||!validation.valid}>{examSaving?'Kaydediliyor…':activeExamId?'Sınavı Güncelle':'Sınavı Kaydet'}</button>
       <button type="button" onClick={refreshSavedExams} disabled={examLoading}>{examLoading?'Yükleniyor…':'Listeyi Yenile'}</button>
+      {examHasUnsavedChanges&&<small role="alert" style={{width:'100%',color:'#92400e'}}>Kayıtlı sınavda kaydedilmemiş değişiklikler var. Optik okuma ve form eşleştirme için önce sınavı kaydediniz.</small>}
       {examMessage&&<small role="status" style={{width:'100%'}}>{examMessage}</small>}
     </div>
     <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:14}}>
@@ -240,7 +257,7 @@ export default function ExamWorkspace({students = [], classes = [], institution 
       <button type="button" onClick={()=>setBulkPrint(v=>!v)} disabled={!bulkStudents.length}>{bulkPrint?'Toplu Önizlemeyi Kapat':`Toplu Optik Önizleme (${bulkStudents.length} öğrenci)`}</button>
       {bulkPrint&&<button type="button" className="primary" onClick={()=>window.print()}>Tümünü Yazdır / PDF</button>}
       {bulkPrint&&<small role="status" style={{width:'100%'}}>Toplu baskıda yalnızca seçilen sınıfın öğrencileri; sınıf seçilmediyse ilk 250 öğrenci yer alır. T.C. kimlik numaraları topluca getirilmez. Öğrenci fotoğrafları kayıtlıysa eklenir. Baskı öncesi sayfa sayısını kontrol ediniz.</small>}
-      <small>PDF için açılan yazdırma penceresinde «PDF olarak kaydet» seçeneğini kullanınız. A4 ve %100 ölçek seçiniz.</small></div>{bulkPrint ? <div aria-label="Toplu optik formlar">{bulkStudents.map(s=><OpticalAnswerSheet key={s.id} logoUrl={institution?.logo_url||'/golkent-logo.png'} questionCount={questions.length} examCode={derivedExamCode} examTitle={title} examDate={examDate} studentName={[s.first_name,s.last_name].filter(Boolean).join(' ')} studentId={String(s.id)} studentClass={s.classes?.code||classes.find(c=>String(c.id)===String(s.class_id))?.code||''} studentPhotoUrl={s.photo_url||''}/>)}</div> : <OpticalAnswerSheet logoUrl={institution?.logo_url||'/golkent-logo.png'} questionCount={questions.length} examCode={derivedExamCode} examTitle={title} examDate={examDate} studentName={studentName} studentId={selectedStudent?.id ? String(selectedStudent.id) : ''} studentNumber={studentNumber} studentClass={studentClass} studentTc={studentTc} studentPhotoUrl={selectedStudent?.photo_url||''}/>}</> : mode==='photo' ? <OpticalPhotoReview supabase={supabase} savedExamId={activeExamId} questionCount={questions.length} examCode={derivedExamCode} answerKey={validation.valid ? questions.map(q=>q.correctAnswer) : null} studentCandidates={students} expectedStudentNumber={selectedStudent?.id ? '' : studentNumber.trim()} expectedFormIdentity={selectedStudent?.id ? (buildCompactFormIdentity({examCode:derivedExamCode,studentId:String(selectedStudent.id),pageNumber:1})||'') : ''}/> : mode==='questions' && keyOnlyMode ? <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))',gap:10}}>{questions.map((q,i)=><label key={i} style={{display:'flex',alignItems:'center',gap:8,padding:8,border:'1px solid #d6e1e9',borderRadius:8}}><strong>{i+1}.</strong><select aria-label={`${i+1}. soru cevap anahtarı`} value={q.correctAnswer} onChange={e=>editQuestion(i,{correctAnswer:e.target.value})}><option value="">Seçiniz</option>{letters.map(letter=><option key={letter} value={letter}>{letter}</option>)}</select></label>)}</div> : mode==='questions' ? questions.map((q,i)=><fieldset key={i} style={{border:'1px solid #d6e1e9',borderRadius:12,padding:14,marginBottom:12}}>
+      <small>PDF için açılan yazdırma penceresinde «PDF olarak kaydet» seçeneğini kullanınız. A4 ve %100 ölçek seçiniz.</small></div>{bulkPrint ? <div aria-label="Toplu optik formlar">{bulkStudents.map(s=><OpticalAnswerSheet key={s.id} logoUrl={institution?.logo_url||'/golkent-logo.png'} questionCount={questions.length} examCode={derivedExamCode} examTitle={title} examDate={examDate} studentName={[s.first_name,s.last_name].filter(Boolean).join(' ')} studentId={String(s.id)} studentClass={s.classes?.code||classes.find(c=>String(c.id)===String(s.class_id))?.code||''} studentPhotoUrl={s.photo_url||''}/>)}</div> : <OpticalAnswerSheet logoUrl={institution?.logo_url||'/golkent-logo.png'} questionCount={questions.length} examCode={derivedExamCode} examTitle={title} examDate={examDate} studentName={studentName} studentId={selectedStudent?.id ? String(selectedStudent.id) : ''} studentNumber={studentNumber} studentClass={studentClass} studentTc={studentTc} studentPhotoUrl={selectedStudent?.photo_url||''}/>}</> : mode==='photo' ? <OpticalPhotoReview supabase={supabase} savedExamId={savedExamReady?activeExamId:''} questionCount={questions.length} examCode={derivedExamCode} answerKey={validation.valid&&!examHasUnsavedChanges ? questions.map(q=>q.correctAnswer) : null} studentCandidates={students} expectedStudentNumber={selectedStudent?.id ? '' : studentNumber.trim()} expectedFormIdentity={selectedStudent?.id ? (buildCompactFormIdentity({examCode:derivedExamCode,studentId:String(selectedStudent.id),pageNumber:1})||'') : ''}/> : mode==='questions' && keyOnlyMode ? <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))',gap:10}}>{questions.map((q,i)=><label key={i} style={{display:'flex',alignItems:'center',gap:8,padding:8,border:'1px solid #d6e1e9',borderRadius:8}}><strong>{i+1}.</strong><select aria-label={`${i+1}. soru cevap anahtarı`} value={q.correctAnswer} onChange={e=>editQuestion(i,{correctAnswer:e.target.value})}><option value="">Seçiniz</option>{letters.map(letter=><option key={letter} value={letter}>{letter}</option>)}</select></label>)}</div> : mode==='questions' ? questions.map((q,i)=><fieldset key={i} style={{border:'1px solid #d6e1e9',borderRadius:12,padding:14,marginBottom:12}}>
       <legend style={{fontWeight:700}}>{i+1}. Soru</legend>
       <textarea aria-label={`${i+1}. soru metni`} dir="auto" rows={2} value={q.text} placeholder="Türkçe veya harekeli Arapça soru metni" onChange={e=>editQuestion(i,{text:e.target.value})} style={{width:'100%',padding:10}}/>
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:10,marginTop:10}}>
