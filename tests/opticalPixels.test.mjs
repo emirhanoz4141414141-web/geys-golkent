@@ -37,3 +37,28 @@ test('görüntü dışına taşan koordinatlar reddedilir',()=>{
 test('yanlış RGBA veri boyutu reddedilir',()=>{
   assert.throws(()=>measureBubbleFill({data:new Uint8Array(3),width:20,height:20},{x:10,y:10,radius:4}))
 })
+
+test('gölgeli gri kâğıtta koyu işaret, yerel karşılaştırmayla okunur',()=>{
+  const {image,circles}=sampleImage()
+  for(let y=0;y<image.height;y++)for(let x=0;x<image.width;x++){
+    const v=Math.round(165-x*.32)
+    const k=(y*image.width+x)*4
+    image.data[k]=image.data[k+1]=image.data[k+2]=v
+  }
+  const target=circles[2]
+  for(let y=0;y<image.height;y++)for(let x=0;x<image.width;x++){
+    if((x-target.x)**2+(y-target.y)**2<=(target.radius*.55)**2){
+      const k=(y*image.width+x)*4
+      image.data[k]=image.data[k+1]=image.data[k+2]=65
+    }
+  }
+  assert.equal(classifyOpticalMarks(measureOpticalRow(image,circles)).answer,'C')
+})
+test('gölgeli fakat işaretsiz gri kâğıt boş kalır',()=>{
+  const {image,circles}=sampleImage()
+  for(let y=0;y<image.height;y++)for(let x=0;x<image.width;x++){
+    const k=(y*image.width+x)*4,v=Math.round(145-x*.2)
+    image.data[k]=image.data[k+1]=image.data[k+2]=v
+  }
+  assert.equal(classifyOpticalMarks(measureOpticalRow(image,circles)).status,'blank')
+})
