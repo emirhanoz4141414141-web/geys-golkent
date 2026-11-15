@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'app/lib/optical*.js'
+      - 'app/components/OpticalPhotoReview.js'
       - 'tests/optical-photo-synthetic.test.mjs'
       - 'package.json'
       - '.github/workflows/optical-photo-tests.yml'
@@ -10,6 +11,7 @@ on:
     branches: [main]
     paths:
       - 'app/lib/optical*.js'
+      - 'app/components/OpticalPhotoReview.js'
       - 'tests/optical-photo-synthetic.test.mjs'
       - 'package.json'
       - '.github/workflows/optical-photo-tests.yml'
