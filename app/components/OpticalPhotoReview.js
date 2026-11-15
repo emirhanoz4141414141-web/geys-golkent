@@ -56,7 +56,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
   function chooseFile(event) {
     photoGenerationRef.current++
     setBarcodeBusy(false);setBusy(false)
-    setBatchFiles([]);setBatchIndex(-1);setBatchMessage('');setBatchStatuses({});setBatchIdentities({})
+    setBatchFiles([]);setBatchIndex(-1);setBatchMessage('');setBatchStatuses({});setBatchIdentities({});setCollectedPages({});setCollectionMessage('')
     const file=event.target.files?.[0]
     setError('');setCorners([]);setAutoCandidate(false);setDimensions(null);setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('');setConfirmedFormIdentity('');setBarcodeMessage('');setMatchedStudent(null);setReviewConfirmed(false);setSaveMessage('')
     if(urlRef.current){URL.revokeObjectURL(urlRef.current);urlRef.current=''}
@@ -91,8 +91,10 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
     if(files.length>250){setBatchMessage('Bir seferde en fazla 250 fotoğraf seçiniz.');return}
     const invalid=files.find(file=>!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>MAX_BYTES)
     if(invalid){setBatchMessage('Dosyaların tamamı 12 MB altında JPEG, PNG veya WebP olmalıdır.');return}
+    const fileKeys=files.map(file=>[file.name,file.size,file.lastModified,file.type].join('|'))
+    if(new Set(fileKeys).size!==fileKeys.length){setBatchMessage('Aynı dosya birden fazla seçilmiş görünüyor. Tekrarlanan dosyaları çıkarıp yeniden seçiniz.');return}
     photoGenerationRef.current++
-    setBatchFiles(files);setBatchIndex(-1);setBatchStatuses({});setBatchIdentities({})
+    setBatchFiles(files);setBatchIndex(-1);setBatchStatuses({});setBatchIdentities({});setCollectedPages({});setCollectionMessage('')
     loadQueuedFile(0,files)
   }
   function markBatchStatus(status){
