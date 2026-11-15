@@ -174,13 +174,32 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
         const canvas=document.createElement('canvas')
         const ctx=canvas.getContext('2d',{willReadFrequently:true})
         if(ctx){
+          // Önce fotoğraf içindeki A4 konumunu tahmin et: sabit ekran
+          // yüzdeleri, kâğıt kadrajda kayınca barkodu tamamen kaçırıyordu.
+          let paperBounds={x:0,y:0,width:image.naturalWidth,height:image.naturalHeight}
+          try{
+            const probe=document.createElement('canvas')
+            probe.width=image.naturalWidth;probe.height=image.naturalHeight
+            const probeCtx=probe.getContext('2d',{willReadFrequently:true})
+            if(probeCtx){
+              probeCtx.drawImage(image,0,0)
+              const detected=detectPaperCorners(probeCtx.getImageData(0,0,probe.width,probe.height))
+              if(detected?.corners?.length===4){
+                const xs=detected.corners.map(p=>p.x),ys=detected.corners.map(p=>p.y)
+                const x=Math.max(0,Math.floor(Math.min(...xs)))
+                const y=Math.max(0,Math.floor(Math.min(...ys)))
+                paperBounds={x,y,width:Math.min(image.naturalWidth-x,Math.ceil(Math.max(...xs)-x)),height:Math.min(image.naturalHeight-y,Math.ceil(Math.max(...ys)-y))}
+              }
+            }
+          }catch{}
           const regions=questionCount<=20
             ? [[.43,.43,.51,.24],[.34,.38,.64,.35]]
             : [[.05,.82,.90,.16],[.05,.76,.90,.22]]
           for(const [rx,ry,rw,rh] of regions){
             if(photoGeneration!==photoGenerationRef.current)return
-            const sx=Math.floor(image.naturalWidth*rx),sy=Math.floor(image.naturalHeight*ry)
-            const sw=Math.floor(image.naturalWidth*rw),sh=Math.floor(image.naturalHeight*rh)
+            const sx=Math.floor(paperBounds.x+paperBounds.width*rx),sy=Math.floor(paperBounds.y+paperBounds.height*ry)
+            const sw=Math.max(1,Math.min(image.naturalWidth-sx,Math.floor(paperBounds.width*rw)))
+            const sh=Math.max(1,Math.min(image.naturalHeight-sy,Math.floor(paperBounds.height*rh)))
             canvas.width=Math.max(1,Math.min(2200,sw*2))
             canvas.height=Math.max(1,Math.round(canvas.width*sh/sw))
             ctx.imageSmoothingEnabled=true
