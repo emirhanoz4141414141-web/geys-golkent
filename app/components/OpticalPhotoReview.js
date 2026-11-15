@@ -6,7 +6,7 @@ import { measurePhotoPage } from '../lib/opticalPhotoMeasure.js'
 import { gradeExam } from '../lib/examGrading.js'
 import { detectPaperCorners } from '../lib/opticalAutoCorners.js'
 import { buildCompactFormIdentity } from '../lib/opticalFormIdentity.js'
-import { buildPrintPages } from '../lib/opticalTemplate.js'
+import { buildPrintPages, PAPER as PAPER_MM } from '../lib/opticalTemplate.js'
 
 const PAPER=[{x:0,y:0},{x:1,y:0},{x:1,y:1},{x:0,y:1}]
 const LABELS=['Sol üst','Sağ üst','Sağ alt','Sol alt']
@@ -52,6 +52,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
   const [reviewConfirmed,setReviewConfirmed]=useState(false)
   const [autoCandidate,setAutoCandidate]=useState(false)
   const [showFillDiagnostics,setShowFillDiagnostics]=useState(false)
+  const [showBubblePositions,setShowBubblePositions]=useState(false)
   useEffect(()=>{setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('');setConfirmedFormIdentity('');setMatchedStudent(null);setCollectedPages({});setCollectionMessage('');setReviewConfirmed(false);setSaveMessage('')},[questionCount,examCode,answerKey?.join('|'),expectedStudentNumber,expectedFormIdentity])
   const photoGenerationRef=useRef(0)
   const batchSelectionRef=useRef(0)
@@ -166,7 +167,29 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
       const supported=await window.BarcodeDetector.getSupportedFormats()
       if(!supported.includes('code_39'))throw new Error('Bu cihazda Code 39 barkod okuyucu desteklenmiyor.')
       const detector=new window.BarcodeDetector({formats:['code_39']})
-      const results=await detector.detect(image)
+      let results=await detector.detect(image)
+      // Bazı mobil tarayıcılar tüm sayfada küçük kalan barkodu kaçırır.
+      // 20 soruluk formda barkod sağ orta bölgede, 40 soruluk formda alt bölgededir.
+      if(!results.length){
+        const canvas=document.createElement('canvas')
+        const ctx=canvas.getContext('2d',{willReadFrequently:true})
+        if(ctx){
+          const regions=questionCount<=20
+            ? [[.43,.43,.51,.24],[.34,.38,.64,.35]]
+            : [[.05,.82,.90,.16],[.05,.76,.90,.22]]
+          for(const [rx,ry,rw,rh] of regions){
+            if(photoGeneration!==photoGenerationRef.current)return
+            const sx=Math.floor(image.naturalWidth*rx),sy=Math.floor(image.naturalHeight*ry)
+            const sw=Math.floor(image.naturalWidth*rw),sh=Math.floor(image.naturalHeight*rh)
+            canvas.width=Math.max(1,Math.min(2200,sw*2))
+            canvas.height=Math.max(1,Math.round(canvas.width*sh/sw))
+            ctx.imageSmoothingEnabled=true
+            ctx.drawImage(image,sx,sy,sw,sh,0,0,canvas.width,canvas.height)
+            const found=await detector.detect(canvas)
+            if(found.length){results=found;break}
+          }
+        }
+      }
       if(photoGeneration!==photoGenerationRef.current) return
       const values=[...new Set(results.map(x=>String(x.rawValue||'').trim().toUpperCase()).filter(Boolean))]
       if(values.length!==1)throw new Error(values.length?'Birden fazla barkod algılandı; formu kontrol ediniz.':'Barkod algılanamadı. Daha net fotoğraf çekiniz veya elle giriniz.')
@@ -443,9 +466,19 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
           {corners.length===4&&<polygon points={corners.map(p=>`${p.x},${p.y}`).join(' ')} fill="rgba(16,185,129,.12)" stroke="#059669" strokeWidth={Math.max(2,dimensions.width/300)}/>}
           {corners.map((p,i)=><g key={i}><circle cx={p.x} cy={p.y} r={Math.max(7,dimensions.width/90)} fill="#f59e0b" stroke="white" strokeWidth="2"/><text x={p.x} y={p.y+5} textAnchor="middle" fill="#111827" fontWeight="bold" fontSize={Math.max(12,dimensions.width/65)}>{i+1}</text></g>)}
           {valid&&preview.map((p,i)=><circle key={i} cx={p.x} cy={p.y} r={Math.max(3,dimensions.width/180)} fill="#059669"/>)}
+          {valid&&showBubblePositions&&(()=>{try{
+            const matrix=computeHomography([{x:0,y:0},{x:PAPER_MM.width,y:0},{x:PAPER_MM.width,y:PAPER_MM.height},{x:0,y:PAPER_MM.height}],corners)
+            return buildPrintPages(questionCount)[pageNumber-1].rows.flatMap(row=>row.bubbles.map(b=>{
+              const pt=mapHomography(matrix,b)
+              const edge=mapHomography(matrix,{x:b.x+PAPER_MM.bubbleRadius,y:b.y})
+              const radius=Math.hypot(edge.x-pt.x,edge.y-pt.y)
+              return <circle key={row.number+'-'+b.option} cx={pt.x} cy={pt.y} r={radius} fill="none" stroke="#ef4444" strokeWidth={Math.max(1,dimensions.width/700)}/>
+            }))
+          }catch{return null}})()}
         </svg>}
       </div>
       <div style={{display:'flex',gap:8,flexWrap:'wrap',marginTop:12}}>
+    <label style={{fontSize:12,display:'flex',alignItems:'center',gap:4}}><input type="checkbox" checked={showBubblePositions} onChange={e=>setShowBubblePositions(e.target.checked)}/> Cevap dairesi merkezlerini göster (kırmızı)</label>
     <button type="button" onClick={findCorners} disabled={!dimensions||busy}>Köşeleri yeniden otomatik tara</button>
     {autoCandidate&&<button type="button" onClick={()=>setAutoCandidate(false)}>Gösterilen köşeleri gözle doğruladım</button>}
         <button type="button" onClick={analyzePhoto} disabled={!valid||autoCandidate||busy||!examCode||confirmedCode.trim().toUpperCase()!==examCode||!confirmedPage||(expectedStudentNumber&&confirmedStudentNumber.trim()!==expectedStudentNumber)||(!verifiedFormIdentity||confirmedFormIdentity.trim().toUpperCase()!==verifiedFormIdentity)}>{busy?'İnceleniyor…':'Fotoğraftaki cevapları incele'}</button>
