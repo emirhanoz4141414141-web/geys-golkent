@@ -46,7 +46,16 @@ function detectRegistrationMarks(image){
     points.push({x:peak.x/peak.count,y:peak.y/peak.count})
   }
   if(!validatePaperCorners(points,{minArea:w*h*.24}).valid)return null
-  return {corners:points,method:'registration-mark-candidates',requiresConfirmation:true}
+  // Kayıt işaretleri kâğıdın fiziksel köşesi değil, kenardan 12 mm içeridedir.
+  // İşaret merkezlerinden fiziksel A4 köşelerine perspektif dönüşümü uygula.
+  try{
+    const transform=computeHomography(REGISTRATION_MARKS,points)
+    const corners=[{x:0,y:0},{x:PAPER.width,y:0},{x:PAPER.width,y:PAPER.height},{x:0,y:PAPER.height}]
+      .map(point=>mapHomography(transform,point))
+    if(corners.some(point=>point.x<0||point.y<0||point.x>=w||point.y>=h))return null
+    if(!validatePaperCorners(corners,{minArea:w*h*.3}).valid)return null
+    return {corners,method:'registration-mark-candidates',requiresConfirmation:true}
+  }catch{return null}
 }
 
 export function detectPaperCorners(image) {
