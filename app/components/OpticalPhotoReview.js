@@ -25,6 +25,9 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
   const pages=buildPrintPages(questionCount)
   const pageRows=pages[pageNumber-1]?.rows||[]
   const pageAnswerKey=Array.isArray(answerKey)?pageRows.map(r=>answerKey[r.number-1]):null
+  const [batchFiles,setBatchFiles]=useState([])
+  const [batchIndex,setBatchIndex]=useState(-1)
+  const [batchMessage,setBatchMessage]=useState('')
   const [url,setUrl]=useState('')
   const [dimensions,setDimensions]=useState(null)
   const [corners,setCorners]=useState([])
@@ -48,6 +51,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
   const urlRef=useRef('')
   useEffect(()=>()=>{if(urlRef.current)URL.revokeObjectURL(urlRef.current)},[])
   function chooseFile(event) {
+    setBatchFiles([]);setBatchIndex(-1);setBatchMessage('')
     const file=event.target.files?.[0]
     setError('');setCorners([]);setAutoCandidate(false);setDimensions(null);setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('');setConfirmedFormIdentity('');setBarcodeMessage('');setMatchedStudent(null);setReviewConfirmed(false);setSaveMessage('')
     if(urlRef.current){URL.revokeObjectURL(urlRef.current);urlRef.current=''}
@@ -60,6 +64,28 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
     const next=URL.createObjectURL(file)
     urlRef.current=next
     setUrl(next)
+  }
+  function loadQueuedFile(index,files=batchFiles){
+    if(index<0||index>=files.length)return
+    const file=files[index]
+    setError('');setCorners([]);setAutoCandidate(false);setDimensions(null);setReading(null);
+    setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('');
+    setConfirmedFormIdentity('');setBarcodeMessage('');setMatchedStudent(null);
+    setReviewConfirmed(false);setSaveMessage('')
+    if(urlRef.current){URL.revokeObjectURL(urlRef.current);urlRef.current=''}
+    const next=URL.createObjectURL(file)
+    urlRef.current=next;setUrl(next);setBatchIndex(index)
+    setBatchMessage((index+1)+'/'+files.length+' fotoğraf açıldı. Öğrenci, sayfa ve cevapları doğrulayınız.')
+  }
+  function chooseBatchFiles(event){
+    const files=Array.from(event.target.files||[])
+    event.target.value=''
+    if(!files.length)return
+    if(files.length>250){setBatchMessage('Bir seferde en fazla 250 fotoğraf seçiniz.');return}
+    const invalid=files.find(file=>!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>MAX_BYTES)
+    if(invalid){setBatchMessage('Dosyaların tamamı 12 MB altında JPEG, PNG veya WebP olmalıdır.');return}
+    setBatchFiles(files);setBatchIndex(-1)
+    loadQueuedFile(0,files)
   }
   async function scanBarcode(){
     const image=imageRef.current
@@ -272,6 +298,21 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
       <label style={{flex:'1 1 210px'}}>Kamera ile fotoğraf çek
         <input type="file" accept="image/jpeg,image/png,image/webp" capture="environment" onChange={chooseFile} style={{display:'block',width:'100%',marginTop:8}}/>
       </label>
+    </div>
+    <div style={{border:'1px solid #d1d5db',borderRadius:10,padding:12,marginTop:12}}>
+      <strong>Toplu fotoğraf inceleme kuyruğu (en fazla 250 fotoğraf)</strong>
+      <p style={{fontSize:12}}>Fotoğraflar yalnızca bu cihazda sırayla açılır; otomatik not kaydı veya öğrenci eşleştirmesi yapılmaz. Her form ayrı ayrı doğrulanmalıdır.</p>
+      <label>Birden fazla fotoğraf seç
+        <input type="file" multiple accept="image/jpeg,image/png,image/webp" onChange={chooseBatchFiles} style={{display:'block',marginTop:6,width:'100%'}}/>
+      </label>
+      {batchFiles.length>0&&<div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap',marginTop:10}}>
+        <button type="button" disabled={batchIndex<=0||busy||saveBusy} onClick={()=>loadQueuedFile(batchIndex-1)}>Önceki fotoğraf</button>
+        <strong>{batchIndex+1} / {batchFiles.length}</strong>
+        <button type="button" disabled={batchIndex>=batchFiles.length-1||busy||saveBusy} onClick={()=>loadQueuedFile(batchIndex+1)}>Sonraki fotoğraf</button>
+        <button type="button" disabled={busy||saveBusy} onClick={()=>{setBatchFiles([]);setBatchIndex(-1);setBatchMessage('Kuyruk temizlendi.');setReading(null);setManualAnswers({});setUrl('');if(urlRef.current){URL.revokeObjectURL(urlRef.current);urlRef.current=''}}}>Kuyruğu temizle</button>
+        <span style={{fontSize:12,maxWidth:260,overflowWrap:'anywhere'}}>{batchFiles[batchIndex]?.name}</span>
+      </div>}
+      {batchMessage&&<p role="status">{batchMessage}</p>}
     </div>
     {url&&<div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap',marginTop:10}}>
       <button type="button" onClick={scanBarcode} disabled={barcodeBusy||!dimensions}>{barcodeBusy?'Barkod aranıyor…':'Barkodu Otomatik Oku (Deneme)'}</button>
