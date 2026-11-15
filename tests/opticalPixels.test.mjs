@@ -62,3 +62,21 @@ test('gölgeli fakat işaretsiz gri kâğıt boş kalır',()=>{
   }
   assert.equal(classifyOpticalMarks(measureOpticalRow(image,circles)).status,'blank')
 })
+
+test('açık kâğıt üzerindeki gri kurşun kalem işareti boş sayılmaz',()=>{
+  const {image,circles}=sampleImage()
+  const target=circles[1]
+  for(let y=0;y<image.height;y++)for(let x=0;x<image.width;x++){
+    const k=(y*image.width+x)*4
+    image.data[k]=image.data[k+1]=image.data[k+2]=220
+    if((x-target.x)**2+(y-target.y)**2<=(target.radius*.55)**2)
+      image.data[k]=image.data[k+1]=image.data[k+2]=135
+  }
+  assert.equal(classifyOpticalMarks(measureOpticalRow(image,circles)).answer,'B')
+})
+test('açık gri kâğıt üzerinde işaret yoksa boş kalır',()=>{
+  const {image,circles}=sampleImage()
+  for(let i=0;i<image.data.length;i+=4)
+    image.data[i]=image.data[i+1]=image.data[i+2]=220
+  assert.equal(classifyOpticalMarks(measureOpticalRow(image,circles)).status,'blank')
+})
