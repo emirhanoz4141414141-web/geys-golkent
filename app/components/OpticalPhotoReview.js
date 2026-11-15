@@ -70,6 +70,8 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
     // Toplanan sayfaları yalnızca açık kuyruk temizleme/yeni toplu seçim sıfırlar.
     setCollectionMessage('')
     const file=event.target.files?.[0]
+    // Aynı fotoğrafı düzeltme amacıyla yeniden seçmek de change olayını tetiklemeli.
+    event.target.value=''
     setError('');setCorners([]);setAutoCandidate(false);setDimensions(null);setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('');setConfirmedFormIdentity('');setBarcodeMessage('');setMatchedStudent(null);setReviewConfirmed(false);setSaveMessage('')
     if(urlRef.current){URL.revokeObjectURL(urlRef.current);urlRef.current=''}
     setUrl('')
