@@ -29,6 +29,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
   const [batchIndex,setBatchIndex]=useState(-1)
   const [batchMessage,setBatchMessage]=useState('')
   const [batchStatuses,setBatchStatuses]=useState({})
+  const [batchIdentities,setBatchIdentities]=useState({})
   const [url,setUrl]=useState('')
   const [dimensions,setDimensions]=useState(null)
   const [corners,setCorners]=useState([])
@@ -52,7 +53,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
   const urlRef=useRef('')
   useEffect(()=>()=>{if(urlRef.current)URL.revokeObjectURL(urlRef.current)},[])
   function chooseFile(event) {
-    setBatchFiles([]);setBatchIndex(-1);setBatchMessage('');setBatchStatuses({})
+    setBatchFiles([]);setBatchIndex(-1);setBatchMessage('');setBatchStatuses({});setBatchIdentities({});setBatchIdentities({})
     const file=event.target.files?.[0]
     setError('');setCorners([]);setAutoCandidate(false);setDimensions(null);setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('');setConfirmedFormIdentity('');setBarcodeMessage('');setMatchedStudent(null);setReviewConfirmed(false);setSaveMessage('')
     if(urlRef.current){URL.revokeObjectURL(urlRef.current);urlRef.current=''}
@@ -85,7 +86,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
     if(files.length>250){setBatchMessage('Bir seferde en fazla 250 fotoğraf seçiniz.');return}
     const invalid=files.find(file=>!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>MAX_BYTES)
     if(invalid){setBatchMessage('Dosyaların tamamı 12 MB altında JPEG, PNG veya WebP olmalıdır.');return}
-    setBatchFiles(files);setBatchIndex(-1);setBatchStatuses({})
+    setBatchFiles(files);setBatchIndex(-1);setBatchStatuses({});setBatchIdentities({})
     loadQueuedFile(0,files)
   }
   function markBatchStatus(status){
@@ -117,12 +118,21 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
       })).filter(x=>x.identity===values[0])
       if(candidates.length!==1)throw new Error(candidates.length?'Form kimliği birden fazla öğrenciyle eşleşti. Otomatik eşleştirme güvenli değil.':'Barkod bu sınavın kayıtlı öğrencileriyle eşleşmedi.')
       if(pageNumber===1 && expectedFormIdentity && values[0]!==expectedFormIdentity)throw new Error('Barkod seçili öğrenciyle eşleşmiyor. Seçimi kontrol ediniz.')
+      const duplicateIndex=Object.entries(batchIdentities).find(([index,identity])=>Number(index)!==batchIndex&&identity===values[0])
+      if(duplicateIndex)throw new Error('Aynı form kimliği kuyrukta '+(Number(duplicateIndex[0])+1)+'. fotoğrafta zaten eşleştirildi. Mükerrer form kontrolü gereklidir.')
+      if(savedExamId&&supabase){
+        const {data:existing,error:lookupError}=await supabase.from('optical_exam_results')
+          .select('id,status').eq('exam_id',savedExamId).eq('student_id',candidates[0].student.id).limit(1)
+        if(lookupError)throw new Error('Mevcut öğrenci sonucu kontrol edilemedi: '+lookupError.message)
+        if(existing?.length)throw new Error('Bu öğrenci için sınav sonucu zaten kayıtlı ('+(existing[0].status==='approved'?'onaylı':'inceleme bekliyor')+'). Yeni form işlenmedi.')
+      }
+      if(batchIndex>=0)setBatchIdentities(old=>({...old,[batchIndex]:values[0]}))
       setMatchedStudent(candidates[0].student)
       setConfirmedFormIdentity(values[0])
       setConfirmedCode(examCode)
       setConfirmedPage(true)
       setBarcodeMessage('Barkod öğrenci ve sınav formuyla eşleşti. Kâğıdın sayfa ve köşe konumlarını ayrıca kontrol ediniz.')
-    }catch(e){setBarcodeMessage(e?.message||'Barkod okunamadı. Elle doğrulayınız.')}
+    }catch(e){setBarcodeMessage(e?.message||'Barkod okunamadı. Elle doğrulayınız.');markBatchStatus('needs_review')}
     finally{setBarcodeBusy(false)}
   }
   function addCorner(event) {
@@ -322,6 +332,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
       <label>Birden fazla fotoğraf seç
         <input type="file" multiple accept="image/jpeg,image/png,image/webp" onChange={chooseBatchFiles} style={{display:'block',marginTop:6,width:'100%'}}/>
       </label>
+      {batchFiles.length>0&&<p style={{fontSize:12}}>Barkodla eşleştirilen form: {Object.keys(batchIdentities).length} · Tekrarlanan barkodlar kontrol gerektirir. Mevcut öğrenci sonuçları da veritabanından sorgulanır.</p>}
       {batchFiles.length>0&&<div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap',marginTop:10}}>
         <button type="button" disabled={batchIndex<=0||busy||saveBusy} onClick={()=>loadQueuedFile(batchIndex-1)}>Önceki fotoğraf</button>
         <strong>{batchIndex+1} / {batchFiles.length}</strong>
