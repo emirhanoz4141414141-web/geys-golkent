@@ -31,7 +31,8 @@ export function measureBubbleFill(image, circle, options = {}) {
   const background=reference.length>=8?reference[Math.floor(reference.length*.65)]:null
   // Mutlak eşik karanlık çekimlerde işareti kaçırıyordu. Yerel eşik,
   // kâğıda göre en az %16 koyu pikselleri işaret kabul eder.
-  const threshold=background===null?darknessCutoff:Math.min(darknessCutoff,Math.max(.08,background-.16))
+  // Önceki Math.min(.48, ...) gri kalem işaretlerini yanlışlıkla boş sayıyordu.
+  const threshold=background===null?darknessCutoff:Math.max(.08,Math.min(.85,background-.16))
   const innerRadius = radius * 0.55
   let dark = 0, sampled = 0
   for (let py = Math.ceil(y-innerRadius); py <= Math.floor(y+innerRadius); py++) {
