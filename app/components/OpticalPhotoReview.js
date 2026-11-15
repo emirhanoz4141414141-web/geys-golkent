@@ -55,6 +55,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
   useEffect(()=>()=>{if(urlRef.current)URL.revokeObjectURL(urlRef.current)},[])
   function chooseFile(event) {
     photoGenerationRef.current++
+    setBarcodeBusy(false)
     setBatchFiles([]);setBatchIndex(-1);setBatchMessage('');setBatchStatuses({});setBatchIdentities({})
     const file=event.target.files?.[0]
     setError('');setCorners([]);setAutoCandidate(false);setDimensions(null);setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('');setConfirmedFormIdentity('');setBarcodeMessage('');setMatchedStudent(null);setReviewConfirmed(false);setSaveMessage('')
@@ -72,6 +73,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
   function loadQueuedFile(index,files=batchFiles){
     if(index<0||index>=files.length)return
     photoGenerationRef.current++
+    setBarcodeBusy(false)
     const file=files[index]
     setError('');setCorners([]);setAutoCandidate(false);setDimensions(null);setReading(null);
     setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('');
@@ -105,6 +107,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
     error:batchFiles.filter((_,i)=>batchStatuses[i]==='error').length
   }
   async function scanBarcode(){
+    if(barcodeBusy)return
     const photoGeneration=photoGenerationRef.current
     const image=imageRef.current
     setBarcodeMessage('')
@@ -232,6 +235,8 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
     markBatchStatus('reviewed')
   }
   function changePage(next){
+    photoGenerationRef.current++
+    setBarcodeBusy(false)
     setPageNumber(next);setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);
     setConfirmedFormIdentity('');setMatchedStudent(null);setCorners([]);setAutoCandidate(false);
     setReviewConfirmed(false);setSaveMessage('');setCollectionMessage('')
