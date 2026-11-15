@@ -14,7 +14,24 @@ export function measureBubbleFill(image, circle, options = {}) {
       !Number.isFinite(darknessCutoff) || darknessCutoff <= 0 || darknessCutoff >= 1) {
     throw new Error('Optik örnekleme için geçerli RGBA görüntüsü ve kabarcık koordinatı gereklidir.')
   }
-  // Baskıdaki daire kenarını ve harf etiketini değil, iç merkez bölgesini ölç.
+  // Aydınlatma fotoğraf boyunca değişebilir. Her baloncuğun hemen
+  // çevresindeki kâğıt parlaklığını ayrı ölç; baskı konturunu dışla.
+  const reference = []
+  for (let py=Math.ceil(y-radius*1.55);py<=Math.floor(y+radius*1.55);py++) {
+    for(let px=Math.ceil(x-radius*1.55);px<=Math.floor(x+radius*1.55);px++){
+      if(px<0||py<0||px>=width||py>=height)continue
+      const d=Math.hypot(px-x,py-y)
+      if(d<radius*1.17||d>radius*1.50)continue
+      const k=(py*width+px)*4
+      if(data[k+3]<250)throw new Error('Saydam görüntü optik değerlendirmeye uygun değil.')
+      reference.push((.2126*data[k]+.7152*data[k+1]+.0722*data[k+2])/255)
+    }
+  }
+  reference.sort((a,b)=>a-b)
+  const background=reference.length>=8?reference[Math.floor(reference.length*.65)]:null
+  // Mutlak eşik karanlık çekimlerde işareti kaçırıyordu. Yerel eşik,
+  // kâğıda göre en az %16 koyu pikselleri işaret kabul eder.
+  const threshold=background===null?darknessCutoff:Math.min(darknessCutoff,Math.max(.08,background-.16))
   const innerRadius = radius * 0.55
   let dark = 0, sampled = 0
   for (let py = Math.ceil(y-innerRadius); py <= Math.floor(y+innerRadius); py++) {
@@ -24,7 +41,7 @@ export function measureBubbleFill(image, circle, options = {}) {
       const alpha = data[offset+3] / 255
       if (alpha < 0.98) throw new Error('Saydam görüntü optik değerlendirmeye uygun değil.')
       const brightness = (0.2126*data[offset] + 0.7152*data[offset+1] + 0.0722*data[offset+2])/255
-      if (brightness < darknessCutoff) dark++
+      if (brightness < threshold) dark++
       sampled++
     }
   }
