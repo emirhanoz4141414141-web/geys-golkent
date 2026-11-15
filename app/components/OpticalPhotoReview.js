@@ -53,7 +53,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
   const urlRef=useRef('')
   useEffect(()=>()=>{if(urlRef.current)URL.revokeObjectURL(urlRef.current)},[])
   function chooseFile(event) {
-    setBatchFiles([]);setBatchIndex(-1);setBatchMessage('');setBatchStatuses({});setBatchIdentities({});setBatchIdentities({})
+    setBatchFiles([]);setBatchIndex(-1);setBatchMessage('');setBatchStatuses({});setBatchIdentities({})
     const file=event.target.files?.[0]
     setError('');setCorners([]);setAutoCandidate(false);setDimensions(null);setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('');setConfirmedFormIdentity('');setBarcodeMessage('');setMatchedStudent(null);setReviewConfirmed(false);setSaveMessage('')
     if(urlRef.current){URL.revokeObjectURL(urlRef.current);urlRef.current=''}
@@ -91,7 +91,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
   }
   function markBatchStatus(status){
     if(batchIndex<0||!batchFiles[batchIndex])return
-    setBatchStatuses(old=>({...old,[batchIndex]:status}))
+    setBatchStatuses(old=>old[batchIndex]==='saved'&&status!=='saved'?old:{...old,[batchIndex]:status})
   }
   const batchCounts={
     waiting:batchFiles.filter((_,i)=>!batchStatuses[i]).length,
@@ -219,7 +219,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
     setCollectedPages(old=>({...old,[pageNumber]:{
       pageNumber,studentId:String(identifiedStudent.id),
       studentName:[identifiedStudent.first_name,identifiedStudent.last_name].filter(Boolean).join(' '),
-      answers:[...finalAnswers],formIdentity:verifiedFormIdentity
+      answers:[...finalAnswers],formIdentity:verifiedFormIdentity,batchIndex
     }}))
     setCollectionMessage(pageNumber+'. sayfa inceleme grubuna eklendi.')
     markBatchStatus('reviewed')
@@ -262,7 +262,11 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
       })
       if(insertError)throw insertError
       setSaveMessage('Tüm sayfaların sonucu yönetici incelemesi bekleyen taslak olarak kaydedildi.')
-      markBatchStatus('saved')
+      setBatchStatuses(old=>{
+        const next={...old}
+        for(const page of Object.values(collectedPages))if(Number.isInteger(page.batchIndex)&&page.batchIndex>=0)next[page.batchIndex]='saved'
+        return next
+      })
       setReviewConfirmed(false);setCollectedPages({})
     }catch(e){setSaveMessage('Çok sayfalı sonuç kaydedilemedi: '+(e?.message||'Bilinmeyen hata'))}
     finally{setSaveBusy(false)}
@@ -337,12 +341,13 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
         <button type="button" disabled={batchIndex<=0||busy||saveBusy} onClick={()=>loadQueuedFile(batchIndex-1)}>Önceki fotoğraf</button>
         <strong>{batchIndex+1} / {batchFiles.length}</strong>
         <button type="button" disabled={batchIndex>=batchFiles.length-1||busy||saveBusy} onClick={()=>loadQueuedFile(batchIndex+1)}>Sonraki fotoğraf</button>
-        <button type="button" disabled={busy||saveBusy} onClick={()=>{setBatchFiles([]);setBatchIndex(-1);setBatchStatuses({});setBatchMessage('Kuyruk temizlendi.');setReading(null);setManualAnswers({});setUrl('');if(urlRef.current){URL.revokeObjectURL(urlRef.current);urlRef.current=''}}}>Kuyruğu temizle</button>
+        <button type="button" disabled={busy||saveBusy} onClick={()=>{setBatchFiles([]);setBatchIndex(-1);setBatchStatuses({});setBatchIdentities({});setCollectedPages({});setCollectionMessage('');setBatchMessage('Kuyruk temizlendi.');setReading(null);setManualAnswers({});setUrl('');if(urlRef.current){URL.revokeObjectURL(urlRef.current);urlRef.current=''}}}>Kuyruğu temizle</button>
         <span style={{fontSize:12,maxWidth:260,overflowWrap:'anywhere'}}>{batchFiles[batchIndex]?.name}</span>
       </div>}
       {batchFiles.length>0&&<>
         <p style={{fontSize:12}}>Bekleyen: {batchCounts.waiting} · İncelenen: {batchCounts.reviewed} · Kontrol gerekli: {batchCounts.needs_review} · Taslak kaydedilen: {batchCounts.saved} · Hatalı: {batchCounts.error}</p>
-        <label>Seçili fotoğrafın durumu <select aria-label="Kuyruk işlem durumu" value={batchStatuses[batchIndex]||'waiting'} onChange={e=>setBatchStatuses(old=>{const next={...old};if(e.target.value==='waiting')delete next[batchIndex];else next[batchIndex]=e.target.value;return next})}>
+        <label>Seçili fotoğrafın durumu <select aria-label="Kuyruk işlem durumu" value={batchStatuses[batchIndex]||'waiting'} disabled={batchStatuses[batchIndex]==='saved'} onChange={e=>setBatchStatuses(old=>{if(old[batchIndex]==='saved')return old;const next={...old};if(e.target.value==='waiting')delete next[batchIndex];else next[batchIndex]=e.target.value;return next})}>
+          {batchStatuses[batchIndex]==='saved'&&<option value="saved">Taslak kaydedildi</option>}
           <option value="waiting">Bekliyor</option>
           <option value="reviewed">İncelendi (taslak kaydı değil)</option>
           <option value="needs_review">Kontrol gerekli</option>
