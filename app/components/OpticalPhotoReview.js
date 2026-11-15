@@ -28,6 +28,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
   const [batchFiles,setBatchFiles]=useState([])
   const [batchIndex,setBatchIndex]=useState(-1)
   const [batchMessage,setBatchMessage]=useState('')
+  const [batchChecking,setBatchChecking]=useState(false)
   const [batchStatuses,setBatchStatuses]=useState({})
   const [batchIdentities,setBatchIdentities]=useState({})
   const [url,setUrl]=useState('')
@@ -56,6 +57,7 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
   useEffect(()=>()=>{if(urlRef.current)URL.revokeObjectURL(urlRef.current)},[])
   function chooseFile(event) {
     batchSelectionRef.current++
+    setBatchChecking(false)
     photoGenerationRef.current++
     setBarcodeBusy(false);setBusy(false)
     setBatchFiles([]);setBatchIndex(-1);setBatchMessage('');setBatchStatuses({});setBatchIdentities({});setCollectedPages({});setCollectionMessage('')
@@ -97,18 +99,22 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
     const fileKeys=files.map(file=>[file.name,file.size,file.lastModified,file.type].join('|'))
     if(new Set(fileKeys).size!==fileKeys.length){setBatchMessage('Aynı dosya birden fazla seçilmiş görünüyor. Tekrarlanan dosyaları çıkarıp yeniden seçiniz.');return}
     if(!globalThis.crypto?.subtle){setBatchMessage('Bu tarayıcıda güvenli dosya karşılaştırması desteklenmiyor. Fotoğrafları tek tek kontrol ediniz.');return}
-    setBatchMessage('Fotoğraflar karşılaştırılıyor…')
+    setBatchChecking(true)
+    setBatchMessage('Fotoğraflar karşılaştırılıyor: 0/'+files.length)
     try{
       const fingerprints=new Set()
-      for(const file of files){
+      for(const [index,file] of files.entries()){
         const hash=await globalThis.crypto.subtle.digest('SHA-256',await file.arrayBuffer())
         if(selection!==batchSelectionRef.current)return
         const key=Array.from(new Uint8Array(hash),byte=>byte.toString(16).padStart(2,'0')).join('')
         if(fingerprints.has(key)){setBatchMessage('Aynı fotoğraf içeriği farklı dosya adlarıyla tekrar seçilmiş. Mükerrer fotoğrafı çıkarıp yeniden deneyiniz.');return}
         fingerprints.add(key)
+        if(index===files.length-1||index%5===4)setBatchMessage('Fotoğraflar karşılaştırılıyor: '+(index+1)+'/'+files.length)
       }
     }catch{if(selection===batchSelectionRef.current)setBatchMessage('Fotoğraflar karşılaştırılamadı. Toplu seçim güvenli biçimde durduruldu.');return}
+    finally{if(selection===batchSelectionRef.current)setBatchChecking(false)}
     if(selection!==batchSelectionRef.current)return
+    setBatchMessage('Fotoğraflar doğrulandı: '+files.length+'/'+files.length)
     photoGenerationRef.current++
     setBatchFiles(files);setBatchIndex(-1);setBatchStatuses({});setBatchIdentities({});setCollectedPages({});setCollectionMessage('')
     loadQueuedFile(0,files)
@@ -368,12 +374,13 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
       <label>Birden fazla fotoğraf seç
         <input type="file" multiple accept="image/jpeg,image/png,image/webp" onChange={chooseBatchFiles} style={{display:'block',marginTop:6,width:'100%'}}/>
       </label>
+      {batchChecking&&<p role="status" style={{fontSize:12}}>Dosya içerikleri cihaz üzerinde kontrol ediliyor. İşlem tamamlanana kadar bekleyiniz.</p>}
       {batchFiles.length>0&&<p style={{fontSize:12}}>Barkodla eşleştirilen form: {Object.keys(batchIdentities).length} · Tekrarlanan barkodlar kontrol gerektirir. Mevcut öğrenci sonuçları da veritabanından sorgulanır.</p>}
       {batchFiles.length>0&&<div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap',marginTop:10}}>
         <button type="button" disabled={batchIndex<=0||busy||saveBusy} onClick={()=>loadQueuedFile(batchIndex-1)}>Önceki fotoğraf</button>
         <strong>{batchIndex+1} / {batchFiles.length}</strong>
         <button type="button" disabled={batchIndex>=batchFiles.length-1||busy||saveBusy} onClick={()=>loadQueuedFile(batchIndex+1)}>Sonraki fotoğraf</button>
-        <button type="button" disabled={busy||saveBusy} onClick={()=>{batchSelectionRef.current++;photoGenerationRef.current++;setBusy(false);setBarcodeBusy(false);setBatchFiles([]);setBatchIndex(-1);setBatchStatuses({});setBatchIdentities({});setCollectedPages({});setCollectionMessage('');setBatchMessage('Kuyruk temizlendi.');setReading(null);setManualAnswers({});setUrl('');if(urlRef.current){URL.revokeObjectURL(urlRef.current);urlRef.current=''}}}>Kuyruğu temizle</button>
+        <button type="button" disabled={busy||saveBusy} onClick={()=>{batchSelectionRef.current++;setBatchChecking(false);photoGenerationRef.current++;setBusy(false);setBarcodeBusy(false);setBatchFiles([]);setBatchIndex(-1);setBatchStatuses({});setBatchIdentities({});setCollectedPages({});setCollectionMessage('');setBatchMessage('Kuyruk temizlendi.');setReading(null);setManualAnswers({});setUrl('');if(urlRef.current){URL.revokeObjectURL(urlRef.current);urlRef.current=''}}}>Kuyruğu temizle</button>
         <span style={{fontSize:12,maxWidth:260,overflowWrap:'anywhere'}}>{batchFiles[batchIndex]?.name}</span>
       </div>}
       {batchFiles.length>0&&<>
