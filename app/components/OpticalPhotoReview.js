@@ -62,7 +62,10 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
     setBatchChecking(false)
     photoGenerationRef.current++
     setBarcodeBusy(false);setBusy(false)
-    setBatchFiles([]);setBatchIndex(-1);setBatchMessage('');setBatchStatuses({});setBatchIdentities({});setCollectedPages({});setCollectionMessage('')
+    setBatchFiles([]);setBatchIndex(-1);setBatchMessage('');setBatchStatuses({});setBatchIdentities({})
+    // Tekli fotoğraf yükleme çok sayfalı formun sonraki sayfası olabilir.
+    // Toplanan sayfaları yalnızca açık kuyruk temizleme/yeni toplu seçim sıfırlar.
+    setCollectionMessage('')
     const file=event.target.files?.[0]
     setError('');setCorners([]);setAutoCandidate(false);setDimensions(null);setReading(null);setManualAnswers({});setConfirmedCode('');setConfirmedPage(false);setConfirmedStudentNumber('');setConfirmedFormIdentity('');setBarcodeMessage('');setMatchedStudent(null);setReviewConfirmed(false);setSaveMessage('')
     if(urlRef.current){URL.revokeObjectURL(urlRef.current);urlRef.current=''}
