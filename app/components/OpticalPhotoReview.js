@@ -259,6 +259,9 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
     if(collectedPages[pageNumber]){
       setCollectionMessage('Bu sayfa zaten eklendi. Önce sayfayı gruptan kaldırınız.');return
     }
+    if(batchIndex>=0&&Object.values(collectedPages).some(item=>item.batchIndex===batchIndex)){
+      setCollectionMessage('Bu fotoğraf kuyrukta başka bir sayfa için zaten kullanıldı. İlgili sayfanın gerçek fotoğrafını seçiniz.');return
+    }
     setCollectedPages(old=>({...old,[pageNumber]:{
       pageNumber,studentId:String(identifiedStudent.id),
       studentName:[identifiedStudent.first_name,identifiedStudent.last_name].filter(Boolean).join(' '),
