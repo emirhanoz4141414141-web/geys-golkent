@@ -31,6 +31,8 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
   const [batchChecking,setBatchChecking]=useState(false)
   const [batchStatuses,setBatchStatuses]=useState({})
   const [batchIdentities,setBatchIdentities]=useState({})
+  const [singlePhotoHash,setSinglePhotoHash]=useState('')
+  const [singlePhotoHashBusy,setSinglePhotoHashBusy]=useState(false)
   const [url,setUrl]=useState('')
   const [dimensions,setDimensions]=useState(null)
   const [corners,setCorners]=useState([])
@@ -56,11 +58,12 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
   const imageRef=useRef(null)
   const urlRef=useRef('')
   useEffect(()=>()=>{if(urlRef.current)URL.revokeObjectURL(urlRef.current)},[])
-  function chooseFile(event) {
+  async function chooseFile(event) {
     batchCheckingRef.current=false
     batchSelectionRef.current++
     setBatchChecking(false)
-    photoGenerationRef.current++
+    const photoGeneration=++photoGenerationRef.current
+    setSinglePhotoHash('');setSinglePhotoHashBusy(false)
     setBarcodeBusy(false);setBusy(false)
     setBatchFiles([]);setBatchIndex(-1);setBatchMessage('');setBatchStatuses({});setBatchIdentities({})
     // Tekli fotoğraf yükleme çok sayfalı formun sonraki sayfası olabilir.
@@ -75,13 +78,22 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
       setError('Yalnızca 12 MB altındaki JPEG, PNG veya WebP fotoğrafları kabul edilir.')
       return
     }
-    const next=URL.createObjectURL(file)
-    urlRef.current=next
-    setUrl(next)
+    if(!globalThis.crypto?.subtle){setError('Fotoğrafın güvenli tekrar kontrolü bu tarayıcıda desteklenmiyor.');return}
+    setSinglePhotoHashBusy(true)
+    try{
+      const hash=await globalThis.crypto.subtle.digest('SHA-256',await file.arrayBuffer())
+      if(photoGeneration!==photoGenerationRef.current)return
+      setSinglePhotoHash(Array.from(new Uint8Array(hash),byte=>byte.toString(16).padStart(2,'0')).join(''))
+      const next=URL.createObjectURL(file)
+      urlRef.current=next
+      setUrl(next)
+    }catch{if(photoGeneration===photoGenerationRef.current)setError('Fotoğraf içeriği doğrulanamadı. Yeniden seçiniz.')}
+    finally{if(photoGeneration===photoGenerationRef.current)setSinglePhotoHashBusy(false)}
   }
   function loadQueuedFile(index,files=batchFiles){
     if(index<0||index>=files.length)return
     photoGenerationRef.current++
+    setSinglePhotoHash('');setSinglePhotoHashBusy(false)
     setBarcodeBusy(false);setBusy(false)
     const file=files[index]
     setError('');setCorners([]);setAutoCandidate(false);setDimensions(null);setReading(null);
@@ -259,13 +271,19 @@ export default function OpticalPhotoReview({ questionCount = 20, examCode = '', 
     if(collectedPages[pageNumber]){
       setCollectionMessage('Bu sayfa zaten eklendi. Önce sayfayı gruptan kaldırınız.');return
     }
+    if(batchIndex<0&&(!singlePhotoHash||singlePhotoHashBusy)){
+      setCollectionMessage('Tekli fotoğrafın içerik kontrolü henüz tamamlanmadı. Lütfen bekleyiniz.');return
+    }
+    if(batchIndex<0&&Object.values(collectedPages).some(item=>item.photoHash&&item.photoHash===singlePhotoHash)){
+      setCollectionMessage('Bu fotoğraf daha önce başka bir sayfa için kullanıldı. Doğru sayfa fotoğrafını seçiniz.');return
+    }
     if(batchIndex>=0&&Object.values(collectedPages).some(item=>item.batchIndex===batchIndex)){
       setCollectionMessage('Bu fotoğraf kuyrukta başka bir sayfa için zaten kullanıldı. İlgili sayfanın gerçek fotoğrafını seçiniz.');return
     }
     setCollectedPages(old=>({...old,[pageNumber]:{
       pageNumber,studentId:String(identifiedStudent.id),
       studentName:[identifiedStudent.first_name,identifiedStudent.last_name].filter(Boolean).join(' '),
-      answers:[...finalAnswers],formIdentity:verifiedFormIdentity,batchIndex
+      answers:[...finalAnswers],formIdentity:verifiedFormIdentity,batchIndex,photoHash:batchIndex<0?singlePhotoHash:''
     }}))
     setCollectionMessage(pageNumber+'. sayfa inceleme grubuna eklendi.')
     markBatchStatus('reviewed')
