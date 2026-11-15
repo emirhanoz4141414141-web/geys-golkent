@@ -9,11 +9,13 @@ function sheet(count=1) {
  const corners=[{x:0,y:0},{x:width-1,y:0},{x:width-1,y:height-1},{x:0,y:height-1}]
  return {image:{width,height,data},corners}
 }
-test('beyaz sayfada boş cevapları tespit eder, kayıt izni vermez',()=>{
+test('tamamen boş beyaz sayfa doğrulama ister, kayıt izni vermez',()=>{
  const {image,corners}=sheet()
  const r=measurePhotoPage(image,corners,{questionCount:1})
  assert.equal(r.rows.length,1)
- assert.equal(r.rows[0].status,'blank')
+ assert.equal(r.rows[0].status,'review')
+ assert.equal(r.rows[0].reason,'all_blank_requires_confirmation')
+ assert.equal(r.requiresReview,true)
  assert.equal(r.publishable,false)
 })
 test('A seçeneği koyu işaretlenince aday cevabı belirler',()=>{
