@@ -41,7 +41,7 @@ test('registration mark candidates on bright sheet are provisional',()=>{
  assert.equal(result.requiresConfirmation,true)
  assert.equal(result.method,'registration-mark-candidates')
  for(let i=0;i<4;i++){
-  const [x,y]=[[50,50],[350,50],[350,550],[50,550]][i]
+  const [x,y]=[[30.65,28.02],[369.35,28.02],[369.35,571.98],[30.65,571.98]][i]
   assert.ok(Math.abs(result.corners[i].x-x)<16)
   assert.ok(Math.abs(result.corners[i].y-y)<16)
  }
