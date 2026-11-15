@@ -21,6 +21,7 @@ export default function ExamWorkspace({students = [], classes = [], institution 
   const [answers, setAnswers] = useState(() => Array(20).fill(''))
   const [mode, setMode] = useState('questions')
   const [showKey, setShowKey] = useState(false)
+  const [keyOnlyMode,setKeyOnlyMode]=useState(false)
   const [selectedStudentId,setSelectedStudentId] = useState('')
   const [studentTc,setStudentTc] = useState('')
   const [tcError,setTcError] = useState('')
@@ -96,13 +97,14 @@ export default function ExamWorkspace({students = [], classes = [], institution 
     setExamCode(exam.exam_code)
     setTitle(exam.title)
     setExamDate(exam.exam_date)
+    setKeyOnlyMode(Boolean(exam.questions?.length&&exam.questions.every(q=>q.opticalKeyOnly===true)))
     setQuestions(exam.questions)
     setAnswers(Array(exam.questions.length).fill(''))
     setExamMessage('Kayıtlı sınav açıldı. Değişikliklerinizi kaydetmeyi unutmayınız.')
   }
   async function saveExam(){
     if(!supabase||examSaving)return
-    if(!validation.valid){setExamMessage('Önce soruları ve seçenekleri tamamlayınız.');return}
+    if(!validation.valid){setExamMessage(keyOnlyMode?'Bütün sorular için A, B, C veya D cevap anahtarını giriniz.':'Önce soruları ve seçenekleri tamamlayınız.');return}
     if(!examDate){setExamMessage('Sınav tarihi gerekli.');return}
     setExamSaving(true);setExamMessage('')
     const payload={exam_code:derivedExamCode,title,exam_date:examDate,questions,updated_at:new Date().toISOString()}
@@ -141,7 +143,9 @@ export default function ExamWorkspace({students = [], classes = [], institution 
   const studentClass=selectedStudent?.classes?.code||selectedClass?.code||''
   const derivedExamCode=examCode==='DENEME' ? ('SINAV-'+examDate.replaceAll('-','') ) : examCode
   const draft = useMemo(() => ({ title, questions }), [title, questions])
-  const validation = useMemo(() => validateExamDraft(draft), [draft])
+  const validation = useMemo(() => keyOnlyMode
+    ? {valid:Boolean(title.trim()&&questions.length>=1&&questions.length<=200&&questions.every(q=>q.opticalKeyOnly===true&&letters.includes(q.correctAnswer))),errors:['Sınav adı ve bütün soruların doğru cevapları zorunludur.']}
+    : validateExamDraft(draft), [draft,keyOnlyMode,title,questions])
   const score = useMemo(() => {
     if (!validation.valid) return null
     try { return gradeExam({ answerKey: questions.map(q => q.correctAnswer), answers }) }
@@ -153,8 +157,18 @@ export default function ExamWorkspace({students = [], classes = [], institution 
   function changeCount(next) {
     const count = Number(next)
     if (!Number.isInteger(count) || count < 1 || count > 200) return
-    setQuestions(old => Array.from({ length: count }, (_, i) => old[i] || EMPTY()))
+    setQuestions(old => Array.from({ length: count }, (_, i) => old[i] || (keyOnlyMode?{...EMPTY(),correctAnswer:'',opticalKeyOnly:true}:EMPTY())))
     setAnswers(old => Array.from({ length: count }, (_, i) => old[i] || ''))
+  }
+  function toggleKeyOnly(next){
+    setKeyOnlyMode(next)
+    setActiveExamId('')
+    setExamResults([]);setResultsMessage('')
+    setQuestions(old=>old.map(q=>next
+      ? {...EMPTY(),correctAnswer:'',opticalKeyOnly:true}
+      : EMPTY()))
+    setAnswers(old=>old.map(()=>''))
+    setExamMessage('Yeni '+(next?'yalnızca cevap anahtarlı':'tam soru metinli')+' sınav hazırlanıyor. Mevcut kayıt değiştirilmedi.')
   }
   return <section className="panel" style={{padding:20}}>
     <div className="panelHead"><div>
@@ -166,6 +180,12 @@ export default function ExamWorkspace({students = [], classes = [], institution 
       <label>Sınav adı <input aria-label="Sınav adı" value={title} maxLength={180} onChange={e=>setTitle(e.target.value)}/></label>
       <label>Sınav kodu <input aria-label="Sınav kodu" value={examCode} maxLength={32} onChange={e=>setExamCode(e.target.value.toUpperCase().replace(/[^A-Z0-9-]/g,''))}/></label>
       <label>Soru sayısı <input aria-label="Soru sayısı" type="number" min="1" max="200" value={questions.length} onChange={e=>changeCount(e.target.value)}/></label>
+    </div>
+    <div style={{display:'flex',gap:12,alignItems:'center',flexWrap:'wrap',padding:12,marginBottom:12,border:'1px solid #d6e1e9',borderRadius:10}}>
+      <strong>Sınav hazırlama türü</strong>
+      <label><input type="radio" name="optical-exam-type" checked={!keyOnlyMode} onChange={()=>toggleKeyOnly(false)}/> Sorular ve seçeneklerle</label>
+      <label><input type="radio" name="optical-exam-type" checked={keyOnlyMode} onChange={()=>toggleKeyOnly(true)}/> Yalnızca cevap anahtarıyla (optik)</label>
+      {keyOnlyMode&&<small style={{width:'100%'}}>Soru metni girmeden sınav adı, tarih, kod, soru sayısı ve her soru için doğru şık yeterlidir. Hiçbir şık varsayılan doğru cevap olarak seçilmez.</small>}
     </div>
     <div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap',marginBottom:16,padding:12,border:'1px solid #d6e1e9',borderRadius:10}}>
       <label>Kayıtlı sınavlar <select aria-label="Kayıtlı sınav seçimi" value={activeExamId} onChange={e=>{if(e.target.value)openSavedExam(e.target.value);else{setActiveExamId('');setExamMessage('Yeni sınav oluşturabilirsiniz.')}}}><option value="">Yeni sınav</option>{savedExams.map(x=><option key={x.id} value={x.id}>{x.title} · {x.exam_date} · {x.exam_code}</option>)}</select></label>
@@ -220,7 +240,7 @@ export default function ExamWorkspace({students = [], classes = [], institution 
       <button type="button" onClick={()=>setBulkPrint(v=>!v)} disabled={!bulkStudents.length}>{bulkPrint?'Toplu Önizlemeyi Kapat':`Toplu Optik Önizleme (${bulkStudents.length} öğrenci)`}</button>
       {bulkPrint&&<button type="button" className="primary" onClick={()=>window.print()}>Tümünü Yazdır / PDF</button>}
       {bulkPrint&&<small role="status" style={{width:'100%'}}>Toplu baskıda yalnızca seçilen sınıfın öğrencileri; sınıf seçilmediyse ilk 250 öğrenci yer alır. T.C. kimlik numaraları topluca getirilmez. Öğrenci fotoğrafları kayıtlıysa eklenir. Baskı öncesi sayfa sayısını kontrol ediniz.</small>}
-      <small>PDF için açılan yazdırma penceresinde «PDF olarak kaydet» seçeneğini kullanınız. A4 ve %100 ölçek seçiniz.</small></div>{bulkPrint ? <div aria-label="Toplu optik formlar">{bulkStudents.map(s=><OpticalAnswerSheet key={s.id} logoUrl={institution?.logo_url||'/golkent-logo.png'} questionCount={questions.length} examCode={derivedExamCode} examTitle={title} examDate={examDate} studentName={[s.first_name,s.last_name].filter(Boolean).join(' ')} studentId={String(s.id)} studentClass={s.classes?.code||classes.find(c=>String(c.id)===String(s.class_id))?.code||''} studentPhotoUrl={s.photo_url||''}/>)}</div> : <OpticalAnswerSheet logoUrl={institution?.logo_url||'/golkent-logo.png'} questionCount={questions.length} examCode={derivedExamCode} examTitle={title} examDate={examDate} studentName={studentName} studentId={selectedStudent?.id ? String(selectedStudent.id) : ''} studentNumber={studentNumber} studentClass={studentClass} studentTc={studentTc} studentPhotoUrl={selectedStudent?.photo_url||''}/>}</> : mode==='photo' ? <OpticalPhotoReview supabase={supabase} savedExamId={activeExamId} questionCount={questions.length} examCode={derivedExamCode} answerKey={validation.valid ? questions.map(q=>q.correctAnswer) : null} studentCandidates={students} expectedStudentNumber={selectedStudent?.id ? '' : studentNumber.trim()} expectedFormIdentity={selectedStudent?.id ? (buildCompactFormIdentity({examCode:derivedExamCode,studentId:String(selectedStudent.id),pageNumber:1})||'') : ''}/> : mode==='questions' ? questions.map((q,i)=><fieldset key={i} style={{border:'1px solid #d6e1e9',borderRadius:12,padding:14,marginBottom:12}}>
+      <small>PDF için açılan yazdırma penceresinde «PDF olarak kaydet» seçeneğini kullanınız. A4 ve %100 ölçek seçiniz.</small></div>{bulkPrint ? <div aria-label="Toplu optik formlar">{bulkStudents.map(s=><OpticalAnswerSheet key={s.id} logoUrl={institution?.logo_url||'/golkent-logo.png'} questionCount={questions.length} examCode={derivedExamCode} examTitle={title} examDate={examDate} studentName={[s.first_name,s.last_name].filter(Boolean).join(' ')} studentId={String(s.id)} studentClass={s.classes?.code||classes.find(c=>String(c.id)===String(s.class_id))?.code||''} studentPhotoUrl={s.photo_url||''}/>)}</div> : <OpticalAnswerSheet logoUrl={institution?.logo_url||'/golkent-logo.png'} questionCount={questions.length} examCode={derivedExamCode} examTitle={title} examDate={examDate} studentName={studentName} studentId={selectedStudent?.id ? String(selectedStudent.id) : ''} studentNumber={studentNumber} studentClass={studentClass} studentTc={studentTc} studentPhotoUrl={selectedStudent?.photo_url||''}/>}</> : mode==='photo' ? <OpticalPhotoReview supabase={supabase} savedExamId={activeExamId} questionCount={questions.length} examCode={derivedExamCode} answerKey={validation.valid ? questions.map(q=>q.correctAnswer) : null} studentCandidates={students} expectedStudentNumber={selectedStudent?.id ? '' : studentNumber.trim()} expectedFormIdentity={selectedStudent?.id ? (buildCompactFormIdentity({examCode:derivedExamCode,studentId:String(selectedStudent.id),pageNumber:1})||'') : ''}/> : mode==='questions' && keyOnlyMode ? <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))',gap:10}}>{questions.map((q,i)=><label key={i} style={{display:'flex',alignItems:'center',gap:8,padding:8,border:'1px solid #d6e1e9',borderRadius:8}}><strong>{i+1}.</strong><select aria-label={`${i+1}. soru cevap anahtarı`} value={q.correctAnswer} onChange={e=>editQuestion(i,{correctAnswer:e.target.value})}><option value="">Seçiniz</option>{letters.map(letter=><option key={letter} value={letter}>{letter}</option>)}</select></label>)}</div> : mode==='questions' ? questions.map((q,i)=><fieldset key={i} style={{border:'1px solid #d6e1e9',borderRadius:12,padding:14,marginBottom:12}}>
       <legend style={{fontWeight:700}}>{i+1}. Soru</legend>
       <textarea aria-label={`${i+1}. soru metni`} dir="auto" rows={2} value={q.text} placeholder="Türkçe veya harekeli Arapça soru metni" onChange={e=>editQuestion(i,{text:e.target.value})} style={{width:'100%',padding:10}}/>
       <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:10,marginTop:10}}>
