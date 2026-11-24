@@ -1236,3 +1236,5 @@
  .supportV2 .supportHero h2{font-size:19px}
  .supportV2 .supportActions{grid-template-columns:1fr}
 }
+
+.personnelReportBuilder{margin:16px 0 24px;padding:20px;border:1px solid #cbdde3;border-radius:14px;background:#f7fbfc}.personnelReportBuilder .panelHead{margin-bottom:14px}.personnelReportBuilder .personnelForm{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:12px}.personnelReportBuilder .personnelForm label.check{display:flex;align-items:center;gap:9px;padding:10px;background:white;border:1px solid #dce8ec;border-radius:8px;min-height:42px}.personnelReportBuilder .personnelForm label.check input{width:17px;height:17px;flex:none;accent-color:#276b78}.personnelReportBuilder .personnelExport{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:15px 0}.personnelReportBuilder .personnelExport button{min-height:40px}.personnelReportBuilder .panelHead small{color:#276b78;font-weight:800;letter-spacing:1px}@media(max-width:600px){.personnelReportBuilder{padding:12px}.personnelReportBuilder .personnelForm{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}}
